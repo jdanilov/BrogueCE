@@ -576,6 +576,19 @@ const floorTileType tileCatalog[NUMBER_TILETYPES] = {
  /*MUD_FLOOR*/                  {G_FLOOR,   &mudBackColor,          &refuseBackColor,   85, 0,  DF_STENCH_SMOLDER,0,0,                      0,  NO_LIGHT,       (T_IS_FLAMMABLE), (TM_VANISHES_UPON_PROMOTION),                                                     "the mud floor",        "Rotting animal matter has been ground into the mud floor; the stench is awful."},
  /*MUD_WALL*/                   {G_WALL,    &mudWallForeColor,      &mudWallBackColor,  0,  0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (T_OBSTRUCTS_EVERYTHING), (TM_STAND_IN_TILE),                                                       "a mud-covered wall",   "A malodorous layer of clay and fecal matter coats the wall."},
  /*MUD_DOORWAY*/                {G_DOORWAY, &mudWallForeColor,      &refuseBackColor,   25, 50, DF_EMBERS,0,0,                              0,  NO_LIGHT,       (T_OBSTRUCTS_VISION | T_OBSTRUCTS_GAS | T_IS_FLAMMABLE), (TM_STAND_IN_TILE | TM_VISUALLY_DISTINCT), "hanging animal skins", "you push through the animal skins that hang across the threshold."},
+
+ // corpse surface tiles (cosmetic)
+ // tileType                    char        fore color          back color        prio ign% [fire,discover,promote]Type     promoteChance   glowLight       flags mechflags                                                                                     description             flavorText
+ /*CORPSE_RED*/                 {G_CORPSE,  &humanBloodColor,   0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "a corpse",             "the mangled remains of a creature lie here."},
+ /*CORPSE_GREEN*/               {G_CORPSE,  &insectBloodColor,  0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "a corpse",             "insectoid remains litter the ground."},
+ /*CORPSE_PURPLE*/              {G_CORPSE,  &poisonGasColor,    0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "a corpse",             "strange, dark remains lie here."},
+ /*CORPSE_WORM*/                {G_CORPSE,  &wormColor,         0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "worm remains",         "worm viscera cover the ground."},
+ /*CORPSE_ACID*/                {G_CORPSE,  &acidBackColor,     0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "acidic remains",       "a bubbling acidic residue marks where a creature fell."},
+ /*CORPSE_ASH*/                 {G_BONES,   &ashForeColor,      0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "ash remains",          "a pile of ash marks where a creature fell."},
+ /*CORPSE_EMBER*/               {G_BONES,   &fireForeColor,     0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "ember remains",        "smoldering embers mark where a creature died."},
+ /*CORPSE_ECTOPLASM*/           {G_FLOOR_ALT,&ectoplasmColor,  0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  ECTOPLASM_LIGHT,(0), (TM_STAND_IN_TILE),                                                                            "ectoplasmic remains",  "a shimmering ectoplasmic smear marks the ground."},
+ /*CORPSE_RUBBLE*/              {G_BONES,   &gray,              0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "rubble remains",       "broken stone fragments mark where a creature stood."},
+ /*CORPSE_ROT*/                 {G_FLOOR_ALT,&gray,            0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "putrid remains",       "a putrid smear marks where a creature dissolved."},
 };
 
 unsigned long terrainFlags(pos p) {
@@ -929,6 +942,18 @@ dungeonFeature dungeonFeatureCatalog[NUMBER_DUNGEON_FEATURES] = {
     // goblin warren:
     {STENCH_SMOKE_GAS,          GAS,        50,     0,      0, "", 0, 0, 0, 0, DF_PLAIN_FIRE},
     {STENCH_SMOKE_GAS,          GAS,        50,     0,      0, "", 0, 0, 0, 0, DF_EMBERS},
+
+    // corpse features (cosmetic, single-tile, always spawns)
+    {CORPSE_RED,                SURFACE,    100,    0,      0},
+    {CORPSE_GREEN,              SURFACE,    100,    0,      0},
+    {CORPSE_PURPLE,             SURFACE,    100,    0,      0},
+    {CORPSE_WORM,               SURFACE,    100,    0,      0},
+    {CORPSE_ACID,               SURFACE,    100,    0,      0},
+    {CORPSE_ASH,                SURFACE,    100,    0,      0},
+    {CORPSE_EMBER,              SURFACE,    100,    0,      0},
+    {CORPSE_ECTOPLASM,          SURFACE,    100,    0,      0},
+    {CORPSE_RUBBLE,             SURFACE,    100,    0,      0},
+    {CORPSE_ROT,                SURFACE,    100,    0,      0},
 };
 
 const dungeonProfile dungeonProfileCatalog[NUMBER_DUNGEON_PROFILES] = {

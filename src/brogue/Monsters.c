@@ -3853,6 +3853,17 @@ boolean moveMonster(creature *monst, short dx, short dy) {
                 swarmDirection = monsterSwarmDirection(monst, defender);
                 if (swarmDirection != NO_DIRECTION) {
                     const pos newLoc = posNeighborInDirection(monst->loc, swarmDirection);
+                    // Blood trail for severely wounded moving monsters
+                    if (monst->info.bloodType
+                        && dungeonFeatureCatalog[monst->info.bloodType].layer != GAS
+                        && monst->currentHP > 0
+                        && monst->currentHP < monst->info.maxHP / 4
+                        && rand_percent(50)) {
+                        dungeonFeature trailBlood = dungeonFeatureCatalog[monst->info.bloodType];
+                        trailBlood.startProbability = 30;
+                        trailBlood.probabilityDecrement = 100;
+                        spawnDungeonFeature(x, y, &trailBlood, true, false);
+                    }
                     setMonsterLocation(monst, newLoc);
                     monst->ticksUntilTurn = monst->movementSpeed;
                     return true;
@@ -3881,6 +3892,17 @@ boolean moveMonster(creature *monst, short dx, short dy) {
                 return true;
             } else {
                 // okay we're moving!
+                // Blood trail for severely wounded moving monsters
+                if (monst->info.bloodType
+                    && dungeonFeatureCatalog[monst->info.bloodType].layer != GAS
+                    && monst->currentHP > 0
+                    && monst->currentHP < monst->info.maxHP / 4
+                    && rand_percent(50)) {
+                    dungeonFeature trailBlood = dungeonFeatureCatalog[monst->info.bloodType];
+                    trailBlood.startProbability = 30;
+                    trailBlood.probabilityDecrement = 100;
+                    spawnDungeonFeature(x, y, &trailBlood, true, false);
+                }
                 setMonsterLocation(monst, (pos){ newX, newY });
                 monst->ticksUntilTurn = monst->movementSpeed;
                 return true;

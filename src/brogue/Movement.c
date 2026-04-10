@@ -1203,6 +1203,17 @@ boolean playerMoves(short direction) {
                 pickUpItemAt(player.loc);
                 rogue.disturbed = true;
             }
+            // Blood trail for severely wounded player
+            if (player.info.bloodType
+                && dungeonFeatureCatalog[player.info.bloodType].layer != GAS
+                && player.currentHP > 0
+                && player.currentHP < player.info.maxHP / 4
+                && rand_percent(50)) {
+                dungeonFeature trailBlood = dungeonFeatureCatalog[player.info.bloodType];
+                trailBlood.startProbability = 30;
+                trailBlood.probabilityDecrement = 100;
+                spawnDungeonFeature(x, y, &trailBlood, true, false);
+            }
             refreshDungeonCell((pos){ x, y });
             refreshDungeonCell(player.loc);
             playerMoved = true;

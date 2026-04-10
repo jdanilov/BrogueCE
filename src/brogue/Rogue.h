@@ -336,7 +336,8 @@ enum displayGlyph {
     G_PIPES,
     G_SAC_ALTAR,
     G_ORB_ALTAR,
-    G_LEFT_TRIANGLE
+    G_LEFT_TRIANGLE,
+    G_CORPSE
 };
 
 enum graphicsModes {
@@ -672,6 +673,18 @@ enum tileType {
     MUD_FLOOR,
     MUD_WALL,
     MUD_DOORWAY,
+
+    // Corpse surface tiles (cosmetic, no gameplay effect)
+    CORPSE_RED,
+    CORPSE_GREEN,
+    CORPSE_PURPLE,
+    CORPSE_WORM,
+    CORPSE_ACID,
+    CORPSE_ASH,
+    CORPSE_EMBER,
+    CORPSE_ECTOPLASM,
+    CORPSE_RUBBLE,
+    CORPSE_ROT,
 
     NUMBER_TILETYPES,
 };
@@ -1777,6 +1790,18 @@ enum dungeonFeatureTypes {
     // goblin warren:
     DF_STENCH_BURN,
     DF_STENCH_SMOLDER,
+
+    // Corpse dungeon features (cosmetic, no gameplay effect)
+    DF_CORPSE_RED,
+    DF_CORPSE_GREEN,
+    DF_CORPSE_PURPLE,
+    DF_CORPSE_WORM,
+    DF_CORPSE_ACID,
+    DF_CORPSE_ASH,
+    DF_CORPSE_EMBER,
+    DF_CORPSE_ECTOPLASM,
+    DF_CORPSE_RUBBLE,
+    DF_CORPSE_ROT,
 
     NUMBER_DUNGEON_FEATURES,
 };

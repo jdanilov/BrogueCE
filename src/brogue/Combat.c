@@ -1546,11 +1546,37 @@ boolean inflictDamage(creature *attacker, creature *defender,
     // bleed all over the place, proportionately to damage inflicted:
     if (damage > 0 && defender->info.bloodType) {
         theBlood = dungeonFeatureCatalog[defender->info.bloodType];
-        theBlood.startProbability = (theBlood.startProbability * (15 + min(damage, defender->currentHP) * 3 / 2) / 100);
+        theBlood.startProbability = (theBlood.startProbability * (30 + min(damage, defender->currentHP) * 2) / 100);
         if (theBlood.layer == GAS) {
             theBlood.startProbability *= 100;
         }
         spawnDungeonFeature(defender->loc.x, defender->loc.y, &theBlood, true, false);
+
+        // Directional blood splatter for melee hits (attacker adjacent to defender)
+        if (attacker && theBlood.layer != GAS) {
+            short ddx = defender->loc.x - attacker->loc.x;
+            short ddy = defender->loc.y - attacker->loc.y;
+            if (ddx >= -1 && ddx <= 1 && ddy >= -1 && ddy <= 1 && (ddx != 0 || ddy != 0)) {
+                // First tile behind defender
+                short bx = defender->loc.x + ddx;
+                short by = defender->loc.y + ddy;
+                if (coordinatesAreInMap(bx, by)
+                    && !cellHasTerrainFlag((pos){bx, by}, T_OBSTRUCTS_PASSABILITY)) {
+                    dungeonFeature dirBlood = dungeonFeatureCatalog[defender->info.bloodType];
+                    dirBlood.startProbability = dirBlood.startProbability * (15 + min(damage, defender->currentHP)) / 100;
+                    spawnDungeonFeature(bx, by, &dirBlood, true, false);
+                }
+                // Second tile (reduced probability)
+                bx = defender->loc.x + ddx * 2;
+                by = defender->loc.y + ddy * 2;
+                if (coordinatesAreInMap(bx, by)
+                    && !cellHasTerrainFlag((pos){bx, by}, T_OBSTRUCTS_PASSABILITY)) {
+                    dungeonFeature dirBlood = dungeonFeatureCatalog[defender->info.bloodType];
+                    dirBlood.startProbability = dirBlood.startProbability * (8 + min(damage, defender->currentHP) / 2) / 100;
+                    spawnDungeonFeature(bx, by, &dirBlood, true, false);
+                }
+            }
+        }
     }
 
     if (defender != &player && defender->creatureState == MONSTER_SLEEPING) {
@@ -1637,6 +1663,22 @@ void addPoison(creature *monst, short durationIncrement, short concentrationIncr
 
 // Marks the decedent as dying, but does not remove it from the monster chain to avoid iterator invalidation;
 // that is done in `removeDeadMonsters`.
+static enum dungeonFeatureTypes bloodTypeToCorpseDF(enum dungeonFeatureTypes bloodType) {
+    switch (bloodType) {
+        case DF_RED_BLOOD:       return DF_CORPSE_RED;
+        case DF_GREEN_BLOOD:     return DF_CORPSE_GREEN;
+        case DF_PURPLE_BLOOD:    return DF_CORPSE_PURPLE;
+        case DF_WORM_BLOOD:      return DF_CORPSE_WORM;
+        case DF_ACID_BLOOD:      return DF_CORPSE_ACID;
+        case DF_ASH_BLOOD:       return DF_CORPSE_ASH;
+        case DF_EMBER_BLOOD:     return DF_CORPSE_EMBER;
+        case DF_ECTOPLASM_BLOOD: return DF_CORPSE_ECTOPLASM;
+        case DF_RUBBLE_BLOOD:    return DF_CORPSE_RUBBLE;
+        case DF_ROT_GAS_BLOOD:   return DF_CORPSE_ROT;
+        default:                 return 0;
+    }
+}
+
 // Use "administrativeDeath" if the monster is being deleted for administrative purposes, as opposed to dying as a result of physical actions.
 // AdministrativeDeath means the monster simply disappears, with no messages, dropped item, DFs or other effect.
 void killCreature(creature *decedent, boolean administrativeDeath) {
@@ -1731,6 +1773,14 @@ void killCreature(creature *decedent, boolean administrativeDeath) {
                 applyInstantTileEffectsToCreature(carriedMonster);
             }
             anyoneWantABite(decedent);
+            // Place a corpse tile for non-inanimate creatures with a blood type.
+            // Set the surface layer directly to avoid spawnDungeonFeature's spreading logic.
+            if (!(decedent->info.flags & MONST_INANIMATE) && decedent->info.bloodType) {
+                enum dungeonFeatureTypes corpseDF = bloodTypeToCorpseDF(decedent->info.bloodType);
+                if (corpseDF) {
+                    pmap[x][y].layers[SURFACE] = dungeonFeatureCatalog[corpseDF].tile;
+                }
+            }
             refreshDungeonCell((pos){ x, y });
         }
     }
