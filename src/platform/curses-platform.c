@@ -6,7 +6,7 @@
 #include "platform.h"
 #include "term.h"
 
-static void gameLoop() {
+static void gameLoop(void) {
     signal(SIGINT, SIG_DFL); // keep SDL from overriding the default ^C handler when it's linked
 
     if (!Term.start()) {

@@ -48,7 +48,7 @@ static unsigned char outputBuffer[OUTPUT_BUFFER_SIZE];
 static int outputBufferPos = 0;
 static int refreshScreenOnly = 0;
 
-static void gameLoop();
+static void gameLoop(void);
 static void openLogfile();
 static void closeLogfile();
 static void writeToLog(const char *msg);
@@ -57,7 +57,7 @@ static int readFromSocket(unsigned char *buf, int size);
 static void writeToSocket(unsigned char *buf, int size);
 static void flushOutputBuffer();
 
-static void gameLoop() {
+static void gameLoop(void) {
     openLogfile();
     writeToLog("Logfile started\n");
 
