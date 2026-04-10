@@ -39,8 +39,8 @@ Topic: $ARGUMENTS
 [2-3 sentence overview]
 
 ### Components Involved
-- file/path.ts:123 - Component purpose
-- file/path.ts:456 - Component purpose
+- src/brogue/File.c:123 - Component purpose
+- src/brogue/File.c:456 - Component purpose
 
 ### Data Flow
 

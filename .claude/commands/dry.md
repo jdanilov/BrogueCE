@@ -23,9 +23,11 @@ $ARGUMENTS
 - **Performance**: Inefficient operations, missing memoization and caching, redundant computations?
 - **Separation of Concerns**: Mixed responsibilities, tight coupling?
 
-**Correctness & Testing**
+**Correctness**
 - Logic errors, edge cases, type safety issues?
-- Is the code properly tested? Does it need unit or e2e tests?
+- Memory safety: buffer overflows, null derefs, uninitialized variables?
+- Integer safety: signed/unsigned mismatches, overflow, division by zero?
+- Undefined behavior: strict aliasing, pointer arithmetic, type punning?
 
 ## Output Format
 

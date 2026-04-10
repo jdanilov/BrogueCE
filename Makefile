@@ -1,4 +1,5 @@
 include config.mk
+MAKEFLAGS += -j$(shell sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
 
 cflags := -Isrc/brogue -Isrc/platform -Isrc/variants -std=c99 \
 	-Wall -Wpedantic -Werror=implicit -Wno-parentheses -Wno-unused-result \
@@ -76,6 +77,25 @@ objects += $(sources:.c=.o)
 
 include make/*.mk
 .DEFAULT_GOAL := bin/brogue$(.exe)
+
+run: bin/brogue$(.exe)
+	cd bin && ./brogue$(.exe)
+
+help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "  make              Build bin/brogue (default)"
+	@echo "  make run          Build and run"
+	@echo "  make -B           Force full rebuild"
+	@echo "  make vars         Regenerate build variable cache"
+	@echo ""
+	@echo "Build options (override in config.mk or on command line):"
+	@echo "  GRAPHICS=YES|NO   SDL2 graphical backend (default: YES)"
+	@echo "  TERMINAL=YES|NO   ncurses terminal backend (default: NO)"
+	@echo "  DEBUG=YES|NO      Debug build with -g -Og (default: NO)"
+	@echo "  MAC_APP=YES|NO    Build for macOS .app bundle (default: NO)"
+
+.PHONY: run help
 
 clean:
 	$(warning 'make clean' is no longer needed in many situations, so is not supported. Use 'make -B' to force rebuild something.)
