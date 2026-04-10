@@ -32,17 +32,14 @@ $ARGUMENTS
 Provide a numbered list of findings:
 
 ```
-1. ⛔ [file:line] Major issue
+1. [file:line] Major issue ⛔
 Problem explanation. Suggested fix (if one can be provided quickly for simple issues).
 
-2. ⚠️ [file:line] Minor issue
+2. [file:line] Minor issue ⚠️
 Problem & suggested fix.
 
-3. 💡 [file:line] Suggestion
+3. [file:line] Suggestion 💡
 Problem & suggested fix.
-
-4. 🧪 [file:line] Needs testing
-What to test.
 ```
 
 If code is clean, simply acknowledge it.

@@ -47,5 +47,6 @@ Topic: $ARGUMENTS
 [Unicode box diagram showing the complete flow]
 
 ### Summary
+
 [Table or brief bullet points of key takeaways]
 ```
