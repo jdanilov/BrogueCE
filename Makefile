@@ -2,7 +2,10 @@ include config.mk
 
 cflags := -Isrc/brogue -Isrc/platform -Isrc/variants -std=c99 \
 	-Wall -Wpedantic -Werror=implicit -Wno-parentheses -Wno-unused-result \
-	-Wformat -Werror=format-security -Wformat-overflow=0 -Wmissing-prototypes
+	-Wformat -Werror=format-security -Wmissing-prototypes
+ifeq ($(CC),gcc)
+cflags += -Wformat-overflow=0
+endif
 libs := -lm
 cppflags := -DDATADIR=$(DATADIR)
 

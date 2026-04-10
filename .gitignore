@@ -4,6 +4,10 @@ bin/BrogueHighScores.txt
 bin/brogue*
 bin/*.png
 vars
+logs
+node_modules
+.env
+.idea
 
 # Release dirs and archives
 BrogueCE-*
