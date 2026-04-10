@@ -28,25 +28,35 @@
 #include <limits.h>
 
 #define MENU_FLAME_PRECISION_FACTOR     10
-#define MENU_FLAME_RISE_SPEED           50
-#define MENU_FLAME_SPREAD_SPEED         20
+#define MENU_FLAME_RISE_SPEED           15
+#define MENU_FLAME_SPREAD_SPEED         8
 #define MENU_FLAME_COLOR_DRIFT_SPEED    500
-#define MENU_FLAME_FADE_SPEED           20
+#define MENU_FLAME_FADE_SPEED           80
 #define MENU_FLAME_UPDATE_DELAY         50
 #define MENU_FLAME_ROW_PADDING          2
 #define MENU_FLAME_COLOR_SOURCE_COUNT   1136
 
-#define MENU_FLAME_DENOMINATOR          (100 + MENU_FLAME_RISE_SPEED + MENU_FLAME_SPREAD_SPEED)
+#define MENU_FLAME_DENOMINATOR          (100 + MENU_FLAME_RISE_SPEED + MENU_FLAME_SPREAD_SPEED) // = 123
 
+
+#define MENU_TITLE_OFFSET_X (0)
+#define MENU_TITLE_OFFSET_Y (-5)
+
+static const color titleTextColor = {80, 50, 10, 0, 0, 0, 0, false}; // warm amber/gold
+static const color titleLabelColor = {60, 40, 8, 0, 0, 0, 0, false}; // dimmer amber for BROGUE label
+
+#define BROGUE_LABEL_X (COLS - 14)
+#define BROGUE_LABEL_Y (ROWS - 12)
 
 static void drawMenuFlames(signed short flames[COLS][(ROWS + MENU_FLAME_ROW_PADDING)][3], unsigned char mask[COLS][ROWS]) {
-    short i, j, versionStringLength, gameModeStringLength;
+    short i, j, gameModeStringLength;
     color tempColor = {0};
-    const color *maskColor = &black;
     char gameModeString[COLS] = "";
     char dchar;
 
-    versionStringLength = strLenWithoutEscapes(gameConst->versionString);
+    // Title art position (must match initializeMenuFlames)
+    short titleX = (COLS - gameConst->mainMenuTitleWidth) / 2 + MENU_TITLE_OFFSET_X;
+    short titleY = (ROWS - gameConst->mainMenuTitleHeight) / 2 + MENU_TITLE_OFFSET_Y;
 
     if (WIZARD_MODE) {
         strcpy(gameModeString, "Wizard Mode");
@@ -55,26 +65,34 @@ static void drawMenuFlames(signed short flames[COLS][(ROWS + MENU_FLAME_ROW_PADD
     }
     gameModeStringLength = strLenWithoutEscapes(gameModeString);
 
+    static const char *brogueName = "BROGUE";
+
     for (j=0; j<ROWS; j++) {
         for (i=0; i<COLS; i++) {
-            if (j == ROWS - 1 && i >= COLS - versionStringLength) {
-                dchar = gameConst->versionString[i - (COLS - versionStringLength)];
-            } else if (gameModeStringLength && j == ROWS - 1 && i <= gameModeStringLength) {
+            if (gameModeStringLength && j == ROWS - 1 && i <= gameModeStringLength) {
                 dchar = gameModeString[i];
             } else {
                 dchar = ' ';
             }
 
             if (mask[i][j] == 100) {
-                plotCharWithColor(dchar, (windowpos){ i, j }, &veryDarkGray, maskColor);
+                // Title art: look up the actual character and render in amber
+                short ti = i - titleX;
+                short tj = j - titleY;
+                char titleChar = ' ';
+                if (ti >= 0 && ti < gameConst->mainMenuTitleWidth
+                    && tj >= 0 && tj < gameConst->mainMenuTitleHeight) {
+                    titleChar = mainMenuTitle[tj * gameConst->mainMenuTitleWidth + ti];
+                }
+                plotCharWithColor(titleChar, (windowpos){ i, j }, &titleTextColor, &black);
+            } else if (j == BROGUE_LABEL_Y && i >= BROGUE_LABEL_X && i < BROGUE_LABEL_X + 6) {
+                // "BROGUE" label above buttons
+                plotCharWithColor(brogueName[i - BROGUE_LABEL_X], (windowpos){ i, j }, &titleLabelColor, &black);
             } else {
                 tempColor = black;
                 tempColor.red   = flames[i][j][0] / MENU_FLAME_PRECISION_FACTOR;
                 tempColor.green = flames[i][j][1] / MENU_FLAME_PRECISION_FACTOR;
                 tempColor.blue  = flames[i][j][2] / MENU_FLAME_PRECISION_FACTOR;
-                if (mask[i][j] > 0) {
-                    applyColorAverage(&tempColor, maskColor, mask[i][j]);
-                }
                 plotCharWithColor(dchar, (windowpos){ i, j }, &veryDarkGray, &tempColor);
             }
         }
@@ -157,31 +175,6 @@ static void updateMenuFlames(const color *colors[COLS][(ROWS + MENU_FLAME_ROW_PA
     }
 }
 
-// Takes a grid of values, each of which is 0 or 100, and fills in some middle values in the interstices.
-static void antiAlias(unsigned char mask[COLS][ROWS]) {
-    short i, j, x, y, dir, nbCount;
-    const short intensity[5] = {0, 0, 35, 50, 60};
-
-    for (i=0; i<COLS; i++) {
-        for (j=0; j<ROWS; j++) {
-            if (mask[i][j] < 100) {
-                nbCount = 0;
-                for (dir=0; dir<4; dir++) {
-                    x = i + nbDirs[dir][0];
-                    y = j + nbDirs[dir][1];
-                    if (locIsInWindow((windowpos){ x, y }) && mask[x][y] == 100) {
-                        nbCount++;
-                    }
-                }
-                mask[i][j] = intensity[nbCount];
-            }
-        }
-    }
-}
-
-#define MENU_TITLE_OFFSET_X (-7)
-#define MENU_TITLE_OFFSET_Y (-2)
-
 static void initializeMenuFlames(boolean includeTitle,
                           const color *colors[COLS][(ROWS + MENU_FLAME_ROW_PADDING)],
                           color colorStorage[COLS],
@@ -223,19 +216,15 @@ static void initializeMenuFlames(boolean includeTitle,
     }
 
     if (includeTitle) {
-        // Wreathe the title in flames, and mask it in black.
+        // Mark the title cells in the mask (rendered as amber blocks, no flame sources).
         for (i=0; i<gameConst->mainMenuTitleWidth; i++) {
             for (j=0; j<gameConst->mainMenuTitleHeight; j++) {
                 if (mainMenuTitle[j * gameConst->mainMenuTitleWidth + i] != ' ') {
-                    colors[(COLS - gameConst->mainMenuTitleWidth)/2 + i + MENU_TITLE_OFFSET_X][(ROWS - gameConst->mainMenuTitleHeight)/2 + j + MENU_TITLE_OFFSET_Y] = &flameTitleColor;
-                    colorSourceCount++;
                     mask[(COLS - gameConst->mainMenuTitleWidth)/2 + i + MENU_TITLE_OFFSET_X][(ROWS - gameConst->mainMenuTitleHeight)/2 + j + MENU_TITLE_OFFSET_Y] = 100;
                }
             }
         }
 
-        // Anti-alias the mask.
-        antiAlias(mask);
     }
 
     brogueAssert(colorSourceCount <= MENU_FLAME_COLOR_SOURCE_COUNT);

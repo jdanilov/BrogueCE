@@ -284,8 +284,8 @@ const color backgroundMessageColor ={60,    20,     70,     0,      0,          
 
 const color superVictoryColor =     {150,   100,    300,    0,      0,          0,          0,      false};
 
-const color flameSourceColor = {20, 7, 7, 60, 40, 40, 0, true}; // 8
-const color flameSourceColorSecondary = {7, 2, 0, 10, 0, 0, 0, true};
+const color flameSourceColor = {8, 3, 2, 20, 10, 8, 0, true}; // dim ember glow
+const color flameSourceColorSecondary = {3, 1, 0, 5, 0, 0, 0, true};
 
 const color flameTitleColor = {0, 0, 0, 9, 9, 15, 0, true}; // *pale blue**
 
