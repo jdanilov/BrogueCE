@@ -5,8 +5,9 @@
  * Loop: Developer → Critic → Fixer (if findings) → Committer
  *
  * Usage:
- *   bun .claude/ivy/cli.ts <plan-name>     Run a specific plan
- *   bun .claude/ivy/cli.ts                 Pick from available plans
+ *   bun .claude/ivy/cli.ts <plan-name>          Run a specific plan
+ *   bun .claude/ivy/cli.ts                      Pick from available plans
+ *   bun .claude/ivy/cli.ts <plan-name> --auto   Run all steps without pausing
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, watch } from 'fs'
@@ -14,8 +15,8 @@ import { resolve, basename } from 'path'
 import { parsePlan, markItem } from './plan'
 import { runClaude } from './runner'
 import { OutputFormatter } from './formatter'
-import { colors, symbols, agentConfig } from './theme'
-import type { AgentRole } from './theme'
+import { colors, symbols, agentConfig, DEFAULT_STEPS, AUTO_APPROVE_STEPS } from './theme'
+import type { AgentRole, StepConfig } from './theme'
 import {
   printHeader,
   printAgentStart,
@@ -24,6 +25,9 @@ import {
   printDone,
   printWatching,
   printPaused,
+  printSteps,
+  printPlanComplete,
+  promptStepWait,
   pickPlan,
   pickStartAgent,
   askUserQuestions,
@@ -175,14 +179,29 @@ function shouldSkip(role: AgentRole, startWith: AgentRole): boolean {
 
 async function main() {
   const args = process.argv.slice(2)
-  const planPath = await resolvePlanPath(args[0])
+
+  // Parse flags
+  const autoApprove = args.includes('--auto') || args.includes('--auto-approve')
+  const positionalArgs = args.filter((a) => !a.startsWith('--'))
+
+  const planPath = await resolvePlanPath(positionalArgs[0])
 
   if (!planPath) {
     process.exit(0)
   }
 
   const slug = basename(planPath, '.md')
-  const planName = parsePlan(planPath).name || slug
+  const initialPlan = parsePlan(planPath)
+  const planName = initialPlan.name || slug
+
+  // If plan has no pending items at all, mark complete and exit
+  if (initialPlan.pending.length === 0 && initialPlan.askUser.length === 0) {
+    printPlanComplete(planName, initialPlan.items.length)
+    process.exit(0)
+  }
+
+  // Step configuration
+  const steps: StepConfig = autoApprove ? { ...AUTO_APPROVE_STEPS } : { ...DEFAULT_STEPS }
 
   // Restore logs from previous session
   const saved = loadLogs(planPath)
@@ -202,6 +221,9 @@ async function main() {
     )
   }
 
+  // Show step config
+  printSteps(steps)
+
   process.on('SIGINT', () => {
     printPaused(slug)
     process.exit(0)
@@ -215,6 +237,31 @@ async function main() {
       criticLog: prevCriticLog,
       fixerLog: prevFixerLog,
     })
+
+  // Handle step mode: returns true if the step should run, false to skip.
+  // Exits process on 'quit'.
+  async function handleStepMode(role: AgentRole): Promise<boolean> {
+    const mode = steps[role]
+    if (mode === 'off') return false
+    if (mode === 'on') return true
+
+    if (mode === 'wait-before') {
+      const result = await promptStepWait(role, 'before')
+      if (result === 'quit') { persist(); printPaused(slug); process.exit(0) }
+      if (result === 'skip') return false
+      return true
+    }
+
+    // wait-after is handled after the step runs, so always return true here
+    return true
+  }
+
+  async function handlePostStep(role: AgentRole): Promise<void> {
+    if (steps[role] === 'wait-after') {
+      const result = await promptStepWait(role, 'after')
+      if (result === 'quit') { persist(); printPaused(slug); process.exit(0) }
+    }
+  }
 
   let firstIteration = true
 
@@ -245,9 +292,9 @@ async function main() {
       continue
     }
 
-    const skip = (role: AgentRole) => firstIteration && shouldSkip(role, startWith)
+    const skipFirst = (role: AgentRole) => firstIteration && shouldSkip(role, startWith)
 
-    // Nothing pending — enter watch mode, wait for new todos
+    // Nothing pending — plan complete
     if (plan.pending.length === 0) {
       printDone(planName, plan.items.length)
       printWatching(planPath)
@@ -256,7 +303,7 @@ async function main() {
     }
 
     // --- Developer ---
-    if (!skip('developer')) {
+    if (!skipFirst('developer') && (await handleStepMode('developer'))) {
       const devPrompt = buildDeveloperPrompt(planPath, prevDevLog)
       const dev = await runAgent('developer', devPrompt, iteration)
 
@@ -268,6 +315,7 @@ async function main() {
 
       prevDevLog = dev.log
       persist()
+      await handlePostStep('developer')
 
       // Re-read plan — developer may have added ask-user items
       const postDev = parsePlan(planPath)
@@ -275,7 +323,7 @@ async function main() {
     }
 
     // --- Critic ---
-    if (!skip('critic')) {
+    if (!skipFirst('critic') && (await handleStepMode('critic'))) {
       const criticPrompt = buildCriticPrompt(planPath, prevDevLog, prevCriticLog)
       const critic = await runAgent('critic', criticPrompt, iteration)
 
@@ -287,10 +335,11 @@ async function main() {
 
       prevCriticLog = critic.log
       persist()
+      await handlePostStep('critic')
     }
 
     // --- Fixer (only if Critic filed findings) ---
-    if (!skip('fixer')) {
+    if (!skipFirst('fixer') && (await handleStepMode('fixer'))) {
       const postCritic = parsePlan(planPath)
       const fixItems = postCritic.pending.filter((i) => i.type === 'fix')
 
@@ -306,14 +355,19 @@ async function main() {
 
         prevFixerLog = fixer.log
         persist()
+        await handlePostStep('fixer')
       }
     }
 
     // --- Committer (sonnet, just runs /commit) ---
-    const committer = await runAgent('committer', '/commit', iteration, 'sonnet')
+    if (await handleStepMode('committer')) {
+      const committer = await runAgent('committer', '/commit', iteration, 'sonnet')
 
-    if (!committer.success) {
-      console.log(`${colors.yellow}${symbols.fail} Committer failed — continuing${colors.reset}`)
+      if (!committer.success) {
+        console.log(`${colors.yellow}${symbols.fail} Committer failed — continuing${colors.reset}`)
+      }
+
+      await handlePostStep('committer')
     }
 
     persist()

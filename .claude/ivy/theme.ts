@@ -25,6 +25,22 @@ export const symbols = {
 }
 
 export type AgentRole = 'developer' | 'critic' | 'fixer' | 'committer'
+export type StepMode = 'on' | 'off' | 'wait-before' | 'wait-after'
+export type StepConfig = Record<AgentRole, StepMode>
+
+export const DEFAULT_STEPS: StepConfig = {
+  developer: 'on',
+  critic: 'on',
+  fixer: 'on',
+  committer: 'wait-before',
+}
+
+export const AUTO_APPROVE_STEPS: StepConfig = {
+  developer: 'on',
+  critic: 'on',
+  fixer: 'on',
+  committer: 'on',
+}
 
 export const agentConfig: Record<AgentRole, { symbol: string; label: string; color: string }> = {
   developer: { symbol: symbols.developer, label: 'Developer', color: colors.cyan },

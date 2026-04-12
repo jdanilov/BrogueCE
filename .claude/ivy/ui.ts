@@ -3,7 +3,7 @@ import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { parsePlan, type PlanItem } from './plan'
 import { colors, symbols, agentConfig, SEPARATOR } from './theme'
-import type { AgentRole } from './theme'
+import type { AgentRole, StepMode, StepConfig } from './theme'
 
 function relativeTime(ms: number): string {
   const seconds = Math.floor(ms / 1000)
@@ -153,7 +153,7 @@ export async function pickPlan(plansDir: string): Promise<string | null> {
     message: 'Pick a plan',
     options: entries.map((e) => {
       const time = relativeTime(now - e.mtime)
-      const status = e.done === e.total && e.total > 0 ? 'complete' : `${e.done}/${e.total} done`
+      const status = (e.done === e.total) ? 'complete' : `${e.done}/${e.total} done`
       return {
         value: e.fullPath,
         label: e.name,
@@ -238,5 +238,53 @@ export async function pickStartAgent(): Promise<AgentRole | null> {
 export function printPaused(planSlug: string): void {
   console.log(
     `\n${colors.yellow}Ivy paused.${colors.reset} Resume: ${colors.dim}bun ivy ${planSlug}${colors.reset}`,
+  )
+}
+
+const STEP_MODE_LABELS: Record<StepMode, { sym: string; color: string; label: string }> = {
+  'on': { sym: symbols.ok, color: colors.green, label: 'on' },
+  'off': { sym: symbols.fail, color: colors.dim, label: 'off' },
+  'wait-before': { sym: symbols.ask, color: colors.yellow, label: 'wait' },
+  'wait-after': { sym: symbols.ask, color: colors.yellow, label: 'wait after' },
+}
+
+export function printSteps(steps: StepConfig): void {
+  const parts = (['developer', 'critic', 'fixer', 'committer'] as AgentRole[]).map((role) => {
+    const cfg = agentConfig[role]
+    const mode = STEP_MODE_LABELS[steps[role]]
+    return `${mode.color}${mode.sym}${colors.reset} ${cfg.label}`
+  })
+  console.log(`  ${parts.join(` ${colors.gray}·${colors.reset} `)}`)
+  console.log()
+}
+
+export type StepWaitResult = 'continue' | 'skip' | 'quit'
+
+export async function promptStepWait(
+  role: AgentRole,
+  when: 'before' | 'after',
+): Promise<StepWaitResult> {
+  const cfg = agentConfig[role]
+  const msg =
+    when === 'before'
+      ? `Ready to run ${cfg.label}`
+      : `${cfg.label} complete`
+
+  const options: Array<{ value: string; label: string; hint?: string }> = [
+    { value: 'continue', label: 'Continue', hint: when === 'before' ? `run ${cfg.label}` : 'proceed to next step' },
+  ]
+  if (when === 'before') {
+    options.push({ value: 'skip', label: 'Skip', hint: `skip ${cfg.label} this iteration` })
+  }
+  options.push({ value: 'quit', label: 'Pause Ivy', hint: 'save and exit' })
+
+  const result = await select({ message: msg, options })
+  if (isCancel(result)) return 'quit'
+  return result as StepWaitResult
+}
+
+export function printPlanComplete(planName: string, total: number): void {
+  console.log(
+    `\n${colors.green}${symbols.ok} Ivy${colors.reset} ${colors.gray}·${colors.reset} ${planName} ${colors.gray}· plan complete (${total} items, all done)${colors.reset}\n`,
   )
 }

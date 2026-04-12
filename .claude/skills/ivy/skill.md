@@ -11,8 +11,11 @@ It spawns its own `claude` subprocesses, so it must run in the user's terminal â
 **Tell the user to run this in their terminal:**
 
 ```bash
-bun ivy $ARGUMENTS
+bun ivy [plan-name] [--auto]
 ```
+
+Flags:
+- `--auto` / `--auto-approve` â€” Run all steps (Developer, Critic, Fixer, Committer) without pausing. By default, Ivy pauses before the Commit step to let the user review changes.
 
 If no plan name is given, show available plans:
 ```bash
