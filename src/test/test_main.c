@@ -9,6 +9,21 @@ extern void suite_status(void);
 extern void suite_items(void);
 extern void suite_environment(void);
 extern void suite_infrastructure(void);
+extern void suite_diagonal(void);
+extern void suite_terrain(void);
+extern void suite_levels(void);
+extern void suite_fire_gas(void);
+extern void suite_weapons(void);
+extern void suite_ranged(void);
+extern void suite_monsters(void);
+extern void suite_item_usage(void);
+extern void suite_combat_math(void);
+extern void suite_status_effects(void);
+extern void suite_vision(void);
+extern void suite_lifecycle(void);
+extern void suite_edge_cases(void);
+extern void suite_keys(void);
+extern void suite_allies(void);
 
 int main(int argc, char *argv[]) {
     printf("BrogueCE Test Suite\n");
@@ -20,6 +35,21 @@ int main(int argc, char *argv[]) {
     RUN_SUITE(status);
     RUN_SUITE(items);
     RUN_SUITE(environment);
+    RUN_SUITE(diagonal);
+    RUN_SUITE(terrain);
+    RUN_SUITE(levels);
+    RUN_SUITE(fire_gas);
+    RUN_SUITE(weapons);
+    RUN_SUITE(ranged);
+    RUN_SUITE(monsters);
+    RUN_SUITE(item_usage);
+    RUN_SUITE(combat_math);
+    RUN_SUITE(status_effects);
+    RUN_SUITE(vision);
+    RUN_SUITE(lifecycle);
+    RUN_SUITE(edge_cases);
+    RUN_SUITE(keys);
+    RUN_SUITE(allies);
 
     printf("\n====================\n");
     printf("Results: %d passed, %d failed\n", _test_state.passed, _test_state.failed);
