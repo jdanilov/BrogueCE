@@ -1940,7 +1940,11 @@ void decrementMonsterStatus(creature *monst) {
                 break;
             case STATUS_MAGICAL_FEAR:
                 if (monst->status[i]) {
-                    if (!--monst->status[i]) {
+                    // Hallucinating creatures are too disoriented to feel fear.
+                    if (monst->status[STATUS_HALLUCINATING]) {
+                        monst->status[i] = 0;
+                        monst->creatureState = (monst->leader == &player ? MONSTER_ALLY : MONSTER_TRACKING_SCENT);
+                    } else if (!--monst->status[i]) {
                         monst->creatureState = (monst->leader == &player ? MONSTER_ALLY : MONSTER_TRACKING_SCENT);
                     }
                 }
@@ -3738,6 +3742,13 @@ boolean moveMonster(creature *monst, short dx, short dy) {
     // move randomly?
     if (!monst->status[STATUS_ENTRANCED]) {
         if (monst->status[STATUS_CONFUSED]) {
+            confusedDirection = randValidDirectionFrom(monst, x, y, false);
+            if (confusedDirection != -1) {
+                dx = nbDirs[confusedDirection][0];
+                dy = nbDirs[confusedDirection][1];
+            }
+        } else if (monst->status[STATUS_HALLUCINATING] && rand_percent(50)) {
+            // Hallucinating monsters stumble around half the time.
             confusedDirection = randValidDirectionFrom(monst, x, y, false);
             if (confusedDirection != -1) {
                 dx = nbDirs[confusedDirection][0];

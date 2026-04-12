@@ -30,6 +30,7 @@ extern const color fireForeColor;
 extern const color deepWaterLightColor;
 
 extern const color confusionGasColor;
+extern const color hallucinationGasColor;
 
 extern color minersLightColor; //dynamic
 extern const color basicLightColor;

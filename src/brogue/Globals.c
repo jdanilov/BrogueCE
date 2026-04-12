@@ -256,6 +256,7 @@ const color methaneColor =          {45,    60,     15,     0,      0,          
 // gas colors
 const color poisonGasColor =        {75,    25,     85,     0,      0,          0,          0,      false};
 const color confusionGasColor =     {60,    60,     60,     40,     40,         40,         0,      true};
+const color hallucinationGasColor = {40,    80,     60,     50,     50,         50,         0,      true};
 
 // interface colors
 const color itemColor =             {100,   95,     -30,    0,      0,          0,          0,      false};
@@ -507,6 +508,7 @@ const floorTileType tileCatalog[NUMBER_TILETYPES] = {
  /*METHANE_GAS*/                {' ',       0,                      &methaneColor,      35, 100,DF_GAS_FIRE,0,DF_EXPLOSION_FIRE,            0,  NO_LIGHT,       (T_IS_FLAMMABLE), (TM_STAND_IN_TILE | TM_EXPLOSIVE_PROMOTE),                                        "a cloud of explosive gas", "the smell of explosive swamp gas fills the air."},
  /*STEAM*/                      {' ',       0,                      &white,             35, 0,  DF_GAS_FIRE,0,0,                            0,  NO_LIGHT,       (T_CAUSES_DAMAGE), (TM_STAND_IN_TILE | TM_GAS_DISSIPATES_QUICKLY),                                  "a cloud of scalding steam", "scalding steam fills the air!"},
  /*DARKNESS_CLOUD*/             {' ',       0,                      0,                  35, 0,  DF_GAS_FIRE,0,0,                            0,  DARKNESS_CLOUD_LIGHT,   (0), (TM_STAND_IN_TILE),                                                                    "a cloud of supernatural darkness", "everything is obscured by an aura of supernatural darkness."},
+ /*HALLUCINATION_GAS*/          {' ',       0,                      &hallucinationGasColor,35,100,DF_GAS_FIRE,0,0,                            0,  HALLUCINATION_GAS_LIGHT,(T_IS_FLAMMABLE | T_CAUSES_HALLUCINATION), (TM_STAND_IN_TILE | TM_GAS_DISSIPATES_QUICKLY), "a cloud of psychedelic gas", "the kaleidoscopic gas makes your vision swim."},
  /*HEALING_CLOUD*/              {' ',       0,                      &darkRed,           35, 0,  DF_GAS_FIRE,0,0,                            0,  NO_LIGHT,       (T_CAUSES_HEALING), (TM_STAND_IN_TILE | TM_GAS_DISSIPATES_QUICKLY),                                 "a cloud of healing spores", "bloodwort spores, renowned for their healing properties, fill the air."},
 
  // bloodwort pods              char        fore color              back color        prio ign% [fire,discover,promote]Type     promoteChance   glowLight       flags mechflags                                                                                     description             flavorText
@@ -790,6 +792,7 @@ dungeonFeature dungeonFeatureCatalog[NUMBER_DUNGEON_FEATURES] = {
     {POISON_GAS,                GAS,        1000,   0,      0,  "", 0,  &poisonGasColor,4},
     {PARALYSIS_GAS,             GAS,        1000,   0,      0,  "", 0,  &pink,4},
     {CONFUSION_GAS,             GAS,        1000,   0,      0,  "", 0,  &confusionGasColor, 4},
+    {HALLUCINATION_GAS,         GAS,        1000,   0,      0,  "", 0,  &hallucinationGasColor, 4},
     {PLAIN_FIRE,                SURFACE,    100,    37,     0,  "", EXPLOSION_FLARE_LIGHT},
     {DARKNESS_CLOUD,            GAS,        200,    0,      0},
     {HOLE_EDGE,                 SURFACE,    300,    100,    0,  "", 0,  &darkBlue,3,0,          DF_HOLE_2},
@@ -1033,6 +1036,7 @@ const lightSource lightCatalog[NUMBER_LIGHT_KINDS] = {
     {&dartFlashColor,       {15*100,15*100,1},      0,      false},     // incendiary darts
     {&portalActivateLightColor, {DCOLS*100,DCOLS*100,1},0,  false},     // portal activation
     {&confusionLightColor,  {300, 300, 1},          100,    false},     // confusion gas
+    {&confusionLightColor,  {300, 300, 1},          100,    false},     // hallucination gas
     {&darknessCloudColor,   {500, 500, 1},          0,      true},      // darkness cloud
     {&forceFieldLightColor, {200, 200, 1},          50,     false},     // forcefield
     {&crystalWallLightColor,{300, 500, 1},          50,     false},     // crystal wall

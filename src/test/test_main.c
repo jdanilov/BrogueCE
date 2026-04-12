@@ -24,6 +24,7 @@ extern void suite_lifecycle(void);
 extern void suite_edge_cases(void);
 extern void suite_keys(void);
 extern void suite_allies(void);
+extern void suite_hallucination(void);
 
 int main(int argc, char *argv[]) {
     printf("BrogueCE Test Suite\n");
@@ -50,6 +51,7 @@ int main(int argc, char *argv[]) {
     RUN_SUITE(edge_cases);
     RUN_SUITE(keys);
     RUN_SUITE(allies);
+    RUN_SUITE(hallucination);
 
     printf("\n====================\n");
     printf("Results: %d passed, %d failed\n", _test_state.passed, _test_state.failed);

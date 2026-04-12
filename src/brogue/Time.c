@@ -205,6 +205,18 @@ void applyInstantTileEffectsToCreature(creature *monst) {
         extinguishFireOnCreature(monst);
     }
 
+    // Water clears hallucination.
+    if (cellHasTMFlag((pos){ *x, *y }, TM_EXTINGUISHES_FIRE)
+        && monst->status[STATUS_HALLUCINATING]
+        && !monst->status[STATUS_LEVITATING]) {
+        monst->status[STATUS_HALLUCINATING] = 0;
+        monst->maxStatus[STATUS_HALLUCINATING] = 0;
+        if (monst == &player) {
+            displayLevel();
+            message("the cold water clears your head.", 0);
+        }
+    }
+
     // If you see a monster use a secret door, you discover it.
     if (playerCanSee(*x, *y)
         && cellHasTMFlag((pos){ *x, *y }, TM_IS_SECRET)
@@ -393,6 +405,23 @@ void applyInstantTileEffectsToCreature(creature *monst) {
                 message(buf2, 0);
             }
             monst->status[STATUS_CONFUSED] = monst->maxStatus[STATUS_CONFUSED] = max(monst->status[STATUS_CONFUSED], 25);
+        }
+
+        // hallucination gas
+        if (cellHasTerrainFlag((pos){ *x, *y }, T_CAUSES_HALLUCINATION) && !(monst->info.flags & (MONST_INANIMATE | MONST_INVULNERABLE))) {
+            if (monst == &player) {
+                rogue.disturbed = true;
+            }
+            if (canDirectlySeeMonster(monst) && !(monst->status[STATUS_HALLUCINATING])) {
+                if (monst->creatureState == MONSTER_SLEEPING) {
+                    monst->creatureState = MONSTER_TRACKING_SCENT;
+                }
+                flashMonster(monst, &hallucinationGasColor, 100);
+                monsterName(buf, monst, true);
+                sprintf(buf2, "%s %s to hallucinate!", buf, (monst == &player ? "begin": "begins"));
+                message(buf2, 0);
+            }
+            monst->status[STATUS_HALLUCINATING] = monst->maxStatus[STATUS_HALLUCINATING] = max(monst->status[STATUS_HALLUCINATING], 25);
         }
 
         // paralysis gas
@@ -1994,6 +2023,28 @@ static void decrementPlayerStatus(void) {
     if (player.status[STATUS_HALLUCINATING] > 0 && !--player.status[STATUS_HALLUCINATING]) {
         displayLevel();
         message("your hallucinations fade.", 0);
+    }
+
+    // Hallucinating creatures are too disoriented to feel fear.
+    if (player.status[STATUS_HALLUCINATING] > 0 && player.status[STATUS_MAGICAL_FEAR]) {
+        player.status[STATUS_MAGICAL_FEAR] = 0;
+    }
+
+    // Hallucination occasionally reveals nearby secrets — your altered perception
+    // sometimes catches things your normal senses would miss.
+    if (player.status[STATUS_HALLUCINATING] > 0) {
+        short hx, hy;
+        for (hx = player.loc.x - 2; hx <= player.loc.x + 2; hx++) {
+            for (hy = player.loc.y - 2; hy <= player.loc.y + 2; hy++) {
+                if (coordinatesAreInMap(hx, hy)
+                    && playerCanDirectlySee(hx, hy)
+                    && cellHasTMFlag((pos){ hx, hy }, TM_IS_SECRET)
+                    && rand_percent(5)) {
+                    discover(hx, hy);
+                    message("your warped vision catches a strange shimmer.", 0);
+                }
+            }
+        }
     }
 
     if (player.status[STATUS_LEVITATING] > 0 && !--player.status[STATUS_LEVITATING]) {
