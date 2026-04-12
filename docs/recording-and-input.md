@@ -49,13 +49,14 @@ KEYSTROKE, MOUSE_UP, MOUSE_DOWN, RIGHT_MOUSE_DOWN, RIGHT_MOUSE_UP, MOUSE_ENTERED
 ### File Format (`Recordings.c:177-221`)
 
 **Header (36 bytes):**
-| Bytes | Content |
-|-------|---------|
-| 0-15 | Version string (15 chars + null) |
-| 16 | Game mode (normal/easy/wizard) |
-| 17-24 | Master RNG seed (uint64_t, 8 bytes) |
-| 25-28 | Player turn count (4 bytes) |
-| 29-32 | Deepest level reached (4 bytes) |
+
+| Bytes | Content                                |
+|-------|----------------------------------------|
+| 0-15  | Version string (15 chars + null)       |
+| 16    | Game mode (normal/easy/wizard)         |
+| 17-24 | Master RNG seed (uint64_t, 8 bytes)    |
+| 25-28 | Player turn count (4 bytes)            |
+| 29-32 | Deepest level reached (4 bytes)        |
 | 33-36 | File length including header (4 bytes) |
 
 **Event Encoding (`Recordings.c:100-130`):**
@@ -101,17 +102,18 @@ Reads events from buffer (reverse of recording format):
 - Special: SAVED_GAME_LOADED, RNG_CHECK, END_OF_RECORDING
 
 ### Playback Controls (`executePlaybackInput()`, `Recordings.c:831-1102`)
-| Key | Action |
-|-----|--------|
-| `k`/UP | Faster (reduce delay by 1/3) |
-| `j`/DOWN | Slower (increase delay by 1/2) |
-| SPACE | Pause/unpause |
-| `<`/`>` | Jump to prev/next depth |
-| `h`/LEFT | Rewind 1-20 turns |
-| `l`/RIGHT | Advance 1-20 turns |
-| `0-9` | Jump to specific turn |
-| TAB | Toggle omniscience |
-| `i` | Show inventory |
+
+| Key       | Action                         |
+|-----------|--------------------------------|
+| `k`/UP    | Faster (reduce delay by 1/3)   |
+| `j`/DOWN  | Slower (increase delay by 1/2) |
+| SPACE     | Pause/unpause                  |
+| `<`/`>`   | Jump to prev/next depth        |
+| `h`/LEFT  | Rewind 1-20 turns              |
+| `l`/RIGHT | Advance 1-20 turns             |
+| `0-9`     | Jump to specific turn          |
+| TAB       | Toggle omniscience             |
+| `i`       | Show inventory                 |
 
 ### Seeking (`seek()`, `Recordings.c:688-780`)
 - Rewind requires `resetPlayback()` (restart from beginning)
@@ -137,11 +139,11 @@ Separate `RNG_COSMETIC` stream for visual effects — doesn't affect recording d
 
 ## Turn Counting
 
-| Counter | Increments | Use |
-|---------|------------|-----|
-| `playerTurnNumber` | Each player action (not during paralysis) | Playback seeking, recording header |
-| `absoluteTurnNumber` | Every turn regardless | Internal timing |
-| `scentTurnNumber` | Each turn | Scent map timing |
+| Counter              | Increments                                | Use                                |
+|----------------------|-------------------------------------------|------------------------------------|
+| `playerTurnNumber`   | Each player action (not during paralysis) | Playback seeking, recording header |
+| `absoluteTurnNumber` | Every turn regardless                     | Internal timing                    |
+| `scentTurnNumber`    | Each turn                                 | Scent map timing                   |
 
 Initialized in `initializeRogue()` (`RogueMain.c:376-380`):
 ```c
