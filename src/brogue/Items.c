@@ -5461,6 +5461,7 @@ boolean moveCursor(boolean *targetConfirmed,
         } else if (theEvent.eventType == KEYSTROKE) {
             keystroke = theEvent.param1;
             moveIncrement = ( (theEvent.controlKey || theEvent.shiftKey) ? 5 : 1 );
+            translateModernKeys(&keystroke);
             stripShiftFromMovementKeystroke(&keystroke);
             switch(keystroke) {
                 case LEFT_ARROW:

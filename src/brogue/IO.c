@@ -2452,6 +2452,7 @@ void executeKeystroke(signed long keystroke, boolean controlKey, boolean shiftKe
     short direction = -1;
 
     confirmMessages();
+    translateModernKeys(&keystroke);
     stripShiftFromMovementKeystroke(&keystroke);
 
     switch (keystroke) {
@@ -3308,6 +3309,7 @@ static short scrollMessageArchive(char messages[MESSAGE_ARCHIVE_LINES][COLS*2], 
 
         if (theEvent.eventType == KEYSTROKE) {
             keystroke = theEvent.param1;
+            translateModernKeys(&keystroke);
             stripShiftFromMovementKeystroke(&keystroke);
 
             switch (keystroke) {
@@ -3653,6 +3655,50 @@ void deleteMessages(void) {
 void confirmMessages(void) {
     messagesUnconfirmed = 0;
     updateMessageDisplay();
+}
+
+// Translates modern keyboard layout (uio/jkl/m,.) to the internal vi-key constants.
+// Must be called BEFORE stripShiftFromMovementKeystroke.
+void translateModernKeys(signed long *keystroke) {
+    if (!rogue.modernKeys || rogue.playbackMode) {
+        return;
+    }
+    switch (*keystroke) {
+        // Lowercase movement keys
+        case 'u': *keystroke = UPLEFT_KEY;    break; // y
+        case 'i': *keystroke = UP_KEY;        break; // k
+        case 'o': *keystroke = UPRIGHT_KEY;   break; // u
+        case 'j': *keystroke = LEFT_KEY;      break; // h
+        case 'k': *keystroke = REST_KEY;      break; // z (wait/rest)
+        // 'l' is already RIGHT_KEY, no translation needed
+        case 'm': *keystroke = DOWNLEFT_KEY;  break; // b
+        case ',': *keystroke = DOWN_KEY;      break; // j
+        case '.': *keystroke = DOWNRIGHT_KEY; break; // n
+        case 'f': *keystroke = INVENTORY_KEY; break; // i
+
+        // Block old vi-keys that conflict or confuse in modern mode
+        case 'h': *keystroke = 0; break; // was LEFT
+        case 'y': *keystroke = 0; break; // was UPLEFT
+        case 'b': *keystroke = 0; break; // was DOWNLEFT
+        case 'n': *keystroke = 0; break; // was DOWNRIGHT
+        case 'Y': *keystroke = 0; break;
+        case 'H': *keystroke = 0; break;
+        case 'B': *keystroke = 0; break;
+        case 'N': *keystroke = 0; break;
+
+        // Uppercase for shift-running
+        case 'U': *keystroke = 'Y'; break; // Shift+upleft
+        case 'I': *keystroke = 'K'; break; // Shift+up
+        case 'O': *keystroke = 'U'; break; // Shift+upright
+        case 'J': *keystroke = 'H'; break; // Shift+left
+        case 'K': *keystroke = AUTO_REST_KEY; break; // Z (auto-rest)
+        // 'L' is already Shift+RIGHT, no translation needed
+        // 'M' is NOT translated: MESSAGE_ARCHIVE_KEY. Use Ctrl+m for run-downleft.
+        // Shift+comma is '<' (ASCEND_KEY) - keep as-is
+        // Shift+period is '>' (DESCEND_KEY) - keep as-is
+
+        default: break;
+    }
 }
 
 void stripShiftFromMovementKeystroke(signed long *keystroke) {
@@ -4061,7 +4107,7 @@ char nextKeyPress(boolean textInput) {
     return theEvent.param1;
 }
 
-#define BROGUE_HELP_LINE_COUNT  33
+#define BROGUE_HELP_LINE_COUNT  34
 
 void printHelpScreen(void) {
     short i, j;
@@ -4076,14 +4122,15 @@ void printHelpScreen(void) {
         "       <return>  ****enable keyboard cursor control",
         "    <space/esc>  ****disable keyboard cursor control",
         "hjklyubn, arrow keys, or numpad  ****move or attack (control or shift to run)",
+        "  (or uio/jkl/m,. with modern keys -- toggle on title screen)",
         "",
         "a/e/r/t/d/c/R/w  ****apply/equip/remove/throw/drop/call/relabel/swap an item",
         "              T  ****re-throw last item at last monster",
-        " i, right-click  ****view inventory",
+        "i (or f), right-click  ****view inventory",
         "              D  ****list discovered items",
         "",
-        "              z  ****rest once",
-        "              Z  ****rest for 100 turns or until something happens",
+        "         z (k)  ****rest once (k in modern mode)",
+        "         Z (K)  ****rest for 100 turns or until something happens",
         "              s  ****search for secrets (control-s: long search)",
         "           <, >  ****travel to stairs",
         "              x  ****auto-explore (control-x: fast forward)",

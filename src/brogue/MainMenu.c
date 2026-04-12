@@ -257,7 +257,7 @@ static void initializeMainMenuButton(brogueButton *button, char *textWithHotkey,
     button->command = command;
 }
 
-#define MAIN_MENU_BUTTON_COUNT 4
+#define MAIN_MENU_BUTTON_COUNT 5
 
 /// @brief Initializes the main menu buttons
 /// @param buttons An array of buttons to initialize
@@ -266,10 +266,15 @@ static void initializeMainMenuButtons(brogueButton *buttons) {
     initializeMainMenuButton(&(buttons[0]), "     %sN%sew Game     ", 'n', 'N', NG_NEW_GAME);
     initializeMainMenuButton(&(buttons[1]), " *     %sP%slay       ", 'p', 'P', NG_FLYOUT_PLAY);
     initializeMainMenuButton(&(buttons[2]), " *     %sV%siew       ", 'v', 'V', NG_FLYOUT_VIEW);
-    initializeMainMenuButton(&(buttons[3]), "       %sQ%suit       ", 'q', 'Q', NG_QUIT);
+    if (rogue.modernKeys) {
+        initializeMainMenuButton(&(buttons[3]), "   %sK%seys: Modern   ", 'k', 'K', NG_MODERN_KEYS);
+    } else {
+        initializeMainMenuButton(&(buttons[3]), "   %sK%seys: Classic  ", 'k', 'K', NG_MODERN_KEYS);
+    }
+    initializeMainMenuButton(&(buttons[4]), "       %sQ%suit       ", 'q', 'Q', NG_QUIT);
 
-    // Add a left-facing triangle to all the buttons except quit
-    for (int i=0; i<MAIN_MENU_BUTTON_COUNT-1; i++) {
+    // Add a left-facing triangle to all the buttons except keys toggle and quit
+    for (int i=0; i<3; i++) {
         buttons[i].symbol[0] = G_LEFT_TRIANGLE;
     }
 
@@ -599,6 +604,13 @@ static void titleMenu(void) {
                             // button for the active flyout (e.g. 'p', 'p' in succession opens and closes the play flyout)
                             rogue.nextGame = NG_NOTHING;
                         }
+                    }
+                    if (rogue.nextGame == NG_MODERN_KEYS) {
+                        rogue.modernKeys = !rogue.modernKeys;
+                        // Reinitialize the entire main menu to update the button label
+                        windowpos quitPos = {COLS - 20, ROWS - 3};
+                        initializeMainMenu(&mainMenu, mainButtons, quitPos, &mainShadowBuf);
+                        rogue.nextGame = NG_NOTHING;
                     }
                 }
             } else {
@@ -1121,6 +1133,9 @@ void mainBrogueJunction(void) {
             case NG_GAME_VARIANT:
                 rogue.nextGame = NG_NOTHING;
                 initializeGameVariant();
+                break;
+            case NG_MODERN_KEYS:
+                rogue.nextGame = NG_NOTHING;
                 break;
             case NG_NEW_GAME:
             case NG_NEW_GAME_WITH_SEED:

@@ -2363,6 +2363,7 @@ enum NGCommands {
     NG_VIEW_RECORDING,
     NG_HIGH_SCORES,
     NG_GAME_STATS,
+    NG_MODERN_KEYS,
     NG_QUIT,
 };
 
@@ -2487,6 +2488,7 @@ typedef struct playerCharacter {
     boolean trueColorMode;              // whether lighting effects are disabled
     boolean hideSeed;                   // whether seed is hidden when pressing SEED_KEY
     boolean displayStealthRangeMode;    // whether your stealth range is displayed
+    boolean modernKeys;                 // whether to use modern (uio/jkl/m,.) keyboard layout
     boolean quit;                       // to skip the typical end-game theatrics when the player quits
     uint64_t seed;                      // the master seed for generating the entire dungeon
     short RNG;                          // which RNG are we currently using?
@@ -3178,6 +3180,7 @@ extern "C" {
     void deleteMessages(void);
     void confirmMessages(void);
     void stripShiftFromMovementKeystroke(signed long *keystroke);
+    void translateModernKeys(signed long *keystroke);
 
     void storeMemories(const short x, const short y);
     void updateFieldOfViewDisplay(boolean updateDancingTerrain, boolean refreshDisplay);

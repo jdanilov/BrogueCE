@@ -44,6 +44,7 @@ static void printCommandlineHelp(void) {
     "--no-effects   -E          disable color effects\n"
     "--wizard       -W          run in wizard mode, invincible with powerful items\n"
     "--hide-seed                disable seed display in game\n"
+    "--classic-keys             use classic vi keyboard layout (hjklyubn)\n"
     "[--csv] --print-seed-catalog [START NUM LEVELS]\n"
     "                           (optional csv format)\n"
     "                           prints a catalog of the first LEVELS levels of NUM\n"
@@ -106,6 +107,7 @@ int main(int argc, char *argv[])
     rogue.mode = GAME_MODE_NORMAL;
     rogue.displayStealthRangeMode = false;
     rogue.trueColorMode = false;
+    rogue.modernKeys = true;
 
     enum graphicsModes initialGraphics = TEXT_GRAPHICS;
 
@@ -315,6 +317,11 @@ int main(int argc, char *argv[])
 
         if (strcmp(argv[i], "--hide-seed") == 0) {
             rogue.hideSeed = true;
+            continue;
+        }
+
+        if (strcmp(argv[i], "--classic-keys") == 0) {
+            rogue.modernKeys = false;
             continue;
         }
 

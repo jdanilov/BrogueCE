@@ -193,6 +193,7 @@ void initializeRogue(uint64_t seed) {
     boolean playingback, playbackFF, playbackPaused, displayStealthRangeMode;
     boolean trueColorMode;
     boolean hideSeed;
+    boolean modernKeys;
     short oldRNG;
     char currentGamePath[BROGUE_FILENAME_MAX];
     enum gameMode mode;
@@ -204,6 +205,7 @@ void initializeRogue(uint64_t seed) {
     hideSeed = rogue.hideSeed;
     displayStealthRangeMode = rogue.displayStealthRangeMode;
     trueColorMode = rogue.trueColorMode;
+    modernKeys = rogue.modernKeys;
 
     strcpy(currentGamePath, rogue.currentGamePath);
 
@@ -219,6 +221,7 @@ void initializeRogue(uint64_t seed) {
     rogue.hideSeed = hideSeed;
     rogue.displayStealthRangeMode = displayStealthRangeMode;
     rogue.trueColorMode = trueColorMode;
+    rogue.modernKeys = modernKeys;
 
     rogue.gameHasEnded = false;
     rogue.gameInProgress = true;
