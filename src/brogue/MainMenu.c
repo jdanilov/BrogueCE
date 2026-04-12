@@ -24,6 +24,7 @@
 #include "Rogue.h"
 #include "GlobalsBase.h"
 #include "Globals.h"
+#include "platform.h"
 #include <time.h>
 #include <limits.h>
 
@@ -607,6 +608,7 @@ static void titleMenu(void) {
                     }
                     if (rogue.nextGame == NG_MODERN_KEYS) {
                         rogue.modernKeys = !rogue.modernKeys;
+                        savePrefs();
                         // Reinitialize the entire main menu to update the button label
                         windowpos quitPos = {COLS - 20, ROWS - 3};
                         initializeMainMenu(&mainMenu, mainButtons, quitPos, &mainShadowBuf);

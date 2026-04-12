@@ -109,6 +109,8 @@ int main(int argc, char *argv[])
     rogue.trueColorMode = false;
     rogue.modernKeys = true;
 
+    loadPrefs(); // Load saved preferences (may override defaults above)
+
     enum graphicsModes initialGraphics = TEXT_GRAPHICS;
 
     int i;

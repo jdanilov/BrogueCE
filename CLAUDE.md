@@ -3,12 +3,12 @@
 ## Build & Run
 
 ```bash
-brew install sdl2 sdl2_image          # macOS deps
-make bin/brogue                        # build (GNU Make)
-./brogue                               # run
+brew install sdl2 sdl2_image              # macOS deps
+make bin/brogue                           # build (GNU Make)
+./brogue                                  # run
 make TERMINAL=YES GRAPHICS=NO bin/brogue  # terminal-only build
 make MAC_APP=YES GRAPHICS=YES Brogue.app  # macOS app bundle
-make -B                                # force full rebuild (no `clean` target)
+make -B                                   # force full rebuild (no `clean` target)
 ```
 
 ## Test
@@ -50,24 +50,24 @@ src/variants/   Game variant constants (Brogue, RapidBrogue, BulletBrogue)
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `src/brogue/Rogue.h` | Central header — ALL types, enums, constants (~46K lines) |
-| `src/brogue/RogueMain.c` | Game init, `rogueMain()`, `startLevel()` |
-| `src/brogue/IO.c` | Main game loop (`mainInputLoop`), display, input |
-| `src/brogue/Time.c` | Turn processing, environment updates |
-| `src/brogue/Monsters.c` | Monster AI, behavior, combat |
-| `src/brogue/Architect.c` | Dungeon generation |
-| `src/brogue/Items.c` | Item generation, identification, usage |
-| `src/brogue/Combat.c` | Attack resolution, damage calc |
-| `src/brogue/Movement.c` | Pathfinding, player/monster movement |
-| `src/brogue/Globals.c` | Monster catalog, item tables, game constants |
-| `src/brogue/Recordings.c` | Game recording/playback |
-| `src/platform/platform.h` | Platform abstraction interface |
-| `src/platform/main.c` | CLI arg parsing, platform selection |
-| `src/platform/null-platform.c` | Headless backend (for testing/replay) |
-| `src/variants/Globals*.c` | Per-variant game constants |
-| `config.mk` | Build configuration options |
+| File                           | Purpose                                                   |
+|--------------------------------|-----------------------------------------------------------|
+| `src/brogue/Rogue.h`           | Central header — ALL types, enums, constants (~46K lines) |
+| `src/brogue/RogueMain.c`       | Game init, `rogueMain()`, `startLevel()`                  |
+| `src/brogue/IO.c`              | Main game loop (`mainInputLoop`), display, input          |
+| `src/brogue/Time.c`            | Turn processing, environment updates                      |
+| `src/brogue/Monsters.c`        | Monster AI, behavior, combat                              |
+| `src/brogue/Architect.c`       | Dungeon generation                                        |
+| `src/brogue/Items.c`           | Item generation, identification, usage                    |
+| `src/brogue/Combat.c`          | Attack resolution, damage calc                            |
+| `src/brogue/Movement.c`        | Pathfinding, player/monster movement                      |
+| `src/brogue/Globals.c`         | Monster catalog, item tables, game constants              |
+| `src/brogue/Recordings.c`      | Game recording/playback                                   |
+| `src/platform/platform.h`      | Platform abstraction interface                            |
+| `src/platform/main.c`          | CLI arg parsing, platform selection                       |
+| `src/platform/null-platform.c` | Headless backend (for testing/replay)                     |
+| `src/variants/Globals*.c`      | Per-variant game constants                                |
+| `config.mk`                    | Build configuration options                               |
 
 ## Domain Terminology
 
@@ -82,6 +82,17 @@ src/variants/   Game variant constants (Brogue, RapidBrogue, BulletBrogue)
 - **Ally**: Creature with `creatureState == MONSTER_ALLY` and `leader` pointing to player.
 - **Variants**: Different game balance via swapped `gameConstants` (Standard/Rapid/Bullet Brogue).
 
+## Documentation
+
+```
+docs/changes/    - Change logs for features, and significant modifications (prefixed YYYY-MM-DD)
+docs/knowledge/  - Deep-dive references on game systems (combat, AI, dungeon gen, etc.)
+docs/plans/      - Brainstormed implementation plans for upcoming or in-progress features
+```
+
+- When completing a feature or significant change, create a dated change doc in `docs/changes/`.
+- Knowledge docs are system references -- update them if the system they describe changes.
+
 ## Conventions
 
 - Pure C codebase (C11). No C++.
@@ -89,3 +100,4 @@ src/variants/   Game variant constants (Brogue, RapidBrogue, BulletBrogue)
 - To add a variant: create `GlobalsYourVariant.c/h` in `src/variants/`, register in `MainMenu.c`.
 - Seed catalogs MUST be updated (`test/update_seed_catalogs.py`) if dungeon generation changes.
 - Game recordings break if turn-order or input-handling logic changes.
+- All changes must be verified with `make test` before committing. Do not commit code that breaks existing tests.

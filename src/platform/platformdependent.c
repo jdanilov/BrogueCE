@@ -397,6 +397,31 @@ void loadKeymap(void) {
     }
 }
 
+#define PREFS_FILENAME "BroguePrefs.txt"
+
+void loadPrefs(void) {
+    FILE *f = fopen(PREFS_FILENAME, "r");
+    if (f == NULL) {
+        return;
+    }
+    char key[64], value[64];
+    while (fscanf(f, "%63s %63s", key, value) == 2) {
+        if (strcmp(key, "modernKeys") == 0) {
+            rogue.modernKeys = (strcmp(value, "1") == 0);
+        }
+    }
+    fclose(f);
+}
+
+void savePrefs(void) {
+    FILE *f = fopen(PREFS_FILENAME, "w");
+    if (f == NULL) {
+        return;
+    }
+    fprintf(f, "modernKeys %d\n", rogue.modernKeys ? 1 : 0);
+    fclose(f);
+}
+
 
 // saves the scoreBuffer global variable into the BrogueHighScores.txt file,
 // thus overwriting whatever is already there.
