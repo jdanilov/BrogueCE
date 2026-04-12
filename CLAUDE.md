@@ -13,7 +13,16 @@ make -B                                # force full rebuild (no `clean` target)
 
 ## Test
 
-No unit tests. Regression tests via Python scripts:
+### C Test Harness (E2E behavioral tests)
+
+```bash
+make test                    # build and run all tests
+```
+
+Tests in `src/test/`. Runs headlessly via null platform, no SDL required. Each test calls `test_init_game(seed)`, injects actions via helpers like `test_move()` / `test_rest()` / `test_place_monster()`, asserts on game state, then calls `test_teardown_game()`. See `test_harness.h` for all helpers and assert macros. To add a suite: create `src/test/test_foo.c` with `TEST()` + `SUITE()` macros, register in `test_main.c`.
+
+### Determinism tests (Python)
+
 ```bash
 python3 test/compare_seed_catalog.py test/seed_catalogs/seed_catalog_brogue.txt 40
 python3 test/compare_seed_catalog.py --extra_args "--variant rapid_brogue" test/seed_catalogs/seed_catalog_rapid_brogue.txt 10
@@ -23,7 +32,7 @@ python3 test/run_regression_tests.py --num_processes=3 --extra_args "--variant r
 python3 test/run_regression_tests.py --num_processes=3 --extra_args "--variant bullet_brogue" test/regression_test_bb_v1_1/
 ```
 
-Seed catalog tests verify deterministic dungeon generation hasn't changed. Regression tests replay `.broguerec` recordings headlessly via null-platform.
+Seed catalog tests verify deterministic dungeon generation hasn't changed. Regression tests replay `.broguerec` recordings headlessly via null-platform. These will break if dungeon generation or turn-order logic changes.
 
 ## Architecture
 
