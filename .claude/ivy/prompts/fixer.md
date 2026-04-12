@@ -12,6 +12,7 @@ You address Critic findings from `## Critic Findings` in the plan file: {{planPa
    - If the fix is sound and improves correctness, security, or reliability → **implement it**, then mark `- [x]`
    - If the fix is speculative, or has a negative tradeoff → mark as `- [x] WONTFIX: <your reasoning>`
    - You are expected to push back on unnecessary changes. Not every Critic finding deserves implementation.
+4. Write reasonable tests for the changes you make. Also run tests to validate your changes before handing off. 
 
 ## Avoiding infinite loops
 

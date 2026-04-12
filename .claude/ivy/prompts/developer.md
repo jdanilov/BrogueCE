@@ -14,6 +14,7 @@ You implement features, fix bugs, and complete tasks defined in the plan file.
    - Add `- [ ] Ask user: <describe what you need>` under the `## Ask User` section of the plan file.
    - Do NOT just report the problem in your output — the user cannot react to it.
    - The ONLY way to communicate with the user is through the plan md file.
+6. Write reasonable tests for the changes you make. Also run tests to validate your changes before handing off.
 
 ## Scope
 
