@@ -832,20 +832,13 @@ boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distanc
         short maxRange = theItem->maxRange;
         short baseDamage = randClump(theItem->damage);
 
-        // Per-weapon-type enchant damage scaling
-        fixpt damageMultiplier = FP_FACTOR;
-        short enchant = max(0, theItem->enchant1);
-        switch (theItem->kind) {
-            case SLING:    damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 15 / 100; break; // +15% per enchant
-            case BOW:      damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 25 / 100; break; // +25% per enchant
-            case CROSSBOW: damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 10 / 100; break; // +10% per enchant
-        }
-        short damage = baseDamage * damageMultiplier / FP_FACTOR;
+        // Exponential enchant damage scaling (same curve as melee weapons)
+        short damage = baseDamage * damageFraction(netEnchant(theItem)) / FP_FACTOR;
 
-        // Distance falloff (linear: full at point-blank, ~50% at max range)
+        // Distance falloff (gentle: full at close range, ~50% at max range)
         // Sniper runic disables falloff
         if (!((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_SNIPER)) {
-            damage = damage * (maxRange - distance + 1) / maxRange;
+            damage = damage * (maxRange * 2 - distance) / (maxRange * 2);
         }
 
         // Point-blank penalty (50% at distance 1 for slings and bows)
@@ -873,6 +866,19 @@ boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distanc
         } else {
             sprintf(buf, "your %s hit %s.", theItemName, targetName);
             messageWithColor(buf, messageColorFromVictim(monst), 0);
+
+            // Crossbow knockback: push the target 1 tile away from the player
+            if (theItem->kind == CROSSBOW
+                && !(monst->info.flags & (MONST_INVULNERABLE | MONST_IMMOBILE | MONST_INANIMATE))
+                && !(monst->bookkeepingFlags & MB_CAPTIVE)) {
+                short newX = monst->loc.x + clamp(monst->loc.x - player.loc.x, -1, 1);
+                short newY = monst->loc.y + clamp(monst->loc.y - player.loc.y, -1, 1);
+                if (coordinatesAreInMap(newX, newY)
+                    && !cellHasTerrainFlag((pos){ newX, newY }, T_OBSTRUCTS_PASSABILITY)
+                    && !(pmap[newX][newY].flags & (HAS_MONSTER | HAS_PLAYER))) {
+                    setMonsterLocation(monst, (pos){ newX, newY });
+                }
+            }
         }
         moralAttack(&player, monst);
         if (armorRunicString[0]) {

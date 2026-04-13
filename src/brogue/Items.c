@@ -2825,9 +2825,15 @@ void itemDetails(char *buf, item *theItem) {
         case RANGED: {
             short currentRange = rangedWeaponRange(theItem);
             short currentCooldown = rangedWeaponCooldownMax(theItem) / 10; // convert deciturns to turns
-            sprintf(buf2, "\n\nRange: %i, Cooldown: %i turns. Reloads only while you stand still.",
-                    currentRange, currentCooldown);
+            sprintf(buf2, "\n\nRange: %i, Cooldown: %i turns.", currentRange, currentCooldown);
             strcat(buf, buf2);
+            if (theItem->kind == SLING) {
+                strcat(buf, " Reloads at full speed even while moving.");
+            } else if (theItem->kind == BOW) {
+                strcat(buf, " Reloads at half speed while moving, full speed while stationary.");
+            } else if (theItem->kind == CROSSBOW) {
+                strcat(buf, " Reloads only while you stand still. Pushes the target backward on hit.");
+            }
             if (theItem->kind != CROSSBOW) {
                 strcat(buf, " Deals half damage at point-blank range.");
             }
@@ -6898,9 +6904,9 @@ static boolean useCharm(item *theItem) {
 static short rangedWeaponBaseCooldown(short kind) {
     switch (kind) {
         case SLING:     return 20;  // 2 turns * 10 (stored as deciturn units for fractional enchant reduction)
-        case BOW:       return 30;  // 3 turns * 10
+        case BOW:       return 40;  // 4 turns * 10
         case CROSSBOW:  return 120; // 12 turns * 10
-        default:        return 30;
+        default:        return 40;
     }
 }
 
@@ -7048,33 +7054,36 @@ boolean fireRangedWeapon(item *theItem) {
 
     // Handle explosive runic at impact point
     if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_EXPLOSIVE) {
-        // Deal AoE damage in 3x3 area around impact
+        // Deal AoE damage in diamond shape (radius 2: 12 cells around center)
         short ex, ey;
-        for (ex = hitLoc.x - 1; ex <= hitLoc.x + 1; ex++) {
-            for (ey = hitLoc.y - 1; ey <= hitLoc.y + 1; ey++) {
-                if (coordinatesAreInMap(ex, ey) && (pmap[ex][ey].flags & (HAS_MONSTER))) {
-                    creature *target = monsterAtLoc((pos){ ex, ey });
-                    if (target && !(target->bookkeepingFlags & MB_IS_DYING)) {
-                        short aoeDamage;
-                        if (ex == hitLoc.x && ey == hitLoc.y) {
-                            aoeDamage = randClump(theItem->damage); // full damage at center
-                        } else {
-                            aoeDamage = randClump(theItem->damage) / 2; // half damage on edges
-                        }
-                        if (inflictDamage(&player, target, aoeDamage, &orange, false)) {
-                            char targetName[COLS];
-                            monsterName(targetName, target, true);
-                            sprintf(buf, "the explosion kills %s.", targetName);
-                            messageWithColor(buf, messageColorFromVictim(target), 0);
-                            killCreature(target, false);
-                        }
+        for (ex = hitLoc.x - 2; ex <= hitLoc.x + 2; ex++) {
+            for (ey = hitLoc.y - 2; ey <= hitLoc.y + 2; ey++) {
+                short dist = abs(ex - hitLoc.x) + abs(ey - hitLoc.y);
+                if (dist > 2 || !coordinatesAreInMap(ex, ey)) continue;
+                if (!(pmap[ex][ey].flags & HAS_MONSTER)) continue;
+                creature *target = monsterAtLoc((pos){ ex, ey });
+                if (target && !(target->bookkeepingFlags & MB_IS_DYING)) {
+                    short aoeDamage;
+                    if (dist == 0) {
+                        aoeDamage = randClump(theItem->damage); // full damage at center
+                    } else if (dist == 1) {
+                        aoeDamage = randClump(theItem->damage) / 2; // half damage inner ring
+                    } else {
+                        aoeDamage = randClump(theItem->damage) / 4; // quarter damage outer ring
+                    }
+                    if (inflictDamage(&player, target, aoeDamage, &orange, false)) {
+                        char targetName[COLS];
+                        monsterName(targetName, target, true);
+                        sprintf(buf, "the explosion kills %s.", targetName);
+                        messageWithColor(buf, messageColorFromVictim(target), 0);
+                        killCreature(target, false);
                     }
                 }
             }
         }
         // Visual explosion effect
         if (playerCanSee(hitLoc.x, hitLoc.y)) {
-            colorFlash(&orange, 0, IN_FIELD_OF_VIEW, 4, 1, hitLoc.x, hitLoc.y);
+            colorFlash(&orange, 0, IN_FIELD_OF_VIEW, 4, 2, hitLoc.x, hitLoc.y);
         }
     }
 

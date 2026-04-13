@@ -1,7 +1,7 @@
 # Plan: Ranged Weapons
 
 ## Goal
-Add slings, bows, and crossbows as a new `RANGED` item category with cooldown-based recharging, distance-based damage falloff, and a curated set of weapon runics. Ranged weapons fire from inventory (like wands), reload only while stationary (preventing kiting), and offer a tactical alternative to melee combat.
+Add slings, bows, and crossbows as a new `RANGED` item category with cooldown-based recharging, distance-based damage falloff, and a curated set of weapon runics. Ranged weapons fire from inventory (like wands) and offer a tactical alternative to melee combat. Each weapon has distinct reload mobility: slings reload on the move, bows half-draw while moving, crossbows require standing still.
 
 ## Context
 
@@ -9,39 +9,32 @@ Add slings, bows, and crossbows as a new `RANGED` item category with cooldown-ba
 - **Item system**: New `RANGED` category alongside WEAPON, ARMOR, etc. Items have `damage`, `enchant1`/`enchant2`, `charges` (for cooldown tracking), `strengthRequired`.
 - **Bolt/projectile system**: `zap()` in Items.c handles projectile pathing and animation. Ranged weapons will use a similar projectile path via `getLineCoordinates()`.
 - **Combat system**: `hitMonsterWithProjectileWeapon()` in Combat.c handles thrown weapon hit resolution. Ranged weapons need analogous logic with distance falloff.
-- **Charm recharge**: Charms recharge via `ticksUntilTurn` in Time.c. Ranged weapons use a similar cooldown but only tick down when player is stationary.
+- **Charm recharge**: Charms recharge via `ticksUntilTurn` in Time.c. Ranged weapons use a similar cooldown with per-weapon mobility rules: sling reloads at full speed while moving, bow at half speed, crossbow only while stationary.
 - **Weapon runics**: `magicWeaponHit()` in Combat.c dispatches runic effects. Ranged weapons use a subset plus 4 new types.
 - **Throwables**: Existing darts/javelins remain unchanged as consumable throwables.
 
 ### Weapon stats
 
-| Weapon   | Damage    | Avg  | Range | Cooldown | Strength | PB Penalty |
-|----------|-----------|------|-------|----------|----------|------------|
-| Sling    | {1,4,1}   | 2.5  | 6     | 2 turns  | 10       | 50%        |
-| Bow      | {3,7,1}   | 5.0  | 12    | 3 turns  | 12       | 50%        |
-| Crossbow | {14,26,1} | 20.0 | 9     | 12 turns | 15       | None       |
+| Weapon   | Damage    | Avg  | Range | Cooldown | Strength | PB Penalty | Reload While Moving | Knockback |
+|----------|-----------|------|-------|----------|----------|------------|---------------------|-----------|
+| Sling    | {1,4,1}   | 2.5  | 6     | 2 turns  | 10       | 50%        | Full speed          | No        |
+| Bow      | {3,7,1}   | 5.0  | 16    | 4 turns  | 12       | 50%        | Half speed          | No        |
+| Crossbow | {14,26,1} | 20.0 | 12    | 12 turns | 15       | None       | No (stationary)     | Yes       |
 
 ### Damage modifiers
-- **Distance falloff**: Damage decreases linearly with distance (full at point-blank, ~50% at max range). Formula: `damage * (maxRange - distance + 1) / maxRange`.
+- **Distance falloff**: Damage decreases gently with distance (~50% at max range). Formula: `damage * (maxRange * 2 - distance) / (maxRange * 2)`.
 - **Point-blank penalty**: Slings and bows deal 50% damage at distance 1 (adjacent). Crossbows are exempt (mechanical weapon, effective at close range).
-- **Stationary reload**: Cooldown only ticks down on turns where the player does not move. Moving pauses the timer (does not reset it).
+- **Crossbow knockback**: Crossbow bolts push the target 1 tile backward on hit (same as mace/hammer), unless the target is immobile, inanimate, invulnerable, or captive.
+- **Reload mobility**: Slings reload at full speed while moving (enables kiting). Bows reload at half speed while moving, full speed while stationary. Crossbows only reload while stationary.
 
-### Enchant scaling (per +1 enchant)
-Each weapon type has a distinct enchanting philosophy, making them feel different as investment targets:
+### Enchant scaling
+Damage uses exponential scaling matching melee weapons (`damageFraction` / `1.065^(4*enchant)`). Cooldown and range scale linearly per enchant:
 
-| Weapon   | Damage scaling | Cooldown reduction | Range | Philosophy                            |
-|----------|----------------|--------------------|-------|---------------------------------------|
-| Sling    | +15%           | -0.15 turns        | +1    | Balanced, steady improvement          |
-| Bow      | +25%           | -0.15 turns        | +1    | Weak→strong; high-investment payoff   |
-| Crossbow | +10%           | -1.0 turns         | +1    | Barely hits harder, fires much faster |
-
-**Approximate DPS at base vs +5 enchant** (at optimal range, stationary):
-
-| Weapon   | Base DPS | +5 DPS | Comparison                              |
-|----------|----------|--------|-----------------------------------------|
-| Sling    | 1.25     | ~3.0   | Rapid chip damage                       |
-| Bow      | 1.67     | ~5.5   | Rivals sword at high enchant            |
-| Crossbow | 1.67     | ~3.3   | Reliable burst, big hits every ~7 turns |
+| Weapon   | Damage scaling      | Cooldown reduction | Range |
+|----------|---------------------|--------------------|-------|
+| Sling    | Exponential (melee) | -0.15 turns        | +1    |
+| Bow      | Exponential (melee) | -0.15 turns        | +1    |
+| Crossbow | Exponential (melee) | -1.0 turns         | +1    |
 
 ### Runics
 
@@ -50,17 +43,18 @@ Each weapon type has a distinct enchanting philosophy, making them feel differen
 **New ranged-specific**:
 - **Piercing** (`W_PIERCING`): Projectile passes through the first creature hit and continues to the next.
 - **Sniper** (`W_SNIPER`): Disables damage falloff — full damage at any range.
-- **Explosive** (`W_EXPLOSIVE`): AoE damage at impact point (3x3 area, reduced damage on edges).
+- **Explosive** (`W_EXPLOSIVE`): AoE damage at impact point (diamond radius 2 — 12 cells around target; full at center, half at inner ring, quarter at outer ring).
 - **Chain** (`W_CHAIN`): After hitting primary target, automatically hits the nearest secondary target within 3 tiles.
 
 ## Acceptance Criteria
 - [x] Three ranged weapons (sling, bow, crossbow) appear in dungeon generation at appropriate depths
 - [x] Player can fire ranged weapons from inventory with directional targeting
 - [x] Projectile animates along path, hits first creature/wall in line
-- [x] Damage falls off linearly with distance
+- [x] Damage falls off gently with distance (formula: `(range*2 - dist) / (range*2)`)
 - [x] Slings and bows deal 50% damage at point-blank (adjacent); crossbows are exempt
-- [x] Cooldown only ticks while player is stationary; moving pauses the timer
-- [x] Enchanting increases damage, range, and reduces cooldown with per-weapon-type scaling (bow: fast damage, crossbow: fast cooldown, sling: balanced)
+- [x] Slings reload at full speed while moving; bows at half speed; crossbows only while stationary
+- [x] Crossbow bolts push targets backward 1 tile on hit
+- [x] Enchanting uses exponential damage scaling (matching melee), plus range/cooldown improvements
 - [x] 6 existing runics work on ranged weapons (force, slaying, speed, slowing, confusion, paralysis)
 - [x] 4 new runics implemented (piercing, sniper, explosive, chain)
 - [x] Ranged weapons display in inventory with cooldown status
@@ -73,14 +67,14 @@ Each weapon type has a distinct enchanting philosophy, making them feel differen
 ## Tasks
 - [x] **Task 1: Type definitions** — In `Rogue.h`: add `RANGED` to `itemCategory` enum, add `rangedKind` enum (SLING, BOW, CROSSBOW, NUMBER_RANGED_KINDS), add ranged runic enum entries (W_PIERCING, W_SNIPER, W_EXPLOSIVE, W_CHAIN), add `ITEM_RANGED_RELOADING` flag, add ranged cooldown fields to item struct or reuse `charges`/`lastUsed`. Add `rogue.lastPlayerMoveTurn` or similar field to track stationary state.
 - [x] **Task 2: Item tables and generation** — In `Globals.c`: add `rangedWeaponTable[NUMBER_RANGED_KINDS]` with names, descriptions, damage, strength, frequency, market value. Register in item generation functions (Items.c `generateItem`). Add to variant globals as needed. Update `NUMBER_ITEM_CATEGORIES` and any category iteration logic.
-- [x] **Task 3: Cooldown and recharge system** — In `Time.c` (or wherever charm recharge ticks): add ranged weapon cooldown tick that only decrements when player hasn't moved. Track player movement state (e.g., flag set in `playerMoves()` in Movement.c, checked in `playerTurnEnded()` in Time.c). Cooldown stored in item `charges` field, max cooldown derived from weapon kind + enchantment.
+- [x] **Task 3: Cooldown and recharge system** — In `Time.c`: add per-weapon-type reload logic. Sling: full speed always. Bow: half speed while moving, full while stationary. Crossbow: stationary only. Track player movement state via `rogue.playerMovedThisTurn` (set in `playerMoves()` in Movement.c, cleared in `playerTurnEnded()` in Time.c). Cooldown stored in item `charges` field in deciturns, max cooldown derived from weapon kind + enchantment.
 - [x] **Task 4: Fire command and targeting** — In `Items.c`: add `fireRangedWeapon()` function. When player applies/uses a RANGED item: check cooldown is 0, prompt for direction (reuse `openNearestConfirmDialog` / targeting from staff zapping), trace projectile path up to weapon range via `getLineCoordinates()`, animate projectile, resolve hit. After firing, set cooldown to max value.
-- [x] **Task 5: Ranged hit resolution** — In `Combat.c`: add `hitMonsterWithRangedWeapon()`. Calculate accuracy (strength modifier + enchantment), apply distance-based damage falloff (linear: `damage * (maxRange - distance + 1) / maxRange`), apply 50% point-blank penalty for slings and bows at distance 1, call `inflictDamage()`. Handle miss messaging. Implement per-weapon-type enchant scaling: bow gets +25% damage per enchant (high investment payoff), crossbow gets +10% damage but -1.0 cooldown per enchant, sling gets +15% damage and -0.15 cooldown (balanced).
+- [x] **Task 5: Ranged hit resolution** — In `Combat.c`: add `hitMonsterWithRangedWeapon()`. Calculate accuracy (strength modifier + enchantment), apply gentle distance falloff (`damage * (maxRange*2 - distance) / (maxRange*2)`), apply 50% point-blank penalty for slings and bows at distance 1, call `inflictDamage()`. Handle miss messaging. Exponential enchant damage scaling via `damageFraction(netEnchant())` matching melee weapons. Crossbow knockback pushes target 1 tile backward on hit.
 - [x] **Task 6: Existing runic support** — Extend `magicWeaponHit()` (or create ranged variant) to process Force, Slaying, Speed, Slowing, Confusion, Paralysis when source is a ranged weapon.
 - [x] **Task 7: New ranged runics** — Implement in Combat.c or Items.c:
   - Piercing: after hitting target, continue projectile along same path for remaining range.
   - Sniper: skip damage falloff calculation.
-  - Explosive: on hit, call `inflictDamage()` on all creatures in 3x3 around impact, apply DF for visual effect.
+  - Explosive: on hit, deal AoE damage in diamond radius 2 (12 cells around impact). Full damage at center, half at inner ring, quarter at outer ring. Visual flash effect.
   - Chain: on hit, find nearest enemy within 3 tiles of target, fire secondary bolt at them with same damage (no further chaining).
 - [x] **Task 8: Inventory and display** — Add RANGED to inventory display sections in `Items.c` (`itemName`, `itemDescription`, etc.). Show cooldown status in item name (e.g., "bow [3/5]" or "bow (ready)"). Add identification system (auto-ID on use like staffs). Add ranged weapon glyph to display constants.
 - [x] **Task 9: Sidebar display** — In `IO.c`: show equipped/carried ranged weapons with cooldown bar or counter in the sidebar, similar to charm display.
@@ -120,3 +114,15 @@ Each weapon type has a distinct enchanting philosophy, making them feel differen
 - [x] WONTFIX: **`itemDetails` for RANGED shows cooldown in integer turns only** — The `/10` division is correct. The deciturns storage format is unchanged; the fix decrements by 10 per turn to match. Display math remains valid.
 
 - [x] WONTFIX: **No depth gating for ranged weapon generation** — This is a balance/design decision, not a bug. Crossbow strength requirement (15) already gates its effectiveness. Frequency tuning can be done in a separate balance pass.
+
+### Balance Pass
+
+- [x] **Exponential damage scaling** — Switched from linear per-weapon multipliers (+15%/+25%/+10%) to `damageFraction(netEnchant())`, matching the melee weapon exponential curve (1.065^(4*enchant)). Ranged enchanting investment now scales comparably to melee.
+- [x] **Gentler distance falloff** — Changed from `(range - dist + 1) / range` to `(range*2 - dist) / (range*2)`. At max range damage is now ~50% instead of ~8%. Makes long-range shots viable.
+- [x] **Sling reloads while moving** — Full speed reload regardless of movement. Enables kiting playstyle, giving slings a unique tactical identity despite low damage.
+- [x] **Bow reloads at half speed while moving** — Partial kiting ability. Base cooldown increased from 3 to 4 turns to compensate.
+- [x] **Crossbow knockback** — Bolts push targets 1 tile backward on hit (same mechanic as mace/hammer `processStaggerHit`). Rewards the stationary reload constraint with crowd control.
+- [x] **Bow base range increased to 16** — Up from 12. Emphasizes the bow's long-range identity.
+- [x] **Crossbow base range increased to 12** — Up from 9. Compensates for stationary-only reload.
+- [x] **Explosive runic radius doubled** — Diamond radius 2 (12 cells) instead of 3x3 (8 cells). Three damage tiers: full at center, half inner ring, quarter outer ring.
+- [x] **Item descriptions rewritten** — Updated to reflect new mechanics (reload mobility, knockback).

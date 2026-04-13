@@ -1881,10 +1881,22 @@ void rechargeItemsIncrementally(short multiplier) {
                 message(buf, 0);
             }
         } else if ((theItem->category & RANGED) && (theItem->charges > 0)) {
-            // Ranged weapons only reload when player is stationary
-            // Cooldown stored in deciturns (10x); decrement by 10 per turn to match
-            if (!rogue.playerMovedThisTurn) {
-                theItem->charges = clamp(theItem->charges - multiplier * 10, 0, theItem->cooldownMax);
+            // Ranged weapon reload behavior depends on weapon type:
+            // Sling: reloads at full speed while moving or stationary (enables kiting)
+            // Bow: reloads at half speed while moving, full speed while stationary
+            // Crossbow: only reloads while stationary
+            short rechargeAmount = 0;
+            if (theItem->kind == SLING) {
+                rechargeAmount = multiplier * 10; // always full speed
+            } else if (theItem->kind == BOW) {
+                rechargeAmount = rogue.playerMovedThisTurn ? multiplier * 5 : multiplier * 10;
+            } else if (theItem->kind == CROSSBOW) {
+                if (!rogue.playerMovedThisTurn) {
+                    rechargeAmount = multiplier * 10;
+                }
+            }
+            if (rechargeAmount > 0) {
+                theItem->charges = clamp(theItem->charges - rechargeAmount, 0, theItem->cooldownMax);
                 if (theItem->charges == 0) {
                     theItem->flags &= ~ITEM_RANGED_RELOADING;
                     itemName(theItem, theItemName, false, false, NULL);

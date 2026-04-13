@@ -147,8 +147,8 @@ TEST(test_bow_base_cooldown) {
 
     item *bow = test_give_item(RANGED, BOW, 0);
     ASSERT(bow != NULL);
-    // Bow base cooldown: 3 turns = 30 deciturns
-    ASSERT_EQ(bow->cooldownMax, 30);
+    // Bow base cooldown: 4 turns = 40 deciturns
+    ASSERT_EQ(bow->cooldownMax, 40);
 
     test_teardown_game();
 }
@@ -182,8 +182,8 @@ TEST(test_bow_base_range) {
 
     item *bow = test_give_item(RANGED, BOW, 0);
     ASSERT(bow != NULL);
-    // Bow base range: 12
-    ASSERT_EQ(bow->maxRange, 12);
+    // Bow base range: 16
+    ASSERT_EQ(bow->maxRange, 16);
 
     test_teardown_game();
 }
@@ -193,8 +193,8 @@ TEST(test_crossbow_base_range) {
 
     item *xbow = test_give_item(RANGED, CROSSBOW, 0);
     ASSERT(xbow != NULL);
-    // Crossbow base range: 9
-    ASSERT_EQ(xbow->maxRange, 9);
+    // Crossbow base range: 12
+    ASSERT_EQ(xbow->maxRange, 12);
 
     test_teardown_game();
 }
@@ -294,36 +294,82 @@ TEST(test_ranged_weapon_cooldown_ticks_while_stationary) {
     test_teardown_game();
 }
 
-TEST(test_ranged_weapon_cooldown_pauses_while_moving) {
+TEST(test_crossbow_cooldown_pauses_while_moving) {
     test_init_arena(12345);
     test_set_player_hp(500, 500);
 
-    item *bow = test_give_item(RANGED, BOW, 0);
-    ASSERT(bow != NULL);
+    // Use crossbow — only reloads while stationary
+    item *xbow = test_give_item(RANGED, CROSSBOW, 0);
+    ASSERT(xbow != NULL);
 
     // Set cooldown high
-    bow->charges = bow->cooldownMax;
-    bow->flags |= ITEM_RANGED_RELOADING;
+    xbow->charges = xbow->cooldownMax;
+    xbow->flags |= ITEM_RANGED_RELOADING;
     short cooldownAfterRest;
     short cooldownAfterMove;
 
     // Rest one turn (should reduce cooldown)
     test_rest();
     if (rogue.gameHasEnded) { test_teardown_game(); return; }
-    cooldownAfterRest = bow->charges;
+    cooldownAfterRest = xbow->charges;
 
     // Now move (cooldown should NOT decrease on this turn)
-    short preMoveCooldown = bow->charges;
+    short preMoveCooldown = xbow->charges;
     test_move(RIGHT);
     if (rogue.gameHasEnded) { test_teardown_game(); return; }
-    cooldownAfterMove = bow->charges;
+    cooldownAfterMove = xbow->charges;
 
     // After resting, cooldown should have dropped
-    ASSERT_LT(cooldownAfterRest, bow->cooldownMax);
+    ASSERT_LT(cooldownAfterRest, xbow->cooldownMax);
 
     // After moving, cooldown should be same as before the move
-    // (movement pauses the timer)
+    // (crossbow only reloads while stationary)
     ASSERT_EQ(cooldownAfterMove, preMoveCooldown);
+
+    test_teardown_game();
+}
+
+TEST(test_bow_reloads_at_half_speed_while_moving) {
+    test_init_arena(12345);
+    test_set_player_hp(500, 500);
+
+    item *bow = test_give_item(RANGED, BOW, 0);
+    ASSERT(bow != NULL);
+
+    // Set cooldown to full (40 deciturns)
+    bow->charges = bow->cooldownMax;
+    bow->flags |= ITEM_RANGED_RELOADING;
+
+    // Rest one turn (should reduce by 10 deciturns)
+    test_rest();
+    if (rogue.gameHasEnded) { test_teardown_game(); return; }
+    short afterRest = bow->charges;
+    ASSERT_EQ(afterRest, 30); // 40 - 10
+
+    // Move one turn (should reduce by 5 deciturns — half speed)
+    test_move(RIGHT);
+    if (rogue.gameHasEnded) { test_teardown_game(); return; }
+    short afterMove = bow->charges;
+    ASSERT_EQ(afterMove, 25); // 30 - 5
+
+    test_teardown_game();
+}
+
+TEST(test_sling_reloads_at_full_speed_while_moving) {
+    test_init_arena(12345);
+    test_set_player_hp(500, 500);
+
+    item *sling = test_give_item(RANGED, SLING, 0);
+    ASSERT(sling != NULL);
+
+    // Set cooldown to full (20 deciturns)
+    sling->charges = sling->cooldownMax;
+    sling->flags |= ITEM_RANGED_RELOADING;
+
+    // Move one turn (should reduce by 10 deciturns — full speed)
+    test_move(RIGHT);
+    if (rogue.gameHasEnded) { test_teardown_game(); return; }
+    ASSERT_EQ(sling->charges, 10); // 20 - 10
 
     test_teardown_game();
 }
@@ -596,7 +642,9 @@ SUITE(ranged) {
 
     // Cooldown recharge behavior
     RUN_TEST(test_ranged_weapon_cooldown_ticks_while_stationary);
-    RUN_TEST(test_ranged_weapon_cooldown_pauses_while_moving);
+    RUN_TEST(test_crossbow_cooldown_pauses_while_moving);
+    RUN_TEST(test_bow_reloads_at_half_speed_while_moving);
+    RUN_TEST(test_sling_reloads_at_full_speed_while_moving);
     RUN_TEST(test_ranged_weapon_becomes_ready_after_cooldown);
     RUN_TEST(test_cooldown_decrements_10_deciturns_per_turn);
 

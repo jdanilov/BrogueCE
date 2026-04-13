@@ -739,9 +739,9 @@ itemTable charmTable_BulletBrogue[] = {
 
 //                          name           flav cal  freq  val  str  pow  damage         id     call   pol  polRev description
 itemTable rangedWeaponTable_BulletBrogue[] = {
-    {"sling",       "", "", 10, 300,    10, 6,  {1, 4, 1},     true, false, 0, false, "A leather strap with a pouch for hurling stones. Quick to reload but weak at close range. Its projectiles lose force over distance."},
-    {"bow",         "", "", 10, 500,    12, 12, {3, 7, 1},     true, false, 0, false, "A recurved wooden bow with a taut sinew string. It fires arrows with precision at long range but is unwieldy in close quarters. Patient enchanting will unlock devastating power."},
-    {"crossbow",    "", "", 10, 800,    15, 9,  {14, 26, 1},   true, false, 0, false, "A heavy mechanical crossbow with a steel-tipped bolt. It strikes with enormous force but takes many turns to reload. Enchanting mainly speeds its loading mechanism."},
+    {"sling",       "", "", 10, 300,    10, 6,  {1, 4, 1},     true, false, 0, false, "A leather strap with a smooth stone pouch. Light enough to reload on the run, though its stones lose force over distance and glance off foes at point blank range."},
+    {"bow",         "", "", 10, 500,    12, 16, {3, 7, 1},     true, false, 0, false, "A recurved bow of dark yew. Its arrows fly true across great distances, but drawing in close quarters is all but impossible. Can be half-drawn while moving."},
+    {"crossbow",    "", "", 10, 800,    15, 12, {14, 26, 1},   true, false, 0, false, "A steel-limbed crossbow with a heavy crank mechanism. Its bolts strike with such force that they drive targets backward, but you must stand still to reload."},
 };
 
 const charmEffectTableEntry charmEffectTable_BulletBrogue[] = {
