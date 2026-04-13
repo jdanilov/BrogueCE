@@ -1,8 +1,8 @@
 Custom Ideas
 
-1. Unique mini-architecture: e.g. a forge with lava tile, an altar, a fountain, etc. Can be added to relatively large rooms / caverns as unique, memorable decorations. Should not be too often, maybe one per 2-3 levels. Need to generate a ton of options first to do not look repetitive.\
+1. Unique fixtures (landmarks): e.g. a forge with lava tile, an altar, a fountain, etc. Added into the rooms / caverns as unique, memorable decorations. Should not be too frequent, maybe one per 1-3 levels. Decorative. Memorable.
 
-2. Review item assignments - try to place items into interesting rooms first and mini-architectures.
+2. Weighted item assignments - try to place items into interesting rooms, fixtures, near stationary monsters first.
 
 3. Items on monsters - make 1/3 of all items appear on monsters, so chasing and killing monsters incentivised. Could be an interesting mechanics, e.g. assign special item pools to special monsters (e.g. mango to monkeys - need to think this through).
 
@@ -10,7 +10,7 @@ Custom Ideas
 
 Low Complexity
 
-1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.) or let the player choose.
+1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.). Or let the player choose starting equipment in the first room: a ranged weapon, a staff, a weapon, a ring.
    This immediately changes early combat feel each run.
 
 2. Early interactive terrain — Increase the frequency of pressure plates, trap doors, steam vents, and flammable grass on D1-D3. These create tactical puzzles even with weak
