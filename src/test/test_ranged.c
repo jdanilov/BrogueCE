@@ -474,7 +474,6 @@ TEST(test_ranged_weapon_runic_sniper_disables_falloff) {
     short maxRange = rangedWeaponRange(bow);
     creature *rat = test_place_monster(MK_RAT, player.loc.x + maxRange, player.loc.y);
     ASSERT(rat != NULL);
-    short ratStartHP = rat->currentHP;
 
     // Place a second monster at close range for comparison (new arena)
     // Instead, just verify the runic flag persists through item operations
