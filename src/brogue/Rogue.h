@@ -2803,7 +2803,8 @@ enum machineTypes {
     MT_REWARD_HEAVY_OR_RUNIC_WEAPON,
 
     // Fixture machines
-    MT_FIXTURE_FOUNTAIN
+    MT_FIXTURE_FOUNTAIN,
+    MT_FIXTURE_RUBBLE_HEAP
 };
 
 typedef struct autoGenerator {

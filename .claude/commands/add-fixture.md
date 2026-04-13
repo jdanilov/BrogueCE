@@ -38,12 +38,12 @@ Think through the visual design before asking the user. Consider:
 | ASH | `'` | 80 | G_ASHES — same char as embers; always hidden by foliage |
 | CARPET / MARBLE_FLOOR | `.` | 85 | G_CARPET — same char as floor, different color; always hidden by foliage |
 | RUBBLE / BONES | `,` | surface | Both G_RUBBLE/G_BONES → `,`; hidden by foliage without purge |
-| WALL / GRANITE / GRANITE_COLUMN / CRYSTAL_WALL | `#` | 0–varies | Columns look identical to walls in terminal |
+| WALL / GRANITE / CRYSTAL_WALL | `#` | 0–varies | Columns look identical to walls in terminal |
 | ALTAR_INERT | `\|` | dungeon | G_ALTAR |
 
 **Rule of thumb:** use `BP_PURGE_INTERIOR` for any fixture where the interesting tiles have priority > 45. Purge runs before features are placed, wiping pre-existing foliage. It sets DUNGEON→FLOOR, LIQUID→NOTHING, SURFACE→NOTHING — safe since machine footprint cells are already floor tiles. The only tiles that never need purge are STATUE_INERT, STEAM_VENT, SPIDERWEB, DEEP_WATER, LAVA, CHASM, and FOLIAGE/FUNGUS_FOREST itself.
 
-**Prepare 2–3 ASCII layout options.** Each should be ~9×7 cells showing wall context. Use the chars above. Note which tiles correspond to which symbol if ambiguous. Note any BP_PURGE_INTERIOR recommendation. Make sure to use appropriate console colors (blue for water, orange for lava etc.) when presenting your ASCII designs. 
+**Prepare 2–3 ASCII layout options.** Each should be ~9×7 cells showing wall context. Use the chars above. Note which tiles correspond to which symbol if ambiguous. Note any BP_PURGE_INTERIOR recommendation. Make sure to use appropriate console colors (blue for water, orange for lava etc.) when presenting your ASCII designs.
 
 **Then call AskUserQuestion** with:
 - The 2–3 layouts side by side or sequentially
@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_FOUNTAIN = 73`
-Blueprint catalog currently has **74 entries** (indices 0–73).
-New fixture will be: enum value **74**, catalog index **74**.
+Current last fixture in the enum: `MT_FIXTURE_RUBBLE_HEAP = 74`
+Blueprint catalog currently has **75 entries** (indices 0–74).
+New fixture will be: enum value **75**, catalog index **75**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum
@@ -69,25 +69,55 @@ Key files:
 - `src/test/test_fixtures.c` — test suite
 - `src/test/test_main.c` — suite registration (only if adding a new suite; fixtures suite already exists)
 
-### 3b. Rogue.h — add to enum
+### 3b. Tile placement reference — CRITICAL, read before choosing tiles
 
-Find the block:
+**Use direct terrain placement (the `terrain` + `layer` fields), NOT DFs.**
+DFs have propagation behavior and the scanner cannot detect DF-placed tiles. Always use terrain directly.
+
+**Verified tileType enum names and their correct layers:**
+
+| Tile | Enum name | Layer | Notes |
+|------|-----------|-------|-------|
+| Statue/pillar | `STATUE_INERT` | `DUNGEON` | Blocks pathing, use MF_TREAT_AS_BLOCKING |
+| Crystal wall | `CRYSTAL_WALL` | `DUNGEON` | Blocks pathing |
+| Altar | `ALTAR_INERT` | `DUNGEON` | |
+| Marble floor | `MARBLE_FLOOR` | `DUNGEON` | |
+| Carpet | `CARPET` | `DUNGEON` | |
+| Obsidian | `OBSIDIAN` | `DUNGEON` | |
+| Shallow water | `SHALLOW_WATER` | `LIQUID` | |
+| Deep water | `DEEP_WATER` | `LIQUID` | |
+| Lava | `LAVA` | `LIQUID` | |
+| Chasm | `CHASM` | `LIQUID` | |
+| Mud | `MUD` | `LIQUID` | |
+| Grass | `GRASS` | `SURFACE` | |
+| Dead grass | `DEAD_GRASS` | `SURFACE` | |
+| Foliage | `FOLIAGE` | `SURFACE` | |
+| Fungus forest | `FUNGUS_FOREST` | `SURFACE` | |
+| Luminescent fungus | `LUMINESCENT_FUNGUS` | `SURFACE` | |
+| Hay | `HAY` | `SURFACE` | |
+| Spiderweb | `SPIDERWEB` | `SURFACE` | |
+| Rubble | `RUBBLE` | `SURFACE` | |
+| Bones | `BONES` | `SURFACE` | |
+| Embers | `EMBERS` | `SURFACE` | |
+| Ash | `ASH` | `SURFACE` | |
+| Junk | `JUNK` | `SURFACE` | |
+| Blood | `RED_BLOOD` | `SURFACE` | |
+
+**There is NO `GRANITE_COLUMN` tileType.** `DF_GRANITE_COLUMN` exists but it's a DF that places `GRANITE` tiles with propagation. To represent a column/pillar, use `STATUE_INERT` instead — it's visually distinct (`ß`/`S`) and detectable by the scanner.
+
+**`GRANITE` is the wall tile** — do not use it for interior features; it's indistinguishable from walls in display.
+
+### 3c. Rogue.h — add to enum
+
+Add before the closing `};` of the machineTypes enum, after the last `MT_FIXTURE_*` entry:
 ```c
-    // Fixture machines
-    MT_FIXTURE_FOUNTAIN
-};
-```
-Change to:
-```c
-    // Fixture machines
-    MT_FIXTURE_FOUNTAIN,
     MT_FIXTURE_NAME
-};
 ```
+(Add a comma to the previous last entry.)
 
-### 3c. GlobalsBrogue.c — blueprint
+### 3d. GlobalsBrogue.c — blueprint
 
-Append after the fountain blueprint entry (before `};`):
+Append after the last fixture blueprint entry (before `};` of blueprintCatalog_Brogue[]):
 
 ```c
 {"Fixture: NAME -- description",
@@ -117,20 +147,25 @@ Append after the fountain blueprint entry (before `};`):
 
 **Layer constants:** `DUNGEON=0  LIQUID=1  GAS=2  SURFACE=3`
 
-### 3d. GlobalsBrogue.c — auto-generator
+### 3e. GlobalsBrogue.c — auto-generator
 
 In the `// Fixture machines` comment block at the bottom of autoGeneratorCatalog_Brogue[]:
 ```c
 {0, 0, 0, MT_FIXTURE_NAME, FLOOR, NOTHING, minDepth, maxDepth, frequency, 0, 0, 1},
 ```
 
-### 3e. test_fixtures.c — add 4 tests
+### 3f. test_fixtures.c — add 4 tests
 
 Follow the established pattern in the file. Four tests minimum:
 1. Blueprint depth range matches plan
 2. Blueprint featureCount > 0
 3. `buildAMachine(MT_FIXTURE_NAME, ...)` succeeds and a key tile appears in pmap
 4. `blueprintCatalog[MT_FIXTURE_NAME].feature[0]` has the expected terrain/layer
+
+**Test gotchas:**
+- `DEEPEST_LEVEL` macro is NOT available in tests. Use `gameConst->deepestLevel` instead.
+- `BP_NO_INTERIOR_FLAG` means `machineNumber` won't be set on fixture tiles — don't check it.
+- The placement test (buildAMachine) uses `test_init_game()` with a retry loop (up to 30 attempts).
 
 Register all four in the `SUITE(fixtures)` block at the bottom of the file.
 
@@ -142,7 +177,7 @@ Register all four in the `SUITE(fixtures)` block at the bottom of the file.
 make test
 ```
 
-All 194+ tests must pass. Fix any failures before continuing.
+All tests must pass (ignore the pre-existing `test_regeneration` flake). Fix any failures before continuing.
 
 ---
 
@@ -162,19 +197,21 @@ cc -DDATADIR=. -DBROGUE_SDL -DBROGUE_EXTRA_VERSION='""' \
    -o bin/scan-fixture 2>&1 | grep error
 ```
 
-**Scan for seeds** (replace 74 with the new fixture's enum index):
+**Scan for seeds** (replace INDEX with the new fixture's enum index):
 ```bash
-./bin/scan-fixture 74 200
+./bin/scan-fixture INDEX 500
 # Output: lists matching seeds, then prints the command to display the first hit
 ```
 
 **Display a specific seed:**
 ```bash
-./bin/scan-fixture 74 -seed 6
+./bin/scan-fixture INDEX -seed N
 # Prints 13x9 ASCII map centered on the fixture's first terrain tile
 ```
 
-Detection uses `blueprintCatalog[mt].feature[0].terrain` as the anchor tile and `feature[1].terrain` as a nearby confirmation — no hardcoding needed.
+Detection uses `blueprintCatalog[mt].feature[0].terrain` as the anchor tile and `feature[1].terrain` as a nearby confirmation. The print function centers on the anchor tile that has the confirmation tile within radius 2 — so it finds the actual fixture, not a random occurrence of the anchor tile.
+
+**If no seeds found in 500:** Try 1000, or check that feature[0] uses a terrain tile (not a DF) — the scanner only detects terrain-based features.
 
 ---
 
@@ -185,10 +222,11 @@ Print:
 2. The legend
 3. The seed and depth (`./bin/brogue --seed N` to verify in-game)
 4. Mark the fixture as ✅ in `docs/plans/fixtures.md`
+5. Update this file's "Current state" section (Step 3a) with the new last enum entry and catalog size.
 
 ---
 
-## Reference: existing fixture as template
+## Reference: existing fixtures as templates
 
 ```c
 // MT_FIXTURE_FOUNTAIN = index 73
@@ -199,3 +237,13 @@ Print:
     {0, MARBLE_FLOOR,  DUNGEON, {1,3}, 0, 0,-1,0, 1, 0,0, (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)}}},
 ```
 Auto-generator: `{0, 0, 0, MT_FIXTURE_FOUNTAIN, FLOOR, NOTHING, 1, 8, 40, 0, 0, 1}`
+
+```c
+// MT_FIXTURE_RUBBLE_HEAP = index 74
+{"Fixture: Rubble Heap -- broken column amid scattered debris",
+{1, DEEPEST_LEVEL}, {4, 8},  0,  3,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    {0, STATUE_INERT,  DUNGEON, {1,1}, 1, 0,-1,0, 0, 0,0, (MF_BUILD_AT_ORIGIN|MF_NOT_IN_HALLWAY|MF_TREAT_AS_BLOCKING)},
+    {0, RUBBLE,        SURFACE, {2,4}, 0, 0,-1,0, 1, 0,0, (MF_NEAR_ORIGIN)},
+    {0, BONES,         SURFACE, {1,1}, 0, 0,-1,0, 1, 0,0, (MF_NEAR_ORIGIN)}}},
+```
+Auto-generator: `{0, 0, 0, MT_FIXTURE_RUBBLE_HEAP, FLOOR, NOTHING, 1, DEEPEST_LEVEL, 35, 0, 0, 1}`

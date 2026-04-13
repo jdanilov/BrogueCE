@@ -171,6 +171,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
 
     // Fixture machines
     {0,                         0,      0,                          MT_FIXTURE_FOUNTAIN,        FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_RUBBLE_HEAP,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -631,6 +632,12 @@ const blueprint blueprintCatalog_Brogue[] = {
         {0,         STATUE_INERT,  DUNGEON,    {1, 1},     1,          0,          -1,         0,              0,              0,          0,          (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING)},
         {0,         SHALLOW_WATER, LIQUID,     {2, 4},     1,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)},
         {0,         MARBLE_FLOOR,  DUNGEON,    {1, 3},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)}}},
+
+    {"Fixture: Rubble Heap -- broken column amid scattered debris",
+    {1, DEEPEST_LEVEL}, {4, 8},     0,      3,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        {0,         STATUE_INERT,  DUNGEON,    {1, 1},     1,          0,          -1,         0,              0,              0,          0,          (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING)},
+        {0,         RUBBLE,        SURFACE,    {2, 4},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN)},
+        {0,         BONES,         SURFACE,    {1, 1},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN)}}},
 };
 
 // To meter item generation (on level generation):

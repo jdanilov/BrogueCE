@@ -139,10 +139,27 @@ static void print_fixture_map(int mt) {
     enum tileType t0      = bp->feature[f0].terrain;
     enum dungeonLayers l0 = bp->feature[f0].layer;
 
+    // Find second feature for confirmation
+    int f1 = -1;
+    for (int i = f0 + 1; i < bp->featureCount; i++) {
+        if (bp->feature[i].terrain != 0) { f1 = i; break; }
+    }
+    enum tileType t1      = (f1 >= 0) ? bp->feature[f1].terrain : 0;
+    enum dungeonLayers l1 = (f1 >= 0) ? bp->feature[f1].layer   : 0;
+
+    // Center on anchor tile that has confirmation tile nearby
     int cx = -1, cy = -1;
     for (int x = 1; x < DCOLS - 1 && cx < 0; x++) {
         for (int y = 1; y < DROWS - 1 && cx < 0; y++) {
-            if (pmap[x][y].layers[l0] == t0) { cx = x; cy = y; }
+            if (pmap[x][y].layers[l0] != t0) continue;
+            if (t1 == 0) { cx = x; cy = y; break; }
+            for (int dx = -2; dx <= 2 && cx < 0; dx++) {
+                for (int dy = -2; dy <= 2 && cx < 0; dy++) {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
+                    if (pmap[nx][ny].layers[l1] == t1) { cx = x; cy = y; }
+                }
+            }
         }
     }
     if (cx < 0) return;
