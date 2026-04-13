@@ -41,6 +41,27 @@ Fixtures use thematic placement to feel intentional rather than random:
 - **Cavern organic** (large `roomSize` footprint, no wall constraint): Mushroom Circle, Crystal Outcrop — natural formations
 - **Anywhere** (no constraints): Rubble Heap, Sunlit Patch — can appear in corridors or rooms
 
+### Thematic Loot
+
+Some fixtures can spawn a thematic item via `MF_GENERATE_ITEM`. Loot should be **optional** (not every instance spawns one) and **thematic** (connects the item to the place). This makes fixtures feel like discoverable locations rather than random item drops.
+
+Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with `itemCategory` and optionally `itemKind`. Not all fixtures have loot — most are purely decorative. When loot is present, it should feel like a natural find, not a guaranteed reward.
+
+| Fixture | Loot | Rationale |
+|---------|------|-----------|
+| **Forge** | WEAPON (random) | Left behind by the smith. |
+| **Toppled Bookcase** | SCROLL (random) | Survived among the wreckage. |
+| **Abandoned Camp** | FOOD or POTION (random) | Supplies left by a prior explorer. |
+| **Altar Nook** | SCROLL or POTION (random) | Offering left at the altar. |
+| **Garden Patch** | POTION (random) | Herbal ingredients growing wild. |
+| **Weapon Rack** | WEAPON (random) | One still serviceable piece. |
+| **Warding Circle** | CHARM or SCROLL (random) | Residual magic condensed into form. |
+| **Bone Throne** | RING or GOLD (random) | Pried from dead fingers. |
+| **Sacrificial Slab** | POTION (random) | Ritual remnant, still potent. |
+| **Crystal Outcrop** | GEM (random) | A loose crystal worth taking. |
+
+**Loot frequency**: Use `MF_ALTERNATIVE` flags so each fixture has e.g. a 30-50% chance of the loot feature firing vs. an empty alternative. This keeps fixtures from being reliable loot sources — you find something maybe half the time.
+
 ### Universal (Any Depth)
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
@@ -58,7 +79,7 @@ Fixtures use thematic placement to feel intentional rather than random:
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 9 | **Garden Patch** | 4-7 | GRASS, DF_FOLIAGE (2-3), SHALLOW_WATER (1) | Cavern organic | Lush overgrown garden remnant. |
+| 9 | **Garden Patch** | 4-7 | GRASS, DF_FOLIAGE (2-3), SHALLOW_WATER (1) | Cavern organic | Lush overgrown garden. Loot: POTION (~30%). |
 | 10 | **Fountain** | 3-5 | DEEP_WATER (1), SHALLOW_WATER (ring), MARBLE_FLOOR (border) | Room center | Classic dungeon fountain. Centerpiece. |
 | 11 | **Mushroom Circle** | 3-6 | FUNGUS_FOREST in ring, GRASS center | Cavern organic | Fairy ring in a damp hollow. |
 | 12 | **Sunlit Patch** | 3-5 | DF_SUNLIGHT, GRASS, DF_FOLIAGE | Anywhere | Shaft of light from a crack above. |
@@ -70,28 +91,28 @@ Fixtures use thematic placement to feel intentional rather than random:
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 16 | **Forge** | 4-6 | LAVA (1), RUBBLE (surround), STATUE_INERT (1 anvil) | Room interior | Ancient smithy. Minor effect: ember DF. |
-| 17 | **Altar Nook** | 2-4 | ALTAR_INERT (1), CARPET (2-3 around) | Room center | Devotional space commanding the room. |
-| 18 | **Crystal Outcrop** | 2-4 | CRYSTAL_WALL (1-2), LUMINESCENT_FUNGUS around | Cavern wall-adjacent | Glowing mineral vein. Minor effect: faint light. |
+| 16 | **Forge** | 4-6 | LAVA (1), RUBBLE (surround), STATUE_INERT (1 anvil) | Room interior | Ancient smithy. Minor effect: ember DF. Loot: WEAPON (~40%). |
+| 17 | **Altar Nook** | 2-4 | ALTAR_INERT (1), CARPET (2-3 around) | Room center | Devotional space. Loot: SCROLL or POTION (~30%). |
+| 18 | **Crystal Outcrop** | 2-4 | CRYSTAL_WALL (1-2), LUMINESCENT_FUNGUS around | Cavern wall-adjacent | Glowing mineral vein. Light effect. Loot: GEM (~30%). |
 | 19 | **Steam Vent** | 1-3 | CHASM (1), DF_STEAM_PUFF periodic | Anywhere | Geothermal fissure. Minor effect: occasional steam. |
-| 20 | **Abandoned Camp** | 4-7 | HAY (2), JUNK (1-2), BONES (1), EMBERS (1) | Room interior | Someone stayed here once. |
-| 21 | **Weapon Rack** | 2-3 | STATUE_INERT (1), JUNK (1-2) | Wall-adjacent | Broken equipment mounted on wall. |
+| 20 | **Abandoned Camp** | 4-7 | HAY (2), JUNK (1-2), BONES (1), EMBERS (1) | Room interior | Someone stayed here once. Loot: FOOD or POTION (~40%). |
+| 21 | **Weapon Rack** | 2-3 | STATUE_INERT (1), JUNK (1-2) | Wall-adjacent | Broken equipment on wall. Loot: WEAPON (~30%). |
 | 22 | **Scorched Earth** | 3-5 | ASH (2-3), EMBERS (1), DEAD_GRASS (1) | Anywhere | Aftermath of an old fire. |
 | 23 | **Lichen Garden** | 3-5 | FUNGUS_FOREST (2), DEAD_GRASS (2), SHALLOW_WATER (1) | Cavern organic | Bioluminescent growth around moisture. |
-| 24 | **Toppled Bookcase** | 2-3 | JUNK (2), RUBBLE (1) | Room wall-adjacent | Rotting shelves spilling their contents. |
+| 24 | **Toppled Bookcase** | 2-3 | JUNK (2), RUBBLE (1) | Room wall-adjacent | Rotting shelves. Loot: SCROLL (~40%). |
 
 ### Deep Levels (D10+)
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 25 | **Bone Throne** | 3-5 | BONES (cluster), STATUE_INERT (1 center) | Room center | Grim seat of power. Commands the room. |
+| 25 | **Bone Throne** | 3-5 | BONES (cluster), STATUE_INERT (1 center) | Room center | Grim seat of power. Loot: RING or GOLD (~30%). |
 | 26 | **Blood Pool** | 2-4 | DF_RED_BLOOD (spread), SHALLOW_WATER (1 center) | Cavern organic | Something died here, slowly. |
 | 27 | **Obsidian Formation** | 2-4 | OBSIDIAN (2-3), ASH around | Anywhere | Cooled lava remnants from an ancient flow. |
 | 28 | **Ember Pit** | 3-5 | EMBERS (center), ASH (ring), BONES (1) | Cavern organic | Still smoldering. Minor effect: embers DF. |
 | 29 | **Claw Marks** | 1-3 | RUBBLE (wall-adjacent), BONES (1) | Wall-adjacent | Deep gouges — something large passed through. |
-| 30 | **Sacrificial Slab** | 2-4 | MARBLE_FLOOR (1), DF_RED_BLOOD (around), BONES (1) | Room center | Dark stains on polished stone. |
+| 30 | **Sacrificial Slab** | 2-4 | MARBLE_FLOOR (1), DF_RED_BLOOD (around), BONES (1) | Room center | Dark stains on polished stone. Loot: POTION (~30%). |
 | 31 | **Sulfur Crust** | 2-4 | ASH (2), EMBERS (1), DF_STEAM_PUFF | Cavern organic | Yellow deposits around a fumarole. Minor effect: steam. |
-| 32 | **Warding Circle** | 3-5 | CARPET (ring), BONES (1 center), ASH (1) | Room center | Ancient protective inscription, long faded. |
+| 32 | **Warding Circle** | 3-5 | CARPET (ring), BONES (1 center), ASH (1) | Room center | Ancient inscription, long faded. Loot: CHARM or SCROLL (~30%). |
 
 ## Implementation Approach
 
