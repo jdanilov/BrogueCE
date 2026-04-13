@@ -41,6 +41,7 @@ static char glyphToAscii(enum displayGlyph glyph) {
         case G_BAD_MAGIC: return '+';
         case G_DOORWAY: return '<';
         case G_CHARM: return '7';
+        case G_RANGED: return '}';
         case G_GUARDIAN: return '5';
         case G_WINGED_GUARDIAN: return '5';
         case G_EGG: return 'o';

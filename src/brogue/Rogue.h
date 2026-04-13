@@ -337,7 +337,8 @@ enum displayGlyph {
     G_SAC_ALTAR,
     G_ORB_ALTAR,
     G_LEFT_TRIANGLE,
-    G_CORPSE
+    G_CORPSE,
+    G_RANGED
 };
 
 enum graphicsModes {
@@ -757,7 +758,7 @@ enum lightType {
     NUMBER_LIGHT_KINDS
 };
 
-#define NUMBER_ITEM_CATEGORIES  13
+#define NUMBER_ITEM_CATEGORIES  14
 
 // Item categories
 enum itemCategory {
@@ -774,6 +775,7 @@ enum itemCategory {
     AMULET              = Fl(10),
     GEM                 = Fl(11),
     KEY                 = Fl(12),
+    RANGED              = Fl(13),
 
     // Categories where the kinds have intrinsic magic polarity; i.e. each kind
     // has a certain polarity (with positive enchant) which doesn't depend on
@@ -782,12 +784,12 @@ enum itemCategory {
     // kinds in these categories have neutral polarity.
     HAS_INTRINSIC_POLARITY = (POTION | SCROLL | RING | WAND | STAFF),
 
-    CAN_BE_DETECTED     = (WEAPON | ARMOR | POTION | SCROLL | RING | CHARM | WAND | STAFF | AMULET),
-    CAN_BE_ENCHANTED    = (WEAPON | ARMOR | RING | CHARM | WAND | STAFF),
+    CAN_BE_DETECTED     = (WEAPON | ARMOR | POTION | SCROLL | RING | CHARM | WAND | STAFF | AMULET | RANGED),
+    CAN_BE_ENCHANTED    = (WEAPON | ARMOR | RING | CHARM | WAND | STAFF | RANGED),
     PRENAMED_CATEGORY   = (FOOD | GOLD | AMULET | GEM | KEY),
-    NEVER_IDENTIFIABLE  = (FOOD | CHARM | GOLD | AMULET | GEM | KEY),
-    CAN_BE_SWAPPED      = (WEAPON | ARMOR | STAFF | CHARM | RING),
-    ALL_ITEMS           = (FOOD|POTION|WEAPON|ARMOR|STAFF|WAND|SCROLL|RING|CHARM|GOLD|AMULET|GEM|KEY),
+    NEVER_IDENTIFIABLE  = (FOOD | CHARM | GOLD | AMULET | GEM | KEY | RANGED),
+    CAN_BE_SWAPPED      = (WEAPON | ARMOR | STAFF | CHARM | RING | RANGED),
+    ALL_ITEMS           = (FOOD|POTION|WEAPON|ARMOR|STAFF|WAND|SCROLL|RING|CHARM|GOLD|AMULET|GEM|KEY|RANGED),
 };
 
 enum keyKind {
@@ -858,7 +860,22 @@ enum weaponEnchants {
     W_MERCY,
     NUMBER_GOOD_WEAPON_ENCHANT_KINDS = W_MERCY,
     W_PLENTY,
-    NUMBER_WEAPON_RUNIC_KINDS
+    NUMBER_WEAPON_RUNIC_KINDS,
+
+    // Ranged-only runics (not included in melee runic count)
+    W_PIERCING = NUMBER_WEAPON_RUNIC_KINDS,
+    W_SNIPER,
+    W_EXPLOSIVE,
+    W_CHAIN,
+    NUMBER_GOOD_RANGED_ENCHANT_KINDS = W_CHAIN,
+    NUMBER_RANGED_RUNIC_KINDS
+};
+
+enum rangedKind {
+    SLING,
+    BOW,
+    CROSSBOW,
+    NUMBER_RANGED_KINDS
 };
 
 enum armorKind {
@@ -1377,7 +1394,7 @@ enum itemFlags {
     ITEM_EQUIPPED           = Fl(1),
     ITEM_CURSED             = Fl(2),
     ITEM_PROTECTED          = Fl(3),
-    // unused               = Fl(4),
+    ITEM_RANGED_RELOADING   = Fl(4),    // ranged weapon is on cooldown
     ITEM_RUNIC              = Fl(5),
     ITEM_RUNIC_HINTED       = Fl(6),
     ITEM_RUNIC_IDENTIFIED   = Fl(7),
@@ -1422,6 +1439,8 @@ typedef struct item {
     enum monsterTypes vorpalEnemy;
     short strengthRequired;
     unsigned short quiverNumber;
+    short maxRange;                     // max range for ranged weapons
+    short cooldownMax;                  // max cooldown for ranged weapons (derived from kind + enchant)
     enum displayGlyph displayChar;
     const color *foreColor;
     const color *inventoryColor;
@@ -2442,6 +2461,7 @@ typedef struct gameConstants {
 
     const int numberMeteredItems;                   // size of the metered items table
     const int numberCharmKinds;                     // size of the charms table
+    const int numberRangedKinds;                    // size of the ranged weapons table
     const int numberPotionKinds;                    // size of the potion table
     const int numberGoodPotionKinds;                // number of good potions in the game (ordered first in the table)
     const int numberScrollKinds;                    // size of the scroll table
@@ -2523,6 +2543,7 @@ typedef struct playerCharacter {
     signed long milliseconds;           // milliseconds since launch, to decide whether to engage cautious mode
     short xpxpThisTurn;                 // how many squares the player explored this turn
     short stealthRange;                 // distance from which monsters will notice you
+    boolean playerMovedThisTurn;        // true if the player moved (changed position) this turn
 
     short previousPoisonPercent;        // and your poison proportion, to display percentage alerts for each.
 
@@ -3288,6 +3309,8 @@ extern "C" {
     void addPoison(creature *monst, short totalDamage, short concentrationIncrement);
     void killCreature(creature *decedent, boolean administrativeDeath);
     void buildHitList(creature **hitList, const creature *attacker, creature *defender, const boolean sweep);
+    boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distance);
+    void magicRangedWeaponHit(creature *monst, item *theItem, pos targetLoc);
     void addScentToCell(short x, short y, short distance);
     void populateItems(pos upstairs);
     item *placeItemAt(item *theItem, pos dest);
@@ -3415,6 +3438,9 @@ extern "C" {
     void relabel(item *theItem);
     void swapLastEquipment(void);
     void apply(item *theItem);
+    boolean fireRangedWeapon(item *theItem);
+    short rangedWeaponCooldownMax(item *theItem);
+    short rangedWeaponRange(item *theItem);
     boolean eat(item *theItem, boolean recordCommands);
     boolean itemCanBeCalled(item *theItem);
     void call(item *theItem);

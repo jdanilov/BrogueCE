@@ -351,6 +351,8 @@ static int fontIndex(enum displayGlyph glyph) {
     } else if (showGraphics == TILES_GRAPHICS || (showGraphics == HYBRID_GRAPHICS && isEnvironmentGlyph(glyph))) {
         // Tile glyphs have sprite indices starting at 256
         // -2 to disregard the up and down arrow glyphs
+        // Ranged weapons reuse the melee weapon tile (G_WEAPON charIndex = 330)
+        if (glyph == G_RANGED) return 330;
         return glyph + 128 - 2;
     } else {
         unsigned int code = glyphToUnicode(glyph);

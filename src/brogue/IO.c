@@ -5107,7 +5107,7 @@ unsigned long printCarriedItemDetails(item *theItem,
         encodeMessageColor(goldColorEscape, 0, KEYBOARD_LABELS ? &yellow : &white);
         encodeMessageColor(whiteColorEscape, 0, &white);
 
-        if (theItem->category & (FOOD | SCROLL | POTION | WAND | STAFF | CHARM)) {
+        if (theItem->category & (FOOD | SCROLL | POTION | WAND | STAFF | CHARM | RANGED)) {
             sprintf(buttons[b].text, "   %sa%spply   ", goldColorEscape, whiteColorEscape);
             buttons[b].hotkey[0] = APPLY_KEY;
             b++;

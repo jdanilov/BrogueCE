@@ -105,8 +105,8 @@ const feat featTable_RapidBrogue[] = {
 const short lumenstoneDistribution_RapidBrogue[DEEPEST_LEVEL - AMULET_LEVEL] = {7, 6, 6, 6};
 
 // Relative generation probabilities of item categories
-//                                                        (GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY)
-const short itemGenerationProbabilities_RapidBrogue[13] = {50,    84,     104,     3,      3,     10,     8,      2,      3,      2,        0,        0,      0};
+//                                                                    (GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY,    RANGED)
+const short itemGenerationProbabilities_RapidBrogue[NUMBER_ITEM_CATEGORIES] = {50,    84,     104,     3,      3,     10,     8,      2,      3,      2,        0,        0,      0,      3};
 
 const autoGenerator autoGeneratorCatalog_RapidBrogue[] = {
 //   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >=Depth <=Depth          freq    minIncp minSlope    maxNumber
@@ -726,6 +726,13 @@ itemTable charmTable_RapidBrogue[] = {
     {"negation",        "", "", 5,  700,    0, 0, {1,2,1}, true, false, 1, false, "A featureless gray disc hangs from a lanyard. When you touch it, your hand and arm go numb."},
 };
 
+//                          name           flav cal  freq  val  str  pow  damage         id     call   pol  polRev description
+itemTable rangedWeaponTable_RapidBrogue[] = {
+    {"sling",       "", "", 10, 300,    10, 6,  {1, 4, 1},     true, false, 0, false, "A leather strap with a pouch for hurling stones. Quick to reload but weak at close range. Its projectiles lose force over distance."},
+    {"bow",         "", "", 10, 500,    12, 12, {3, 7, 1},     true, false, 0, false, "A recurved wooden bow with a taut sinew string. It fires arrows with precision at long range but is unwieldy in close quarters. Patient enchanting will unlock devastating power."},
+    {"crossbow",    "", "", 10, 800,    15, 9,  {14, 26, 1},   true, false, 0, false, "A heavy mechanical crossbow with a steel-tipped bolt. It strikes with enormous force but takes many turns to reload. Enchanting mainly speeds its loading mechanism."},
+};
+
 const charmEffectTableEntry charmEffectTable_RapidBrogue[] = {
     { .kind = CHARM_HEALTH, .effectDurationBase = 3, .effectDurationIncrement = POW_0_CHARM_INCREMENT, .rechargeDelayDuration = 2500, .rechargeDelayBase = FP_FACTOR * 55 / 100, .rechargeDelayMinTurns = 1, .effectMagnitudeMultiplier = 20 },
     { .kind = CHARM_PROTECTION, .effectDurationBase = 20, .effectDurationIncrement = POW_0_CHARM_INCREMENT, .rechargeDelayDuration = 1000, .rechargeDelayBase = FP_FACTOR * 60 / 100, .rechargeDelayMinTurns = 1, .effectMagnitudeMultiplier = 150 },
@@ -1044,6 +1051,7 @@ const gameConstants rapidBrogueGameConst = {
     .numberWandKinds = sizeof(wandTable_RapidBrogue) / sizeof(itemTable),
     .numberGoodWandKinds = 6,
     .numberCharmKinds = sizeof(charmTable_RapidBrogue) / sizeof(itemTable),
+    .numberRangedKinds = sizeof(rangedWeaponTable_RapidBrogue) / sizeof(itemTable),
     .numberMeteredItems = sizeof(meteredItemsGenerationTable_RapidBrogue) / sizeof(meteredItemGenerationTable),
     .numberHordes = sizeof(hordeCatalog_RapidBrogue) / sizeof(hordeType),
     .numberFeats = sizeof(featTable_RapidBrogue) / sizeof(feat),
@@ -1069,6 +1077,7 @@ void initializeGameVariantRapidBrogue(void) {
     scrollTable = scrollTable_RapidBrogue;
     wandTable = wandTable_RapidBrogue;
     charmTable = charmTable_RapidBrogue;
+    rangedWeaponTable = rangedWeaponTable_RapidBrogue;
     featTable = featTable_RapidBrogue;
 
     charmEffectTable = charmEffectTable_RapidBrogue;

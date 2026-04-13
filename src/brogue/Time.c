@@ -1880,6 +1880,18 @@ void rechargeItemsIncrementally(short multiplier) {
                 sprintf(buf, "your %s has recharged.", theItemName);
                 message(buf, 0);
             }
+        } else if ((theItem->category & RANGED) && (theItem->charges > 0)) {
+            // Ranged weapons only reload when player is stationary
+            // Cooldown stored in deciturns (10x); decrement by 10 per turn to match
+            if (!rogue.playerMovedThisTurn) {
+                theItem->charges = clamp(theItem->charges - multiplier * 10, 0, theItem->cooldownMax);
+                if (theItem->charges == 0) {
+                    theItem->flags &= ~ITEM_RANGED_RELOADING;
+                    itemName(theItem, theItemName, false, false, NULL);
+                    sprintf(buf, "your %s is ready to fire.", theItemName);
+                    message(buf, 0);
+                }
+            }
         }
     }
 }
@@ -2670,6 +2682,8 @@ void playerTurnEnded(void) {
         animateFlares(rogue.flares, rogue.flareCount);
         rogue.flareCount = 0;
     }
+
+    rogue.playerMovedThisTurn = false;
 }
 
 void resetScentTurnNumber(void) { // don't want player.scentTurnNumber to roll over the short maxint!

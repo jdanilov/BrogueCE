@@ -1,15 +1,15 @@
 Brogue seed catalog, seeds 1 to 25, through depth 5.
-Generated with BB 1.1.1-dev.ac31fd1.feature/bullet_brogue_mainline. Dungeons unchanged since BB 1.1.
+Generated with BB 1.2.1-dev.281d8c3.feature-movement-keys. Dungeons unchanged since BB 1.1.
 
 To play one of these seeds, select Play>New Seeded Game from the title screen.
 Seed 1:
     Depth 1:
-        A potion of fire immunity
-        A potion of caustic gas
-        A potion of creeping death
-        A potion of speed
-        A potion of paralysis
-        A +3 ring of reaping
+        A scroll of discord
+        A +2 ring of clairvoyance
+        A scroll of shattering
+        A potion of levitation
+        A potion of telepathy
+        A +0 crossbow (ready)
         A scroll of aggravate monsters
         A potion of detect magic
         A potion of strength
@@ -24,17 +24,17 @@ Seed 1:
         +2 banded mail of multiplicity [9]<15> (vault 5)
         A scroll of shattering
         A +1 broadsword <19> (vault 1)
-        484 gold pieces (3 piles)
+        580 gold pieces (3 piles)
         A shackled ogre
         A shackled ogre
         A shackled goblin mystic
         A shackled goblin mystic
     Depth 2:
         A potion of paralysis
-        A +1 ring of light
+        A -2 bow (ready)
         A potion of caustic gas
         A scroll of protect armor
-        +0 banded mail [7]<15>
+        Some food
         A scroll of identify
         A scroll of summon monsters
         A potion of detect magic
@@ -48,6 +48,7 @@ Seed 1:
         A door key (stone guardian) (opens vault 5)
         A resurrection altar (vault 5)
     Depth 3:
+        A potion of caustic gas
         A potion of confusion
         A potion of levitation
         A scroll of discord
@@ -59,12 +60,10 @@ Seed 1:
         A scroll of enchanting
         A scroll of enchanting
         A scroll of enchanting
-        Some food
         A cage key
         A crystal orb
         A scroll of shattering
-        2637 gold pieces (7 piles)
-        A potion of hallucination (dar battlemage)
+        2636 gold pieces (7 piles)
         A caged pixie
         A caged dar battlemage
         A caged salamander
@@ -117,13 +116,13 @@ Seed 1:
         A lumenstone from depth 5
 Seed 2:
     Depth 1:
-        A staff of lightning [2/2]
-        A potion of levitation
-        A scroll of teleportation
-        A scroll of discord
-        A wand of polymorphism [1]
+        A potion of paralysis
+        A scroll of protect weapon
         A potion of detect magic
-        +0 chain mail [5]<13>
+        A scroll of discord
+        A potion of confusion
+        A potion of paralysis
+        Some food
         A potion of darkness
         A potion of levitation
         A potion of detect magic
@@ -149,11 +148,12 @@ Seed 2:
         A +0 war axe <19> (vault 3)
         A scroll of enchanting (vault 3)
         A +2 flail <17> (vault 1)
-        303 gold pieces (2 piles)
+        353 gold pieces (2 piles)
         A potion of paralysis (goblin mystic)
         A door key (monkey) (opens vault 12)
         A potion of fire immunity (goblin mystic)
         A scroll of negation (goblin warlord)
+        A shackled ogre
         A caged ogre
         A caged goblin conjurer
         A caged goblin conjurer
@@ -175,23 +175,22 @@ Seed 2:
         A shackled ogre
         A commutation altar (vault 1)
     Depth 3:
-        A scroll of protect weapon
-        A scroll of remove curse
-        A potion of invisibility
-        A staff of healing [2/2]
-        A potion of paralysis
+        A scroll of summon monsters
+        A scroll of identify
+        A scroll of identify
         A potion of descent
-        A potion of incineration
+        A potion of confusion
+        A potion of darkness
+        A scroll of magic mapping
+        A +0 flail <17>
         A potion of strength
         A potion of strength
         A potion of life
         A scroll of enchanting
         A scroll of enchanting
         A scroll of enchanting
-        Some food
-        2998 gold pieces (8 piles)
-        A scroll of teleportation (dar blademaster [reflective])
-        A shackled golem
+        3153 gold pieces (8 piles)
+        A scroll of teleportation (dar blademaster)
         A shackled dar blademaster
         A shackled troll
         A resurrection altar (vault 4)
@@ -321,8 +320,9 @@ Seed 3:
         Some food
         A +2 whip of quietus <14> (vault 2)
         3808 gold pieces (11 piles)
-        A scroll of remove curse (dar battlemage)
-        A scroll of magic mapping (dar priestess)
+        A wand of invisibility [4] (dar battlemage)
+        A scroll of discord (dar priestess)
+        A potion of descent (dragon)
         A scroll of teleportation (dar priestess)
         A cage key (vampire)
         A shackled dar blademaster
@@ -404,8 +404,8 @@ Seed 4:
         A scroll of shattering
         A +2 dagger of speed <12> (vault 1)
         333 gold pieces (2 piles)
-        A scroll of negation (goblin conjurer)
-        A scroll of identify (goblin mystic)
+        A potion of caustic gas (goblin conjurer)
+        A potion of telepathy (goblin mystic)
         A caged goblin
         A caged goblin conjurer
         A caged monkey
@@ -497,14 +497,14 @@ Seed 4:
         A shackled dar priestess
 Seed 5:
     Depth 1:
+        A potion of fire immunity
+        A potion of paralysis
         A potion of levitation
         A potion of descent
-        A scroll of discord
-        A potion of speed
-        A scroll of summon monsters
-        A potion of paralysis
-        A scroll of shattering
-        A wand of invisibility [3]
+        +0 leather armor [3]<10>
+        A potion of hallucination
+        A potion of levitation
+        5 +0 incendiary darts <12>
         A potion of darkness
         A scroll of remove curse
         A potion of detect magic
@@ -530,11 +530,11 @@ Seed 5:
         A potion of creeping death
         A door key (opens vault 1)
         A +2 flail of paralysis <17> (vault 1)
-        783 gold pieces (4 piles)
+        785 gold pieces (4 piles)
         A shackled ogre
         A shackled ogre
     Depth 2:
-        A +0 broadsword <19>
+        +0 leather armor [3]<10>
         A scroll of summon monsters
         A scroll of identify
         A scroll of summon monsters
@@ -557,8 +557,8 @@ Seed 5:
         A door key (opens vault 3)
         A scroll of enchanting (vault 1)
         1829 gold pieces (7 piles)
-        A potion of invisibility (dar blademaster)
-        A potion of invisibility (dar blademaster)
+        +3 splint mail [12]<17> (dar blademaster)
+        A scroll of protect armor (dar blademaster)
     Depth 3:
         A scroll of identify
         A potion of incineration
@@ -580,8 +580,10 @@ Seed 5:
         A door key (opens vault 2)
         A scroll of enchanting (vault 2)
         3328 gold pieces (8 piles)
-        A potion of telepathy (dar battlemage)
-        A potion of fire immunity (dar blademaster)
+        A potion of invisibility (dar battlemage)
+        A potion of invisibility (dar blademaster)
+        A scroll of identify (dar blademaster)
+        A scroll of teleportation (dar blademaster)
         A shackled tentacle horror
         A commutation altar (vault 7)
     Depth 4:
@@ -625,13 +627,13 @@ Seed 5:
         A shackled dar blademaster [agile]
 Seed 6:
     Depth 1:
-        A potion of darkness
-        +2 banded mail [9]<15>
-        A scroll of protect armor
-        A potion of descent
         A scroll of magic mapping
+        A scroll of aggravate monsters
+        A potion of speed
+        A potion of incineration
         A scroll of identify
-        A +1 ring of light
+        A scroll of identify
+        A +1 levitation charm (ready)
         A potion of detect magic
         A scroll of aggravate monsters
         A potion of detect magic
@@ -653,8 +655,7 @@ Seed 6:
         A wand of negation [3] (vault 3)
         A door key (opens vault 3)
         A +2 war pike <18> (vault 1)
-        381 gold pieces (2 piles)
-        A scroll of identify (goblin conjurer)
+        408 gold pieces (2 piles)
     Depth 2:
         A scroll of identify
         A scroll of identify
@@ -772,7 +773,6 @@ Seed 7:
         A +1 ring of awareness (vault 4)
         A +2 sword of paralysis <14> (vault 1)
         304 gold pieces (2 piles)
-        A scroll of identify (goblin mystic)
         A door key (monkey) (opens vault 1)
         A shackled goblin mystic
         A shackled ogre
@@ -800,33 +800,30 @@ Seed 7:
         A +2 spear of slowing <13> (vault 2)
         A door key (opens vault 2)
         2039 gold pieces (7 piles)
-        A potion of incineration (goblin conjurer)
-        A potion of hallucination (dar priestess)
+        A scroll of protect weapon (dar priestess)
         An allied unicorn
         A resurrection altar (vault 9)
         A resurrection altar (vault 7)
         A commutation altar (vault 5)
     Depth 3:
-        A potion of invisibility
         A +0 mace <16>
         A scroll of remove curse
-        A +0 dagger <12>
+        +0 leather armor [3]<10>
         A +0 flail <17>
         A scroll of protect armor
-        A +0 spear <13>
-        A +3 ring of awareness
+        A potion of invisibility
+        A scroll of summon monsters
+        A +0 bow (ready)
         A potion of strength
         A potion of strength
         A potion of life
         A scroll of enchanting
         A scroll of enchanting
         Some food
-        3121 gold pieces (8 piles)
-        A potion of telepathy (dar priestess)
-        A potion of detect magic (dar priestess)
-        A +1 war pike <18> (dar blademaster)
+        3130 gold pieces (8 piles)
+        A potion of telepathy (dar blademaster)
         A crystal orb (flamedancer)
-        A shackled golem [agile]
+        A shackled salamander
         An allied mangrove dryad
     Depth 4:
         A lumenstone from depth 4
@@ -869,7 +866,7 @@ Seed 7:
         A shackled dar blademaster [reflective]
 Seed 8:
     Depth 1:
-        A potion of hallucination
+        A staff of obstruction [2/2]
         A scroll of identify
         A scroll of identify
         A potion of hallucination
@@ -900,8 +897,9 @@ Seed 8:
         A wand of empowerment [1] (vault 3)
         A door key (opens vault 3)
         A +3 broadsword <19> (vault 1)
-        523 gold pieces (3 piles)
-        A potion of descent (goblin mystic)
+        481 gold pieces (3 piles)
+        A potion of paralysis (goblin mystic)
+        A potion of descent (goblin conjurer)
         A scroll of aggravate monsters (goblin conjurer)
     Depth 2:
         A potion of telepathy
@@ -929,8 +927,8 @@ Seed 8:
         A potion of life (vault 3)
         1984 gold pieces (7 piles)
     Depth 3:
-        A potion of invisibility
-        A wand of beckoning [2]
+        A potion of incineration
+        A +2 spear of airborne slaying <13>
         A potion of detect magic
         A potion of caustic gas
         A scroll of aggravate monsters
@@ -945,12 +943,9 @@ Seed 8:
         +2 scale mail of dampening [6]<12>
         A crystal orb
         A potion of life (vault 2)
-        2648 gold pieces (7 piles)
-        A +3 broadsword <19> (dar blademaster)
-        A scroll of discord (dar blademaster [reflective])
-        A potion of fire immunity (dar blademaster)
-        A potion of paralysis (dragon)
-        A shackled dar blademaster
+        2710 gold pieces (7 piles)
+        A scroll of discord (dar blademaster)
+        A potion of fire immunity (dragon)
         An allied phoenix egg
     Depth 4:
         A lumenstone from depth 4
@@ -1024,7 +1019,7 @@ Seed 9:
         A caged monkey
         A caged ogre
     Depth 2:
-        A wand of teleportation [1]
+        A +3 dagger of abomination slaying <12>
         A potion of incineration
         A scroll of protect armor
         A potion of detect magic
@@ -1042,9 +1037,8 @@ Seed 9:
         A door key (opens vault 5)
         A cage key
         A cage key
-        2127 gold pieces (8 piles)
-        A potion of speed (goblin mystic)
-        A shackled goblin mystic
+        2143 gold pieces (8 piles)
+        A scroll of identify (goblin conjurer)
         A caged naga
         A caged goblin mystic
         A caged ogre
@@ -1052,8 +1046,8 @@ Seed 9:
         A caged salamander
         A commutation altar (vault 5)
     Depth 3:
-        A potion of caustic gas
-        A potion of incineration
+        A potion of detect magic
+        A staff of conjuration [2/2]
         A potion of telepathy
         A potion of confusion
         A potion of speed
@@ -1065,11 +1059,9 @@ Seed 9:
         A scroll of enchanting
         Some food
         A door key (opens vault 5)
-        3030 gold pieces (8 piles)
+        2951 gold pieces (8 piles)
         A crystal orb (imp)
-        A potion of telepathy (dragon)
         A cage key (vampire)
-        A shackled ogre
         A shackled ogre
         A caged troll
         A caged dar battlemage
@@ -1122,13 +1114,13 @@ Seed 10:
         A scroll of summon monsters
         A scroll of discord
         A scroll of remove curse
-        A scroll of remove curse
-        A potion of invisibility
-        A staff of tunneling [3/3]
+        A wand of polymorphism [1]
+        A scroll of magic mapping
+        A wand of negation [2]
         A scroll of discord
         A potion of invisibility
-        A -3 broadsword of mercy <19>
-        A wand of domination [2]
+        -3 scale mail of burden [1]<12>
+        A +0 war hammer <20>
         A potion of detect magic
         A potion of strength
         A potion of strength
@@ -1151,7 +1143,7 @@ Seed 10:
         6 +0 incendiary darts <12>
         A +2 broadsword <19> (vault 1)
         533 gold pieces (3 piles)
-        A +2 ring of stealth (goblin mystic)
+        A +1 protection charm (ready) (goblin mystic)
         A caged goblin mystic
         A caged goblin mystic
         A caged monkey
@@ -1179,9 +1171,9 @@ Seed 10:
         A +2 whip of slowing <14> (vault 1)
         1939 gold pieces (7 piles)
     Depth 3:
-        6 +0 incendiary darts <12>
-        A potion of telepathy
-        A +1 negation charm (ready)
+        A +0 rapier <15>
+        A scroll of protect armor
+        A -1 crossbow (ready)
         A potion of caustic gas
         A scroll of identify
         A potion of strength
@@ -1193,8 +1185,9 @@ Seed 10:
         Some food
         +2 leather armor of multiplicity [5]<10>
         A potion of life (vault 2)
-        3135 gold pieces (8 piles)
+        3127 gold pieces (8 piles)
         A cage key (vampire)
+        A shackled imp
         A caged dar battlemage
         A caged imp [juggernaut]
         A shackled wraith
@@ -1241,12 +1234,12 @@ Seed 10:
         A shackled tentacle horror [toxic]
 Seed 11:
     Depth 1:
-        A scroll of recharging
-        A scroll of identify
-        A scroll of identify
-        A scroll of shattering
-        A potion of invisibility
-        Some food
+        A scroll of summon monsters
+        A staff of firebolt [2/2]
+        A potion of caustic gas
+        A scroll of remove curse
+        A potion of creeping death
+        A +4 ring of transference
         A scroll of identify
         A potion of detect magic
         A potion of strength
@@ -1274,8 +1267,8 @@ Seed 11:
         A cage key
         A scroll of shattering
         A +2 sword of multiplicity <14> (vault 1)
-        356 gold pieces (2 piles)
-        A scroll of negation (goblin conjurer)
+        324 gold pieces (2 piles)
+        A potion of incineration (goblin conjurer)
         A caged monkey
         A caged goblin mystic
         A caged ogre
@@ -1289,7 +1282,7 @@ Seed 11:
         A scroll of discord
         +0 plate armor [11]<19>
         A scroll of protect weapon
-        A wand of polymorphism [2]
+        A +0 flail <17>
         A potion of strength
         A potion of strength
         A potion of life
@@ -1299,12 +1292,11 @@ Seed 11:
         A door key (opens vault 3)
         A potion of incineration
         1628 gold pieces (6 piles)
-        A scroll of remove curse (dar priestess)
-        A potion of speed (dar priestess)
+        A scroll of negation (dar priestess)
+        A scroll of identify (dar priestess)
         A commutation altar (vault 1)
         A commutation altar (vault 3)
     Depth 3:
-        A scroll of protect weapon
         A potion of speed
         A +0 whip <14>
         A potion of levitation
@@ -1319,11 +1311,12 @@ Seed 11:
         A potion of strength
         A scroll of enchanting
         A scroll of enchanting
+        A mango
         A potion of fire immunity
         A +1 mace of waterborne slaying <16>
         A crystal orb
-        2906 gold pieces (8 piles)
-        A potion of invisibility (dar priestess)
+        2903 gold pieces (8 piles)
+        A potion of speed (dar priestess)
         A shackled ogre [juggernaut]
         A shackled tentacle horror
         A shackled tentacle horror
@@ -1363,10 +1356,10 @@ Seed 11:
         A lumenstone from depth 5
 Seed 12:
     Depth 1:
-        A scroll of discord
-        A potion of creeping death
-        A potion of confusion
-        A potion of hallucination
+        A scroll of recharging
+        A +1 ring of wisdom
+        A potion of detect magic
+        A staff of obstruction [2/2]
         A potion of caustic gas
         A potion of fire immunity
         A potion of incineration
@@ -1401,18 +1394,18 @@ Seed 12:
         A door key (opens vault 5)
         A door key (opens vault 1)
         A +2 rapier of waterborne slaying <15> (vault 1)
-        346 gold pieces (2 piles)
-        A potion of incineration (goblin mystic)
+        373 gold pieces (2 piles)
+        A potion of telepathy (goblin mystic)
         A caged goblin conjurer
         A caged monkey
         A caged goblin mystic
         A shackled ogre
         A shackled goblin mystic
     Depth 2:
-        A scroll of summon monsters
-        A scroll of shattering
-        A potion of incineration
-        A potion of incineration
+        A potion of confusion
+        A scroll of remove curse
+        A potion of fire immunity
+        A staff of conjuration [3/3]
         A potion of levitation
         A potion of caustic gas
         A +0 whip <14>
@@ -1424,9 +1417,9 @@ Seed 12:
         A scroll of enchanting
         A scroll of enchanting
         A +1 whip of abomination slaying <14>
-        2430 gold pieces (9 piles)
+        2365 gold pieces (9 piles)
     Depth 3:
-        A wand of negation [2]
+        A +3 mace <16>
         A potion of paralysis
         A scroll of magic mapping
         A scroll of identify
@@ -1440,7 +1433,7 @@ Seed 12:
         A mango
         A potion of telepathy
         +3 banded mail of dampening [10]<15>
-        3174 gold pieces (8 piles)
+        3113 gold pieces (8 piles)
     Depth 4:
         A lumenstone from depth 4
         A lumenstone from depth 4
@@ -1503,13 +1496,13 @@ Seed 13:
         A shackled ogre
         A shackled goblin mystic
     Depth 2:
-        A potion of paralysis
+        A potion of invisibility
+        A potion of confusion
+        A potion of descent
+        A scroll of remove curse
+        A scroll of protect weapon
         A potion of hallucination
-        5 +0 incendiary darts <12>
-        A scroll of discord
-        A potion of speed
-        A potion of detect magic
-        A staff of firebolt [3/3]
+        A wand of slowness [3]
         A potion of incineration
         A potion of detect magic
         A +0 axe <15>
@@ -1534,15 +1527,15 @@ Seed 13:
         A wand of slowness [2] (vault 5)
         A door key (opens vault 5)
         A door key (opens vault 1)
-        1925 gold pieces (7 piles)
+        1885 gold pieces (7 piles)
         A commutation altar (vault 1)
     Depth 3:
-        A potion of caustic gas
-        -2 banded mail of immolation [5]<15>
-        A scroll of negation
-        A potion of levitation
-        A potion of caustic gas
-        A +2 ring of awareness
+        A scroll of recharging
+        A scroll of summon monsters
+        A potion of detect magic
+        A scroll of magic mapping
+        A scroll of recharging
+        A +1 guardian charm (ready)
         A scroll of remove curse
         A scroll of remove curse
         A potion of detect magic
@@ -1556,8 +1549,8 @@ Seed 13:
         A scroll of enchanting (vault 6)
         A cage key
         A +1 sword of fireborne slaying <14>
-        3246 gold pieces (9 piles)
-        A potion of paralysis (dar blademaster)
+        3407 gold pieces (9 piles)
+        A potion of descent (dar blademaster)
         A caged troll
         A caged naga
         A caged dar blademaster
@@ -1609,7 +1602,7 @@ Seed 14:
         A potion of incineration
         A -2 whip <14>
         A scroll of magic mapping
-        A staff of lightning [2/2]
+        A wand of teleportation [2]
         A potion of descent
         A potion of telepathy
         A potion of detect magic
@@ -1666,9 +1659,9 @@ Seed 14:
     Depth 3:
         A potion of telepathy
         A scroll of aggravate monsters
-        A scroll of discord
-        A scroll of protect armor
-        A +3 ring of reaping
+        A staff of firebolt [2/2]
+        A scroll of teleportation
+        A +2 negation charm (ready)
         A potion of strength
         A potion of strength
         A potion of life
@@ -1685,9 +1678,8 @@ Seed 14:
         +3 banded mail of reprisal [10]<15> (vault 4)
         A scroll of shattering
         2822 gold pieces (7 piles)
+        A potion of incineration (dar priestess)
         A door key (imp) (opens vault 4)
-        A shackled troll
-        A shackled dar battlemage
         A resurrection altar (vault 2)
     Depth 4:
         A lumenstone from depth 4
@@ -1765,12 +1757,12 @@ Seed 15:
         701 gold pieces (4 piles)
         A door key (monkey) (vault 8) (opens vault 4)
     Depth 2:
-        A wand of teleportation [2]
+        A +0 sword <14>
         A potion of detect magic
         A potion of descent
         A potion of levitation
         A scroll of identify
-        A scroll of aggravate monsters
+        A potion of darkness
         A potion of paralysis
         A scroll of shattering
         A scroll of discord
@@ -1792,12 +1784,12 @@ Seed 15:
         A commutation altar (vault 5)
         A commutation altar (vault 11)
     Depth 3:
-        A scroll of discord
-        A wand of beckoning [2]
-        A potion of detect magic
-        A +0 whip <14>
-        A +3 ring of reaping
-        A wand of polymorphism [1]
+        A potion of telepathy
+        A scroll of magic mapping
+        A potion of fire immunity
+        A potion of descent
+        A +2 negation charm (ready)
+        A +0 rapier <15>
         A potion of creeping death
         A scroll of summon monsters
         A potion of strength
@@ -1814,9 +1806,12 @@ Seed 15:
         A potion of fire immunity (vault 4)
         A potion of levitation
         A +1 spear of force <13>
-        2934 gold pieces (8 piles)
+        3014 gold pieces (8 piles)
+        A scroll of summon monsters (dar blademaster)
+        A scroll of magic mapping (dar battlemage)
         A potion of incineration (dar priestess)
         A scroll of recharging (dar blademaster)
+        A shackled dar battlemage
         A shackled troll
     Depth 4:
         A lumenstone from depth 4
@@ -2018,6 +2013,7 @@ Seed 17:
         5 +0 incendiary darts <12>
         A +3 war axe <19> (vault 1)
         361 gold pieces (2 piles)
+        A potion of speed (goblin conjurer)
         A door key (monkey) (opens vault 8)
         A cage key (monkey)
         A shackled ogre
@@ -2028,11 +2024,11 @@ Seed 17:
         A caged ogre
         A caged goblin conjurer
     Depth 2:
+        A potion of incineration
+        A potion of detect magic
         A scroll of identify
-        A scroll of aggravate monsters
-        A scroll of aggravate monsters
-        A +0 war pike <18>
-        A wand of invisibility [3]
+        +3 scale mail [7]<12>
+        6 +0 incendiary darts <12>
         A potion of hallucination
         A potion of confusion
         A scroll of protect weapon
@@ -2057,15 +2053,15 @@ Seed 17:
         A +0 whip <14> (vault 1)
         A wand of negation [2] (vault 1)
         A door key (opens vault 1)
-        1657 gold pieces (6 piles)
+        1695 gold pieces (6 piles)
     Depth 3:
-        A potion of detect magic
-        A scroll of aggravate monsters
-        A potion of telepathy
+        A wand of teleportation [2]
+        A scroll of shattering
         A potion of caustic gas
-        A scroll of remove curse
-        A scroll of protect weapon
-        A potion of caustic gas
+        A staff of conjuration [3/3]
+        A scroll of sanctuary
+        A scroll of identify
+        A staff of entrancement [3/3]
         +0 scale mail [4]<12>
         A potion of descent
         A potion of strength
@@ -2084,15 +2080,9 @@ Seed 17:
         A potion of detect magic (vault 2)
         A potion of paralysis (vault 2)
         A potion of descent (vault 2)
-        3121 gold pieces (8 piles)
-        A scroll of summon monsters (dar battlemage)
-        A +2 protection charm (ready) (dar blademaster)
+        3065 gold pieces (8 piles)
         A staff of protection [3/3] (imp)
         A door key (imp) (opens vault 8)
-        A potion of descent (dragon)
-        A shackled tentacle horror
-        A shackled troll
-        A shackled pixie
         A commutation altar (vault 4)
         A commutation altar (vault 11)
         A commutation altar (vault 14)
@@ -2170,14 +2160,14 @@ Seed 18:
         A caged goblin mystic
         A caged goblin
     Depth 2:
+        4 +0 incendiary darts <12>
         A potion of levitation
-        A potion of fire immunity
-        +1 plate armor [12]<19>
+        A wand of slowness [3]
+        A potion of caustic gas
+        A mango
         A scroll of recharging
         A +1 dagger of quietus <12>
-        A scroll of shattering
-        A potion of confusion
-        A wand of invisibility [3]
+        3 +0 incendiary darts <12>
         +0 plate armor [11]<19>
         A potion of invisibility
         A potion of strength
@@ -2196,13 +2186,14 @@ Seed 18:
         A staff of blinking [2/2] (vault 1)
         A staff of poison [2/2] (vault 1)
         A door key (opens vault 1)
-        1639 gold pieces (6 piles)
+        1566 gold pieces (6 piles)
     Depth 3:
+        A potion of detect magic
         A scroll of identify
         -2 plate armor [9]<19>
         A potion of fire immunity
-        A +2 ring of wisdom
-        A wand of teleportation [2]
+        A -3 crossbow (ready)
+        A +0 dagger <12>
         A scroll of protect armor
         A potion of fire immunity
         A potion of strength
@@ -2210,9 +2201,9 @@ Seed 18:
         A potion of life
         A scroll of enchanting
         A scroll of enchanting
-        Some food
         A door key (opens vault 4)
-        2441 gold pieces (7 piles)
+        2561 gold pieces (7 piles)
+        A shackled dar blademaster
         A resurrection altar (vault 2)
         A commutation altar (vault 4)
     Depth 4:
@@ -2283,7 +2274,6 @@ Seed 19:
         6 +0 incendiary darts <12>
         A +2 whip of slowing <14> (vault 1)
         772 gold pieces (4 piles)
-        A scroll of protect weapon (goblin mystic)
         A caged monkey
         A caged goblin mystic
         A caged ogre
@@ -2313,11 +2303,11 @@ Seed 19:
         A resurrection altar (vault 3)
         A commutation altar (vault 1)
     Depth 3:
-        A scroll of negation
+        A potion of hallucination
         A scroll of remove curse
-        A potion of telepathy
-        A potion of invisibility
-        A +1 recharging charm (ready)
+        A scroll of negation
+        A potion of levitation
+        A -1 crossbow (ready)
         A potion of confusion
         A potion of paralysis
         A scroll of identify
@@ -2327,7 +2317,7 @@ Seed 19:
         A scroll of enchanting
         A potion of levitation
         A door key (opens vault 6)
-        2539 gold pieces (7 piles)
+        2444 gold pieces (7 piles)
         A resurrection altar (vault 2)
         A resurrection altar (vault 4)
         A resurrection altar (vault 6)
@@ -2414,9 +2404,9 @@ Seed 20:
         A shackled ogre
         A shackled goblin mystic
     Depth 2:
-        A scroll of summon monsters
-        A scroll of summon monsters
-        6 +0 incendiary darts <12>
+        A +1 ring of light
+        A potion of detect magic
+        -1 plate armor [10]<19>
         A scroll of aggravate monsters
         A scroll of sanctuary
         A potion of fire immunity
@@ -2427,12 +2417,11 @@ Seed 20:
         A potion of life
         A scroll of enchanting
         A scroll of enchanting
-        1900 gold pieces (7 piles)
-        A potion of detect magic (goblin mystic)
+        2028 gold pieces (7 piles)
     Depth 3:
         A potion of levitation
         A potion of detect magic
-        A wand of plenty [2]
+        A +0 axe <15>
         A scroll of magic mapping
         A scroll of remove curse
         A scroll of sanctuary
@@ -2447,9 +2436,9 @@ Seed 20:
         A door key (opens vault 6)
         A +1 sword of multiplicity <14> (vault 6)
         2580 gold pieces (7 piles)
-        A scroll of magic mapping (dar priestess)
         A potion of invisibility (dar priestess)
         A potion of caustic gas (dar priestess)
+        A potion of detect magic (dar priestess)
         A cage key (vampire)
         A caged imp
         A caged imp
@@ -2495,11 +2484,11 @@ Seed 20:
         A shackled dar blademaster
 Seed 21:
     Depth 1:
-        A potion of speed
-        A scroll of aggravate monsters
-        A potion of speed
         A potion of hallucination
-        A +1 health charm (ready)
+        A potion of detect magic
+        A potion of fire immunity
+        A scroll of remove curse
+        A +3 sling of explosive (ready)
         A scroll of negation
         A scroll of aggravate monsters
         A potion of detect magic
@@ -2518,7 +2507,7 @@ Seed 21:
         A wand of slowness [3] (vault 5)
         A door key (opens vault 1)
         A +1 dagger of paralysis <12> (vault 1)
-        553 gold pieces (3 piles)
+        496 gold pieces (3 piles)
         A door key (monkey) (opens vault 5)
         A shackled goblin mystic
         A shackled goblin mystic
@@ -2536,7 +2525,7 @@ Seed 21:
         A scroll of protect armor
         A potion of descent
         A potion of confusion
-        A +0 flail <17>
+        +0 chain mail [5]<13>
         A scroll of remove curse
         A potion of strength
         A potion of strength
@@ -2555,16 +2544,16 @@ Seed 21:
         A door key (opens vault 5)
         +1 splint mail of respiration [10]<17>
         1607 gold pieces (6 piles)
-        A scroll of summon monsters (goblin conjurer)
+        A potion of incineration (goblin conjurer)
         A scroll of protect weapon (dar priestess)
         A resurrection altar (vault 1)
         A commutation altar (vault 5)
         A commutation altar (vault 11)
     Depth 3:
-        A scroll of summon monsters
-        A scroll of negation
-        A potion of levitation
-        A wand of beckoning [2]
+        A scroll of magic mapping
+        +0 plate armor [11]<19>
+        A potion of descent
+        A +1 spear <13>
         A scroll of remove curse
         A scroll of shattering
         A potion of strength
@@ -2582,9 +2571,8 @@ Seed 21:
         A potion of caustic gas (vault 5)
         A potion of invisibility (vault 5)
         A door key (opens vault 2)
-        2897 gold pieces (8 piles)
+        3148 gold pieces (8 piles)
         A staff of blinking [3/3] (imp)
-        A shackled troll
         A commutation altar (vault 2)
     Depth 4:
         A lumenstone from depth 4
@@ -2616,13 +2604,13 @@ Seed 21:
         A lumenstone from depth 5
 Seed 22:
     Depth 1:
-        A potion of telepathy
-        A potion of invisibility
-        A potion of hallucination
+        A scroll of remove curse
         A potion of incineration
-        A potion of levitation
-        A potion of descent
-        A potion of caustic gas
+        A potion of confusion
+        A scroll of protect armor
+        A potion of hallucination
+        A scroll of magic mapping
+        A staff of entrancement [3/3]
         A potion of confusion
         A potion of paralysis
         A potion of caustic gas
@@ -2636,7 +2624,7 @@ Seed 22:
         A +2 axe of speed <15> (vault 5)
         A door key (opens vault 1)
         A +1 spear of confusion <13> (vault 1)
-        699 gold pieces (4 piles)
+        696 gold pieces (4 piles)
         A shackled ogre
         A shackled ogre
     Depth 2:
@@ -2664,6 +2652,7 @@ Seed 22:
         A staff of protection [3/3] (stone guardian)
         A commutation altar (vault 7)
     Depth 3:
+        A potion of invisibility
         A potion of hallucination
         A scroll of aggravate monsters
         A scroll of summon monsters
@@ -2678,19 +2667,17 @@ Seed 22:
         A potion of caustic gas
         A potion of darkness
         A scroll of teleportation
-        A potion of caustic gas
-        A scroll of negation
-        A scroll of protect armor
-        Some food
+        +0 chain mail [5]<13>
+        A scroll of identify
+        A +3 ring of awareness
         A scroll of magic mapping
         A potion of strength
         A scroll of enchanting
         A scroll of enchanting
         Some food
         A scroll of enchanting (vault 2)
-        3019 gold pieces (8 piles)
-        A potion of fire immunity (dar blademaster)
-        A scroll of teleportation (dar priestess)
+        3027 gold pieces (8 piles)
+        A potion of hallucination (dar priestess)
     Depth 4:
         A lumenstone from depth 4
         A lumenstone from depth 4
@@ -2739,7 +2726,7 @@ Seed 23:
         A scroll of discord
         A scroll of magic mapping
         A potion of fire immunity
-        A +3 rapier of force <15>
+        +3 scale mail of respiration [7]<12>
         A scroll of summon monsters
         A potion of detect magic
         A potion of strength
@@ -2793,7 +2780,8 @@ Seed 23:
         +1 leather armor of dragon immunity [4]<10> (monkey)
         A door key (goblin warlord) (opens vault 4)
         A cage key (goblin warlord)
-        A potion of confusion (dar blademaster)
+        A potion of caustic gas (dar blademaster)
+        A potion of incineration (dar blademaster)
         A caged goblin mystic
         A caged dar blademaster
         A caged dar blademaster
@@ -2817,8 +2805,9 @@ Seed 23:
         A cage key
         A cage key
         3042 gold pieces (9 piles)
-        A potion of caustic gas (dar blademaster)
-        A potion of incineration (dar blademaster)
+        A scroll of protect weapon (dar blademaster)
+        A +0 war hammer <20> (dar blademaster)
+        A potion of descent (dar battlemage)
         A shackled dar blademaster
         A shackled golem
         A caged dar battlemage
@@ -2862,10 +2851,10 @@ Seed 23:
         A shackled tentacle horror [agile]
 Seed 24:
     Depth 1:
-        A scroll of summon monsters
-        A potion of creeping death
+        A potion of telepathy
+        A potion of darkness
         A potion of invisibility
-        A staff of tunneling [3/3]
+        A wand of polymorphism [1]
         A potion of speed
         A potion of speed
         A potion of speed
@@ -2883,22 +2872,24 @@ Seed 24:
         A +0 broadsword <19> (vault 3)
         A scroll of enchanting (vault 3)
         A +2 war axe <19> (vault 1)
-        319 gold pieces (2 piles)
-        +3 plate armor [14]<19> (goblin mystic)
+        360 gold pieces (2 piles)
+        A scroll of identify (goblin mystic)
+        A potion of paralysis (goblin mystic)
+        A shackled goblin mystic
         A shackled ogre
         A shackled ogre
     Depth 2:
-        A scroll of discord
-        A wand of polymorphism [1]
-        A scroll of teleportation
+        A scroll of identify
+        A scroll of aggravate monsters
+        A potion of telepathy
+        A scroll of shattering
         A potion of paralysis
-        A potion of hallucination
-        A staff of lightning [3/3]
+        A wand of teleportation [1]
         A scroll of remove curse
         A potion of caustic gas
         A scroll of discord
         A potion of hallucination
-        A +0 war hammer <20>
+        +0 banded mail [7]<15>
         A scroll of teleportation
         A potion of darkness
         A potion of strength
@@ -2913,8 +2904,9 @@ Seed 24:
         A door key (opens vault 7)
         A +1 dagger of multiplicity <12>
         A potion of life (vault 2)
-        1584 gold pieces (6 piles)
-        A scroll of remove curse (dragon)
+        1603 gold pieces (6 piles)
+        +3 plate armor [14]<19> (dar blademaster)
+        A potion of fire immunity (dragon)
         A cage key (vampire)
         A cage key (vampire)
         A caged goblin conjurer
@@ -2941,7 +2933,7 @@ Seed 24:
         A scroll of identify
         A scroll of summon monsters
         A potion of caustic gas
-        A -1 ring of awareness
+        A +1 guardian charm (ready)
         A potion of strength
         A scroll of enchanting
         A scroll of enchanting
@@ -3007,11 +2999,11 @@ Seed 25:
         A door key (opens vault 1)
         A +2 war pike <18> (vault 1)
         745 gold pieces (4 piles)
-        A potion of confusion (goblin mystic)
-        A scroll of summon monsters (goblin conjurer)
-        A potion of descent (goblin mystic)
-        A potion of confusion (goblin warlord)
+        A potion of fire immunity (goblin mystic)
+        A +3 ring of wisdom (goblin conjurer)
         A potion of invisibility (goblin mystic)
+        A +5 broadsword <19> (goblin warlord)
+        A scroll of magic mapping (goblin mystic)
         A shackled ogre
         A shackled goblin mystic
         A shackled ogre
@@ -3033,7 +3025,8 @@ Seed 25:
         1717 gold pieces (6 piles)
         A staff of protection [3/3] (stone guardian)
         A staff of conjuration [3/3] (stone guardian)
-        A +1 ring of clairvoyance (dragon)
+        A +1 health charm (ready) (dragon)
+        A scroll of negation (dragon)
         A shackled dragon
         A shackled dragon
     Depth 3:

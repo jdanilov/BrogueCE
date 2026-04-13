@@ -1217,6 +1217,7 @@ boolean playerMoves(short direction) {
             refreshDungeonCell((pos){ x, y });
             refreshDungeonCell(player.loc);
             playerMoved = true;
+            rogue.playerMovedThisTurn = true;
 
             checkForMissingKeys(x, y);
             if (monsterShouldFall(&player)) {

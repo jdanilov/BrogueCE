@@ -105,8 +105,8 @@ const feat featTable_Brogue[] = {
 const short lumenstoneDistribution_Brogue[DEEPEST_LEVEL - AMULET_LEVEL] = {3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1};
 
 // Relative generation probabilities of item categories
-//                                                   (GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY)
-const short itemGenerationProbabilities_Brogue[13] = {50,    42,     52,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0};
+//                                                                    (GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY,    RANGED)
+const short itemGenerationProbabilities_Brogue[NUMBER_ITEM_CATEGORIES] = {50,    42,     52,     3,      3,      10,     8,      2,      3,      2,        0,        0,      0,      3};
 
 const autoGenerator autoGeneratorCatalog_Brogue[] = {
 //   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >Depth  <Depth          freq    minIncp minSlope    maxNumber
@@ -726,6 +726,14 @@ itemTable charmTable_Brogue[] = {
     {"negation",        "", "", 5,  700,    0, 0, {1,2,1}, true, false, 1, false, "A featureless gray disc hangs from a lanyard. When you touch it, your hand and arm go numb."},
 };
 
+//                          name           flav cal  freq  val  str  pow  damage         id     call   pol  polRev description
+// power field stores base range; base cooldown is derived from kind in rangedWeaponBaseCooldown()
+itemTable rangedWeaponTable_Brogue[] = {
+    {"sling",       "", "", 10, 300,    10, 6,  {1, 4, 1},     true, false, 0, false, "A leather strap with a pouch for hurling stones. Quick to reload but weak at close range. Its projectiles lose force over distance."},
+    {"bow",         "", "", 10, 500,    12, 12, {3, 7, 1},     true, false, 0, false, "A recurved wooden bow with a taut sinew string. It fires arrows with precision at long range but is unwieldy in close quarters. Patient enchanting will unlock devastating power."},
+    {"crossbow",    "", "", 10, 800,    15, 9,  {14, 26, 1},   true, false, 0, false, "A heavy mechanical crossbow with a steel-tipped bolt. It strikes with enormous force but takes many turns to reload. Enchanting mainly speeds its loading mechanism."},
+};
+
 const charmEffectTableEntry charmEffectTable_Brogue[] = {
     { .kind = CHARM_HEALTH, .effectDurationBase = 3, .effectDurationIncrement = POW_0_CHARM_INCREMENT, .rechargeDelayDuration = 2500, .rechargeDelayBase = FP_FACTOR * 55 / 100, .rechargeDelayMinTurns = 1, .effectMagnitudeMultiplier = 20 },
     { .kind = CHARM_PROTECTION, .effectDurationBase = 20, .effectDurationIncrement = POW_0_CHARM_INCREMENT, .rechargeDelayDuration = 1000, .rechargeDelayBase = FP_FACTOR * 60 / 100, .rechargeDelayMinTurns = 1, .effectMagnitudeMultiplier = 150 },
@@ -1040,6 +1048,7 @@ const gameConstants brogueGameConst = {
     .numberWandKinds = sizeof(wandTable_Brogue) / sizeof(itemTable),
     .numberGoodWandKinds = 6,
     .numberCharmKinds = sizeof(charmTable_Brogue) / sizeof(itemTable),
+    .numberRangedKinds = sizeof(rangedWeaponTable_Brogue) / sizeof(itemTable),
     .numberMeteredItems = sizeof(meteredItemsGenerationTable_Brogue) / sizeof(meteredItemGenerationTable),
     .numberHordes = sizeof(hordeCatalog_Brogue) / sizeof(hordeType),
     .numberFeats = sizeof(featTable_Brogue) / sizeof(feat),
@@ -1065,6 +1074,7 @@ void initializeGameVariantBrogue(void) {
     scrollTable = scrollTable_Brogue;
     wandTable = wandTable_Brogue;
     charmTable = charmTable_Brogue;
+    rangedWeaponTable = rangedWeaponTable_Brogue;
     featTable = featTable_Brogue;
 
     charmEffectTable = charmEffectTable_Brogue;

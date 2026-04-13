@@ -68,7 +68,7 @@ fixpt strengthModifier(item *theItem) {
 
 fixpt netEnchant(item *theItem) {
     fixpt retval = theItem->enchant1 * FP_FACTOR;
-    if (theItem->category & (WEAPON | ARMOR)) {
+    if (theItem->category & (WEAPON | ARMOR | RANGED)) {
         retval += strengthModifier(theItem);
     }
     // Clamp all net enchantment values to [-20, 50].
@@ -780,6 +780,199 @@ void magicWeaponHit(creature *defender, item *theItem, boolean backstabbed) {
                 break;
         }
     }
+    if (autoID) {
+        autoIdentify(theItem);
+    }
+}
+
+// Ranged weapon hit resolution with distance-based damage falloff
+boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distance) {
+    char buf[DCOLS * 3], theItemName[DCOLS], targetName[DCOLS], armorRunicString[DCOLS];
+
+    if (!(theItem->category & RANGED)) {
+        return false;
+    }
+
+    armorRunicString[0] = '\0';
+    itemName(theItem, theItemName, false, false, NULL);
+    monsterName(targetName, monst, true);
+
+    // Alerting the monster
+    monst->status[STATUS_ENTRANCED] = 0;
+    if (monst != &player
+        && monst->creatureMode != MODE_PERM_FLEEING
+        && (monst->creatureState != MONSTER_FLEEING || monst->status[STATUS_MAGICAL_FEAR])
+        && !(monst->bookkeepingFlags & MB_CAPTIVE)
+        && monst->creatureState != MONSTER_ALLY) {
+        monst->creatureState = MONSTER_TRACKING_SCENT;
+        if (monst->status[STATUS_MAGICAL_FEAR]) {
+            monst->status[STATUS_MAGICAL_FEAR] = 1;
+        }
+    }
+
+    // Ranged accuracy: use the ranged weapon's enchant, not the melee weapon
+    boolean hit;
+    if (monst->status[STATUS_STUCK]
+        || monst->status[STATUS_PARALYZED]
+        || (monst->bookkeepingFlags & MB_CAPTIVE)) {
+        hit = true;
+    } else if ((theItem->flags & ITEM_RUNIC)
+        && theItem->enchant2 == W_SLAYING
+        && monsterIsInClass(monst, theItem->vorpalEnemy)) {
+        hit = true;
+    } else {
+        short accuracy = player.info.accuracy * accuracyFraction(netEnchant(theItem)) / FP_FACTOR;
+        short defense = monsterDefenseAdjusted(monst);
+        short hitChance = accuracy * defenseFraction(defense * FP_FACTOR) / FP_FACTOR;
+        hitChance = clamp(hitChance, 0, 100);
+        hit = rand_percent(hitChance);
+    }
+
+    if (hit) {
+        short maxRange = theItem->maxRange;
+        short baseDamage = randClump(theItem->damage);
+
+        // Per-weapon-type enchant damage scaling
+        fixpt damageMultiplier = FP_FACTOR;
+        short enchant = max(0, theItem->enchant1);
+        switch (theItem->kind) {
+            case SLING:    damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 15 / 100; break; // +15% per enchant
+            case BOW:      damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 25 / 100; break; // +25% per enchant
+            case CROSSBOW: damageMultiplier = FP_FACTOR + enchant * FP_FACTOR * 10 / 100; break; // +10% per enchant
+        }
+        short damage = baseDamage * damageMultiplier / FP_FACTOR;
+
+        // Distance falloff (linear: full at point-blank, ~50% at max range)
+        // Sniper runic disables falloff
+        if (!((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_SNIPER)) {
+            damage = damage * (maxRange - distance + 1) / maxRange;
+        }
+
+        // Point-blank penalty (50% at distance 1 for slings and bows)
+        if (distance <= 1 && theItem->kind != CROSSBOW) {
+            damage /= 2;
+        }
+
+        // Immune monsters
+        if (monst->info.flags & (MONST_IMMUNE_TO_WEAPONS | MONST_INVULNERABLE)) {
+            damage = 0;
+        }
+
+        if (monst == &player) {
+            applyArmorRunicEffect(armorRunicString, &player, &damage, false);
+        }
+
+        if (inflictDamage(&player, monst, damage, &red, false)) {
+            // Monster killed
+            sprintf(buf, "your %s %s %s.",
+                    theItemName,
+                    (monst->info.flags & MONST_INANIMATE) ? "destroyed" : "killed",
+                    targetName);
+            messageWithColor(buf, messageColorFromVictim(monst), 0);
+            killCreature(monst, false);
+        } else {
+            sprintf(buf, "your %s hit %s.", theItemName, targetName);
+            messageWithColor(buf, messageColorFromVictim(monst), 0);
+        }
+        moralAttack(&player, monst);
+        if (armorRunicString[0]) {
+            message(armorRunicString, 0);
+        }
+        return true;
+    } else {
+        sprintf(buf, "your %s missed %s.", theItemName, targetName);
+        message(buf, 0);
+        return false;
+    }
+}
+
+// Ranged weapon runic effects (subset of melee runics + ranged-specific)
+void magicRangedWeaponHit(creature *defender, item *theItem, pos targetLoc) {
+    char buf[DCOLS * 3], monstName[DCOLS], theItemName[DCOLS];
+    fixpt enchant;
+    boolean autoID = false;
+
+    if (defender->bookkeepingFlags & MB_IS_DYING) {
+        return;
+    }
+
+    enchant = netEnchant(theItem);
+    short enchantType = theItem->enchant2;
+
+    // Only process supported ranged runics
+    short chance;
+    if (enchantType == W_SLAYING) {
+        chance = (monsterIsInClass(defender, theItem->vorpalEnemy) ? 100 : 0);
+    } else if (defender->info.flags & (MONST_INANIMATE | MONST_INVULNERABLE)) {
+        chance = 0;
+    } else {
+        chance = runicWeaponChance(theItem, false, 0);
+    }
+
+    if (chance <= 0 || !rand_percent(chance)) {
+        return;
+    }
+
+    monsterName(monstName, defender, true);
+    itemName(theItem, theItemName, false, false, NULL);
+
+    switch (enchantType) {
+        case W_SPEED:
+            if (player.ticksUntilTurn != -1) {
+                sprintf(buf, "your %s trembles and time freezes for a moment", theItemName);
+                buf[DCOLS] = '\0';
+                combatMessage(buf, 0);
+                player.ticksUntilTurn = -1;
+                autoID = true;
+            }
+            break;
+        case W_SLAYING:
+            inflictLethalDamage(&player, defender);
+            sprintf(buf, "%s suddenly %s",
+                    monstName,
+                    (defender->info.flags & MONST_INANIMATE) ? "shatters" : "dies");
+            buf[DCOLS] = '\0';
+            combatMessage(buf, messageColorFromVictim(defender));
+            killCreature(defender, false);
+            autoID = true;
+            break;
+        case W_PARALYSIS:
+            defender->status[STATUS_PARALYZED] = max(defender->status[STATUS_PARALYZED], weaponParalysisDuration(enchant));
+            defender->maxStatus[STATUS_PARALYZED] = defender->status[STATUS_PARALYZED];
+            if (canDirectlySeeMonster(defender)) {
+                sprintf(buf, "%s is frozen in place", monstName);
+                buf[DCOLS] = '\0';
+                combatMessage(buf, messageColorFromVictim(defender));
+                autoID = true;
+            }
+            break;
+        case W_SLOWING:
+            slow(defender, weaponSlowDuration(enchant));
+            if (canDirectlySeeMonster(defender)) {
+                sprintf(buf, "%s slows down", monstName);
+                buf[DCOLS] = '\0';
+                combatMessage(buf, messageColorFromVictim(defender));
+                autoID = true;
+            }
+            break;
+        case W_CONFUSION:
+            defender->status[STATUS_CONFUSED] = max(defender->status[STATUS_CONFUSED], weaponConfusionDuration(enchant));
+            defender->maxStatus[STATUS_CONFUSED] = defender->status[STATUS_CONFUSED];
+            if (canDirectlySeeMonster(defender)) {
+                sprintf(buf, "%s looks very confused", monstName);
+                buf[DCOLS] = '\0';
+                combatMessage(buf, messageColorFromVictim(defender));
+                autoID = true;
+            }
+            break;
+        case W_FORCE:
+            autoID = forceWeaponHit(defender, theItem);
+            break;
+        // Piercing, sniper, explosive, chain are handled in fireRangedWeapon()
+        default:
+            break;
+    }
+
     if (autoID) {
         autoIdentify(theItem);
     }

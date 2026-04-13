@@ -80,11 +80,11 @@ item *generateItem(unsigned short theCategory, short theKind) {
 
 static unsigned long pickItemCategory(unsigned long theCategory) {
     short i, sum, randIndex;
-    unsigned short correspondingCategories[13] =    {GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY};
+    unsigned short correspondingCategories[NUMBER_ITEM_CATEGORIES] = {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY, RANGED};
 
     sum = 0;
 
-    for (i=0; i<13; i++) {
+    for (i=0; i<NUMBER_ITEM_CATEGORIES; i++) {
         if (theCategory <= 0 || theCategory & correspondingCategories[i]) {
             sum += itemGenerationProbabilities[i];
         }
@@ -109,8 +109,8 @@ static unsigned long pickItemCategory(unsigned long theCategory) {
 /// @brief Pick a random item category for hallucination
 /// @return the category
 enum itemCategory getHallucinatedItemCategory(void) {
-    const enum itemCategory itemCategories[10] = {FOOD, WEAPON, ARMOR, POTION, SCROLL, STAFF, WAND, RING, CHARM, GOLD};
-    return itemCategories[rand_range(0, 9)];
+    const enum itemCategory itemCategories[11] = {FOOD, WEAPON, ARMOR, POTION, SCROLL, STAFF, WAND, RING, CHARM, GOLD, RANGED};
+    return itemCategories[rand_range(0, 10)];
 }
 
 /// @brief Gets the glyph used to represent an item of the given category
@@ -145,6 +145,8 @@ enum displayGlyph getItemCategoryGlyph(const enum itemCategory theCategory) {
             return G_GOLD;
         case AMULET:
             return G_AMULET;
+        case RANGED:
+            return G_RANGED;
         default:
             break;
     }
@@ -370,6 +372,40 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
             while (rand_percent(7)) {
                 theItem->enchant1++;
             }
+            theItem->flags |= ITEM_IDENTIFIED;
+            break;
+        case RANGED:
+            if (itemKind < 0) {
+                itemKind = chooseKind(rangedWeaponTable, gameConst->numberRangedKinds);
+            }
+            theItem->kind = itemKind; // Set kind early so cooldown/range functions can read it
+            theEntry = &rangedWeaponTable[itemKind];
+            theItem->damage = rangedWeaponTable[itemKind].range;
+            theItem->strengthRequired = rangedWeaponTable[itemKind].strengthRequired;
+            theItem->maxRange = rangedWeaponTable[itemKind].power; // base range stored in power field
+            theItem->charges = 0; // ready to fire
+            theItem->cooldownMax = 0; // will be computed after enchant is set
+            if (rand_percent(40)) {
+                theItem->enchant1 += rand_range(1, 3);
+                if (rand_percent(50)) {
+                    theItem->enchant1 *= -1;
+                    theItem->flags |= ITEM_CURSED;
+                } else if (rand_range(3, 10) > theItem->damage.lowerBound) {
+                    // lower damage items are more likely to be runic
+                    theItem->enchant2 = rand_range(W_SPEED, W_SLAYING);
+                    // Also allow ranged-specific runics
+                    if (rand_percent(40)) {
+                        theItem->enchant2 = rand_range(W_PIERCING, NUMBER_GOOD_RANGED_ENCHANT_KINDS);
+                    }
+                    theItem->flags |= ITEM_RUNIC;
+                } else {
+                    while (rand_percent(10)) {
+                        theItem->enchant1++;
+                    }
+                }
+            }
+            theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
+            theItem->maxRange = rangedWeaponRange(theItem);
             theItem->flags |= ITEM_IDENTIFIED;
             break;
         case GOLD:
@@ -1661,6 +1697,35 @@ void itemName(const item *theItem, char *root, boolean includeDetails, boolean i
                 }
             }
             break;
+        case RANGED:
+            sprintf(root, "%s%s", rangedWeaponTable[theItem->kind].name, pluralization);
+            if (includeDetails) {
+                sprintf(buf, "%s%i %s", (theItem->enchant1 < 0 ? "" : "+"), theItem->enchant1, root);
+                strcpy(root, buf);
+
+                if (theItem->flags & ITEM_RUNIC) {
+                    if ((theItem->flags & ITEM_RUNIC_IDENTIFIED) || rogue.playbackOmniscience) {
+                        if (theItem->enchant2 >= W_PIERCING) {
+                            sprintf(buf, "%s of %s", root, rangedRunicNames[theItem->enchant2 - NUMBER_WEAPON_RUNIC_KINDS]);
+                        } else {
+                            sprintf(buf, "%s of %s", root, weaponRunicNames[theItem->enchant2]);
+                        }
+                        strcpy(root, buf);
+                    } else if (theItem->flags & ITEM_RUNIC_HINTED) {
+                        strcat(root, " (unknown runic)");
+                    }
+                }
+
+                if (theItem->charges > 0) {
+                    short reloadPercent = (theItem->cooldownMax - theItem->charges) * 100 / theItem->cooldownMax;
+                    sprintf(buf, "%s %s(%i%%)", root, grayEscapeSequence, reloadPercent);
+                    strcpy(root, buf);
+                } else {
+                    strcat(root, grayEscapeSequence);
+                    strcat(root, " (ready)");
+                }
+            }
+            break;
         case GOLD:
             sprintf(root, "gold piece%s", pluralization);
             break;
@@ -1781,6 +1846,8 @@ itemTable *tableForItemCategory(enum itemCategory theCat) {
             return staffTable;
         case CHARM:
             return charmTable;
+        case RANGED:
+            return rangedWeaponTable;
         default:
             return NULL;
     }
@@ -1969,6 +2036,8 @@ void itemDetails(char *buf, item *theItem) {
             case CHARM: // Should never be displayed.
                 strcat(buf2, "What a perplexing charm!");
                 break;
+            case RANGED:
+                break; // Ranged weapons are always identified
             case AMULET:
                 strcpy(buf2, "Legends are told about this mysterious golden amulet, and legions of adventurers have perished in its pursuit. Unfathomable riches await anyone with the skill and ambition to carry it into the light of day.");
                 break;
@@ -2753,6 +2822,30 @@ void itemDetails(char *buf, item *theItem) {
             }
             strcat(buf, buf2);
             break;
+        case RANGED: {
+            short currentRange = rangedWeaponRange(theItem);
+            short currentCooldown = rangedWeaponCooldownMax(theItem) / 10; // convert deciturns to turns
+            sprintf(buf2, "\n\nRange: %i, Cooldown: %i turns. Reloads only while you stand still.",
+                    currentRange, currentCooldown);
+            strcat(buf, buf2);
+            if (theItem->kind != CROSSBOW) {
+                strcat(buf, " Deals half damage at point-blank range.");
+            }
+            if (theItem->flags & ITEM_RUNIC) {
+                if ((theItem->flags & ITEM_RUNIC_IDENTIFIED) || rogue.playbackOmniscience) {
+                    if (theItem->enchant2 == W_PIERCING) {
+                        strcat(buf, "\n\nPiercing: Projectile passes through the first creature hit.");
+                    } else if (theItem->enchant2 == W_SNIPER) {
+                        strcat(buf, "\n\nSniper: Full damage at any range.");
+                    } else if (theItem->enchant2 == W_EXPLOSIVE) {
+                        strcat(buf, "\n\nExplosive: Deals area damage on impact.");
+                    } else if (theItem->enchant2 == W_CHAIN) {
+                        strcat(buf, "\n\nChain: Automatically hits a nearby second target.");
+                    }
+                }
+            }
+            break;
+        }
         default:
             break;
     }
@@ -4119,6 +4212,14 @@ static void negationBlast(const char *emitterName, const short distance) {
                 case CHARM:
                     theItem->charges = charmRechargeDelay(theItem->kind, theItem->enchant1);
                     break;
+                case RANGED:
+                    theItem->enchant1 = theItem->enchant2 = 0;
+                    theItem->charges = 0;
+                    theItem->flags &= ~(ITEM_RUNIC | ITEM_RUNIC_HINTED | ITEM_RUNIC_IDENTIFIED | ITEM_PROTECTED | ITEM_RANGED_RELOADING);
+                    theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
+                    theItem->maxRange = rangedWeaponRange(theItem);
+                    identify(theItem);
+                    break;
                 default:
                     break;
             }
@@ -5204,7 +5305,7 @@ static boolean canAutoTargetMonster(const creature *monst, const item *theItem, 
         || monst->depth != rogue.depthLevel
         || (monst->bookkeepingFlags & MB_IS_DYING)
         || (use && (theItem->category != STAFF) && (theItem->category != WAND))
-        || (throw && (theItem->category != POTION) && (theItem->category != WEAPON))
+        || (throw && (theItem->category != POTION) && (theItem->category != WEAPON) && (theItem->category != RANGED))
         || (throw && (theItem->category == WEAPON) && !itemIsThrowingWeapon(theItem))
         || (throw && (theItem->category == WEAPON) && (monst->info.flags & MONST_INVULNERABLE))
         || (throw && (theItem->category == POTION) && itemMagicPolarityIsKnown(theItem, MAGIC_POLARITY_BENEVOLENT))
@@ -5805,6 +5906,10 @@ int itemKindCount(enum itemCategory category, int polarityConstraint) {
         case CHARM:
             totalKinds = gameConst->numberCharmKinds;
             goodKinds = gameConst->numberCharmKinds;
+            break;
+        case RANGED:
+            totalKinds = gameConst->numberRangedKinds;
+            goodKinds = 0;
             break;
         default:
             totalKinds = 0;
@@ -6789,11 +6894,235 @@ static boolean useCharm(item *theItem) {
     return true;
 }
 
+// Base cooldown in turns for each ranged weapon kind (before enchant scaling)
+static short rangedWeaponBaseCooldown(short kind) {
+    switch (kind) {
+        case SLING:     return 20;  // 2 turns * 10 (stored as deciturn units for fractional enchant reduction)
+        case BOW:       return 30;  // 3 turns * 10
+        case CROSSBOW:  return 120; // 12 turns * 10
+        default:        return 30;
+    }
+}
+
+// Compute max cooldown for a ranged weapon, accounting for enchantment.
+// Cooldown stored in deciturn units (multiply by 10) to support fractional reduction.
+// Sling: -0.15 turns per enchant = -1.5 deciturns
+// Bow: -0.15 turns per enchant = -1.5 deciturns
+// Crossbow: -1.0 turns per enchant = -10 deciturns
+short rangedWeaponCooldownMax(item *theItem) {
+    short baseCooldown = rangedWeaponBaseCooldown(theItem->kind);
+    short enchant = max(0, theItem->enchant1);
+    short reduction = 0;
+
+    switch (theItem->kind) {
+        case SLING:
+        case BOW:
+            reduction = enchant * 15 / 10; // 1.5 deciturns per enchant
+            break;
+        case CROSSBOW:
+            reduction = enchant * 10; // 10 deciturns per enchant
+            break;
+    }
+
+    short cooldown = baseCooldown - reduction;
+    return max(10, cooldown); // minimum 1 turn (10 deciturns)
+}
+
+// Compute effective range for a ranged weapon, accounting for enchantment.
+// Each enchant adds +1 range.
+short rangedWeaponRange(item *theItem) {
+    short baseRange = rangedWeaponTable[theItem->kind].power;
+    short enchant = max(0, theItem->enchant1);
+    return baseRange + enchant;
+}
+
+boolean fireRangedWeapon(item *theItem) {
+    char buf[COLS * 3], buf2[COLS * 3];
+    short i, numCells, distance;
+    creature *monst = NULL;
+    enum displayGlyph displayChar;
+    color foreColor, backColor, multColor;
+    boolean fastForward = false;
+
+    if (!(theItem->category & RANGED)) {
+        return false;
+    }
+
+    // Check cooldown (stored in deciturns; 0 means ready)
+    if (theItem->charges > 0) {
+        itemName(theItem, buf2, false, false, NULL);
+        sprintf(buf, "Your %s is still reloading.", buf2);
+        messageWithColor(buf, &itemMessageColor, 0);
+        return false;
+    }
+
+    itemName(theItem, buf2, false, false, NULL);
+    sprintf(buf, "Fire your %s:", buf2);
+    temporaryMessage("Direction? (<hjklyubn>, mouse, or <tab>; <return> to confirm)", REFRESH_SIDEBAR);
+    printString(buf, mapToWindowX(0), 1, &itemMessageColor, &black, NULL);
+
+    short maxDistance = rangedWeaponRange(theItem);
+
+    pos zapTarget;
+    if (!chooseTarget(&zapTarget, maxDistance, AUTOTARGET_MODE_THROW, theItem)) {
+        return false;
+    }
+
+    recordApplyItemCommand(theItem);
+    recordMouseClick(mapToWindowX(zapTarget.x), mapToWindowY(zapTarget.y), true, false);
+    confirmMessages();
+
+    pos originLoc = player.loc;
+    pos listOfCoordinates[MAX_BOLT_LENGTH];
+    numCells = getLineCoordinates(listOfCoordinates, originLoc, zapTarget, &boltCatalog[BOLT_NONE]);
+
+    // Animate projectile and resolve hit
+    boolean hitCreature = false;
+    boolean piercingUsed = false;
+    pos hitLoc = originLoc;
+    for (i = 0; i < numCells && i < maxDistance; i++) {
+        short x = listOfCoordinates[i].x;
+        short y = listOfCoordinates[i].y;
+        distance = i + 1;
+
+        if (pmap[x][y].flags & (HAS_MONSTER | HAS_PLAYER)) {
+            monst = monsterAtLoc((pos){ x, y });
+            if (monst && !(monst->bookkeepingFlags & MB_SUBMERGED)) {
+                hitLoc = (pos){ x, y };
+                hitCreature = true;
+
+                if (hitMonsterWithRangedWeapon(monst, theItem, distance)) {
+                    // Hit landed — apply runic if monster survived
+                    if (!(monst->bookkeepingFlags & MB_IS_DYING)
+                        && (theItem->flags & ITEM_RUNIC)) {
+                        magicRangedWeaponHit(monst, theItem, hitLoc);
+                    }
+                }
+
+                // Piercing runic: continue through first target only
+                if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_PIERCING && !piercingUsed) {
+                    piercingUsed = true;
+                    hitCreature = false; // allow projectile to continue
+                    monst = NULL;
+                    continue;
+                }
+                break;
+            }
+        }
+
+        // Hit wall/obstruction
+        if (cellHasTerrainFlag((pos){ x, y }, (T_OBSTRUCTS_PASSABILITY | T_OBSTRUCTS_VISION))) {
+            i--;
+            if (i >= 0) {
+                hitLoc = listOfCoordinates[i];
+            } else {
+                hitLoc = originLoc;
+            }
+            break;
+        }
+
+        hitLoc = (pos){ x, y };
+
+        // Animate projectile
+        if (playerCanSee(x, y)) {
+            getCellAppearance((pos){ x, y }, &displayChar, &foreColor, &backColor);
+            foreColor = yellow;
+            if (playerCanDirectlySee(x, y)) {
+                colorMultiplierFromDungeonLight(x, y, &multColor);
+                applyColorMultiplier(&foreColor, &multColor);
+            } else {
+                applyColorMultiplier(&foreColor, &clairvoyanceColor);
+            }
+            plotCharWithColor(G_WEAPON, mapToWindow((pos){ x, y }), &foreColor, &backColor);
+
+            if (!fastForward) {
+                fastForward = rogue.playbackFastForward || pauseAnimation(25, PAUSE_BEHAVIOR_DEFAULT);
+            }
+            refreshDungeonCell((pos){ x, y });
+        }
+
+        if (x == zapTarget.x && y == zapTarget.y) {
+            break;
+        }
+    }
+
+    // Handle explosive runic at impact point
+    if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_EXPLOSIVE) {
+        // Deal AoE damage in 3x3 area around impact
+        short ex, ey;
+        for (ex = hitLoc.x - 1; ex <= hitLoc.x + 1; ex++) {
+            for (ey = hitLoc.y - 1; ey <= hitLoc.y + 1; ey++) {
+                if (coordinatesAreInMap(ex, ey) && (pmap[ex][ey].flags & (HAS_MONSTER))) {
+                    creature *target = monsterAtLoc((pos){ ex, ey });
+                    if (target && !(target->bookkeepingFlags & MB_IS_DYING)) {
+                        short aoeDamage;
+                        if (ex == hitLoc.x && ey == hitLoc.y) {
+                            aoeDamage = randClump(theItem->damage); // full damage at center
+                        } else {
+                            aoeDamage = randClump(theItem->damage) / 2; // half damage on edges
+                        }
+                        if (inflictDamage(&player, target, aoeDamage, &orange, false)) {
+                            char targetName[COLS];
+                            monsterName(targetName, target, true);
+                            sprintf(buf, "the explosion kills %s.", targetName);
+                            messageWithColor(buf, messageColorFromVictim(target), 0);
+                            killCreature(target, false);
+                        }
+                    }
+                }
+            }
+        }
+        // Visual explosion effect
+        if (playerCanSee(hitLoc.x, hitLoc.y)) {
+            colorFlash(&orange, 0, IN_FIELD_OF_VIEW, 4, 1, hitLoc.x, hitLoc.y);
+        }
+    }
+
+    // Handle chain runic: find nearest secondary target within 3 tiles
+    if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_CHAIN && hitCreature && monst) {
+        creature *secondary = NULL;
+        short bestDist = 4; // must be within 3 tiles
+        for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
+            creature *candidate = nextCreature(&it);
+            if (candidate != monst && candidate != &player
+                && !(candidate->bookkeepingFlags & MB_SUBMERGED)
+                && candidate->currentHP > 0
+                && canSeeMonster(candidate)) {
+                short dist = distanceBetween(monst->loc, candidate->loc);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    secondary = candidate;
+                }
+            }
+        }
+        if (secondary) {
+            char targetName[COLS];
+            monsterName(targetName, secondary, true);
+            sprintf(buf, "the shot chains to %s!", targetName);
+            message(buf, 0);
+            short chainDist = distanceBetween(monst->loc, secondary->loc);
+            hitMonsterWithRangedWeapon(secondary, theItem, chainDist);
+        }
+    }
+
+    if (!hitCreature) {
+        itemName(theItem, buf2, false, false, NULL);
+        sprintf(buf, "your %s shot hits nothing.", buf2);
+        message(buf, 0);
+    }
+
+    // Set cooldown (in deciturns)
+    theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
+    theItem->charges = theItem->cooldownMax;
+    theItem->flags |= ITEM_RANGED_RELOADING;
+    return true;
+}
+
 void apply(item *theItem) {
     char buf[COLS * 3], buf2[COLS * 3];
 
     if (!theItem) {
-        theItem = promptForItemOfType((SCROLL|FOOD|POTION|STAFF|WAND|CHARM), 0, 0,
+        theItem = promptForItemOfType((SCROLL|FOOD|POTION|STAFF|WAND|CHARM|RANGED), 0, 0,
                                       KEYBOARD_LABELS ? "Apply what? (a-z, shift for more info; or <esc> to cancel)" : "Apply what?",
                                       true);
     }
@@ -6828,6 +7157,11 @@ void apply(item *theItem) {
             return;
         case CHARM:
             if (useCharm(theItem)) {
+                break;
+            }
+            return;
+        case RANGED:
+            if (fireRangedWeapon(theItem)) {
                 break;
             }
             return;
@@ -7024,23 +7358,23 @@ boolean readScroll(item *theItem) {
         case SCROLL_ENCHANTING:
             identify(theItem);
             messageWithColor("this is a scroll of enchanting.", &itemMessageColor, REQUIRE_ACKNOWLEDGMENT);
-            if (!numberOfMatchingPackItems((WEAPON | ARMOR | RING | STAFF | WAND | CHARM), 0, 0, false)) {
+            if (!numberOfMatchingPackItems((WEAPON | ARMOR | RING | STAFF | WAND | CHARM | RANGED), 0, 0, false)) {
                 confirmMessages();
                 message("you have nothing that can be enchanted.", 0);
                 break; // regardless, the scroll is consumed
             }
             do {
-                theItem = promptForItemOfType((WEAPON | ARMOR | RING | STAFF | WAND | CHARM), 0, 0,
+                theItem = promptForItemOfType((WEAPON | ARMOR | RING | STAFF | WAND | CHARM | RANGED), 0, 0,
                                               KEYBOARD_LABELS ? "Enchant what? (a-z; shift for more info)" : "Enchant what?",
                                               false);
                 confirmMessages();
-                if (theItem == NULL || !(theItem->category & (WEAPON | ARMOR | RING | STAFF | WAND | CHARM))) {
+                if (theItem == NULL || !(theItem->category & (WEAPON | ARMOR | RING | STAFF | WAND | CHARM | RANGED))) {
                     message("Can't enchant that.", REQUIRE_ACKNOWLEDGMENT);
                 }
                 if (rogue.gameHasEnded) {
                     return false;
                 }
-            } while (theItem == NULL || !(theItem->category & (WEAPON | ARMOR | RING | STAFF | WAND | CHARM)));
+            } while (theItem == NULL || !(theItem->category & (WEAPON | ARMOR | RING | STAFF | WAND | CHARM | RANGED)));
             recordKeystroke(theItem->inventoryLetter, false, false);
             confirmMessages();
 
@@ -7077,10 +7411,18 @@ boolean readScroll(item *theItem) {
                     theItem->enchant1 += enchantMagnitude();
                     theItem->charges = min(0, theItem->charges); // Enchanting instantly recharges charms.
                     break;
+                case RANGED:
+                    theItem->strengthRequired = max(0, theItem->strengthRequired - enchantMagnitude());
+                    theItem->enchant1 += enchantMagnitude();
+                    theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
+                    theItem->maxRange = rangedWeaponRange(theItem);
+                    theItem->charges = 0; // Enchanting instantly reloads.
+                    theItem->flags &= ~ITEM_RANGED_RELOADING;
+                    break;
                 default:
                     break;
             }
-            if ((theItem->category & (WEAPON | ARMOR | STAFF | RING | CHARM))
+            if ((theItem->category & (WEAPON | ARMOR | STAFF | RING | CHARM | RANGED))
                 && theItem->enchant1 >= 16) {
 
                 rogue.featRecord[FEAT_SPECIALIST] = true;

@@ -125,6 +125,7 @@ extern itemTable *wandTable;
 extern itemTable staffTable[NUMBER_STAFF_KINDS];
 extern itemTable ringTable[NUMBER_RING_KINDS];
 extern itemTable *charmTable;
+extern itemTable *rangedWeaponTable;
 extern const charmEffectTableEntry *charmEffectTable;
 
 extern const meteredItemGenerationTable *meteredItemsGenerationTable;
@@ -132,6 +133,7 @@ extern const meteredItemGenerationTable *meteredItemsGenerationTable;
 extern const bolt *boltCatalog;
 
 extern const char weaponRunicNames[NUMBER_WEAPON_RUNIC_KINDS][30];
+extern const char rangedRunicNames[NUMBER_RANGED_RUNIC_KINDS - NUMBER_WEAPON_RUNIC_KINDS][30];
 
 extern const char armorRunicNames[NUMBER_ARMOR_ENCHANT_KINDS][30];
 

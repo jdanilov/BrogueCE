@@ -108,14 +108,26 @@ static void dialogCreateItemChooseRunic(item *theItem){
     short i=0, runicOffset =0, noRunic, selectedRunic, selectedVorpalEnemy;
     brogueButton buttons[DIALOG_CREATE_ITEM_MAX_BUTTONS];
 
-    if (!(theItem->category & (WEAPON | ARMOR))) {
+    if (!(theItem->category & (WEAPON | ARMOR | RANGED))) {
         return;
     }
 
     // Heavy weapons can only have bad runics. The logic below but differs from that used in dungeon generation, which
     // is based on minimum weapon damage, but has the same net effect. Might be nice to consolidate. Perhaps add a flag
     // to the kind (itemtable).
-    if (theItem->category == WEAPON) {
+    if (theItem->category == RANGED) {
+        // Shared weapon runics (speed through slaying)
+        for (i=0; i<NUMBER_GOOD_WEAPON_ENCHANT_KINDS; i++) {
+            strcpy(buttonText, weaponRunicNames[i]);
+            initializeCreateItemButton(&(buttons[i]), buttonText);
+        }
+        // Ranged-specific runics
+        for (short j=0; j<NUMBER_RANGED_RUNIC_KINDS - NUMBER_WEAPON_RUNIC_KINDS; j++) {
+            strcpy(buttonText, rangedRunicNames[j]);
+            initializeCreateItemButton(&(buttons[i + j]), buttonText);
+        }
+        i += NUMBER_RANGED_RUNIC_KINDS - NUMBER_WEAPON_RUNIC_KINDS;
+    } else if (theItem->category == WEAPON) {
         if (theItem->kind == HAMMER || theItem->kind == WAR_AXE || theItem->kind == PIKE || theItem->kind == BROADSWORD) {
             for (i=0; i<NUMBER_WEAPON_RUNIC_KINDS - NUMBER_GOOD_WEAPON_ENCHANT_KINDS; i++) {
                 strcpy(buttonText, weaponRunicNames[i + NUMBER_GOOD_WEAPON_ENCHANT_KINDS]);
@@ -152,10 +164,16 @@ static void dialogCreateItemChooseRunic(item *theItem){
     selectedRunic = dialogSelectEntryFromList(buttons, i+1, "Choose a runic:");
 
     if (selectedRunic >=0 && selectedRunic != noRunic) {
-        theItem->enchant2 = selectedRunic + runicOffset;
-        theItem->flags |= ITEM_RUNIC;
+        if (theItem->category == RANGED && selectedRunic >= NUMBER_GOOD_WEAPON_ENCHANT_KINDS) {
+            // Map ranged-specific runic buttons to correct enum values
+            // Button index 8 -> W_PIERCING (10), 9 -> W_SNIPER (11), etc.
+            theItem->enchant2 = W_PIERCING + (selectedRunic - NUMBER_GOOD_WEAPON_ENCHANT_KINDS);
+        } else {
+            theItem->enchant2 = selectedRunic + runicOffset;
+        }
+        theItem->flags |= (ITEM_RUNIC | ITEM_RUNIC_IDENTIFIED | ITEM_RUNIC_HINTED);
 
-        if ((theItem->enchant2 == W_SLAYING && theItem->category == WEAPON)
+        if ((theItem->enchant2 == W_SLAYING && (theItem->category & (WEAPON | RANGED)))
             || (theItem->enchant2 == A_IMMUNITY && theItem->category == ARMOR)) {
             selectedVorpalEnemy = dialogCreateItemChooseVorpalEnemy();
 
@@ -212,7 +230,7 @@ static void dialogCreateItemChooseEnchantmentLevel(item *theItem) {
         minVal = 2;
     } else if (theItem->category == RING) {
         minVal = -3;
-    } else if (theItem->category & (WEAPON | ARMOR)) {
+    } else if (theItem->category & (WEAPON | ARMOR | RANGED)) {
         if (!(theItem->flags & ITEM_RUNIC)) {
             minVal = -3;
         } else { // bad runics can only be negatively enchanted
@@ -484,7 +502,7 @@ static void dialogCreateItem(void) {
         return;
     }
 
-    if (Fl(selectedCategory) & (ARMOR | WEAPON)) {
+    if (Fl(selectedCategory) & (ARMOR | WEAPON | RANGED)) {
         dialogCreateItemChooseRunic(theItem);
     }
 

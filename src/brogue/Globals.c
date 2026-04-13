@@ -54,6 +54,7 @@ itemTable *potionTable;
 itemTable *scrollTable;
 itemTable *wandTable;
 itemTable *charmTable;
+itemTable *rangedWeaponTable;
 const feat *featTable;
 const charmEffectTableEntry *charmEffectTable;
 const levelFeeling *levelFeelings;
@@ -1478,7 +1479,8 @@ const char itemCategoryNames[NUMBER_ITEM_CATEGORIES][11] = {
         "gold",
         "amulet",
         "lumenstone",
-        "key"
+        "key",
+        "ranged"
 };
 
 const char titlePhonemes[NUMBER_TITLE_PHONEMES][30] = {
@@ -1651,6 +1653,13 @@ const char weaponRunicNames[NUMBER_WEAPON_RUNIC_KINDS][30] = {
     "slaying",
     "mercy",
     "plenty"
+};
+
+const char rangedRunicNames[NUMBER_RANGED_RUNIC_KINDS - NUMBER_WEAPON_RUNIC_KINDS][30] = {
+    "piercing",
+    "sniper",
+    "explosive",
+    "chain"
 };
 
 const char armorRunicNames[NUMBER_ARMOR_ENCHANT_KINDS][30] = {
