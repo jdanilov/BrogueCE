@@ -12,24 +12,17 @@ static void equip_weapon(item *theItem) {
 }
 
 TEST(test_whip_attacks_at_range_2) {
-    test_init_game(12345);
+    test_init_arena(12345);
 
-    // Set up controlled arena
-    test_remove_all_monsters();
-    test_teleport_player(40, 15);
-    test_clear_area(40, 15, 10);
-
-    // Give and equip a whip with high enchant for guaranteed damage
-    item *whip = test_give_item(WEAPON, WHIP, 3);
+    // Give and equip a whip with high enchant for guaranteed hit
+    item *whip = test_give_item(WEAPON, WHIP, 10);
     ASSERT(whip != NULL);
     ASSERT(whip->flags & ITEM_ATTACKS_EXTEND);
     equip_weapon(whip);
 
     // Place a rat 2 cells to the right of the player.
-    // The cell at distance 1 (41, 15) must be empty for the whip to trigger.
     short ratX = player.loc.x + 2;
     short ratY = player.loc.y;
-    ASSERT(ratX < DCOLS);
 
     creature *rat = test_place_monster(MK_RAT, ratX, ratY);
     ASSERT(rat != NULL);
@@ -55,11 +48,7 @@ TEST(test_whip_attacks_at_range_2) {
 }
 
 TEST(test_axe_hits_all_adjacent) {
-    test_init_game(54321);
-
-    test_remove_all_monsters();
-    test_teleport_player(40, 15);
-    test_clear_area(40, 15, 10);
+    test_init_arena(54321);
 
     // Give and equip a war axe (ITEM_ATTACKS_ALL_ADJACENT)
     item *axe = test_give_item(WEAPON, WAR_AXE, 5);
@@ -111,11 +100,7 @@ TEST(test_axe_hits_all_adjacent) {
 }
 
 TEST(test_spear_penetrates) {
-    test_init_game(99999);
-
-    test_remove_all_monsters();
-    test_teleport_player(40, 15);
-    test_clear_area(40, 15, 10);
+    test_init_arena(99999);
 
     // Give and equip a pike (ITEM_ATTACKS_PENETRATE)
     item *pike = test_give_item(WEAPON, PIKE, 5);
@@ -184,11 +169,7 @@ TEST(test_weapon_equip_changes_rogue_weapon) {
 }
 
 TEST(test_enchanted_weapon_kills_weak_monster) {
-    test_init_game(77777);
-
-    test_remove_all_monsters();
-    test_teleport_player(40, 15);
-    test_clear_area(40, 15, 10);
+    test_init_arena(77777);
 
     // Give and equip a highly enchanted sword (+5)
     item *sword = test_give_item(WEAPON, SWORD, 5);

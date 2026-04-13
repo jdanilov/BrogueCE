@@ -19,7 +19,22 @@ make -B                                   # force full rebuild (no `clean` targe
 make test                    # build and run all tests
 ```
 
-Tests in `src/test/`. Runs headlessly via null platform, no SDL required. Each test calls `test_init_game(seed)`, injects actions via helpers like `test_move()` / `test_rest()` / `test_place_monster()`, asserts on game state, then calls `test_teardown_game()`. See `test_harness.h` for all helpers and assert macros. To add a suite: create `src/test/test_foo.c` with `TEST()` + `SUITE()` macros, register in `test_main.c`.
+Tests in `src/test/`. Runs headlessly via null platform, no SDL required. See `test_harness.h` for all helpers and assert macros. To add a suite: create `src/test/test_foo.c` with `TEST()` + `SUITE()` macros, register in `test_main.c`.
+
+**Two init modes** — choose based on what the test needs:
+
+- `test_init_arena(seed)` — Preferred for most tests. Creates a blank walled rectangle of open floor with the player at center. **Skips dungeon generation entirely**, so the RNG is fully independent of item/monster tables. Tests using this will never break due to generation changes.
+- `test_init_game(seed)` — Only for tests that need a real generated dungeon (level transitions, dungeon features, stair placement). If the test then builds a controlled scenario (clear_area, remove_all_monsters, etc.), add `test_reseed(seed)` after setup to decouple gameplay RNG from generation.
+
+```c
+// Preferred: arena-based test (immune to generation changes)
+test_init_arena(12345);
+test_set_player_hp(200, 200);
+creature *rat = test_place_monster(MK_RAT, player.loc.x + 1, player.loc.y);
+test_move(RIGHT);  // deterministic, no dungeon generation involved
+// ...
+test_teardown_game();
+```
 
 ### Determinism tests (Python)
 
@@ -101,3 +116,4 @@ docs/plans/      - Brainstormed implementation plans for upcoming or in-progress
 - Seed catalogs MUST be updated (`test/update_seed_catalogs.py`) if dungeon generation changes.
 - Game recordings break if turn-order or input-handling logic changes.
 - All changes must be verified with `make test` before committing. Do not commit code that breaks existing tests.
+- Plan test fixes analytically: Understand why a test fails (RNG divergence, ordering) before patching.

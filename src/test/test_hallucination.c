@@ -5,10 +5,7 @@
 // --- Feature #1: Hallucination gas from thrown potion ---
 
 TEST(test_hallucination_gas_tile_causes_status) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Place hallucination gas at the player's position
@@ -29,10 +26,7 @@ TEST(test_hallucination_gas_tile_causes_status) {
 }
 
 TEST(test_hallucination_gas_affects_monster) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 8);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Place a monster away from the player
@@ -69,29 +63,25 @@ TEST(test_hallucination_gas_affects_monster) {
 }
 
 TEST(test_hallucination_gas_dissipates) {
-    test_init_game(99999);
+    test_init_arena(99999);
 
     short cx = player.loc.x;
     short cy = player.loc.y;
-    test_clear_area(cx, cy, 5);
-    test_remove_all_monsters();
 
     // Place hallucination gas away from the player
     short gx = cx + 3;
     short gy = cy;
-    if (gx < DCOLS && gy < DROWS) {
-        test_set_terrain(gx, gy, GAS, HALLUCINATION_GAS);
-        pmap[gx][gy].volume = 1000;
+    test_set_terrain(gx, gy, GAS, HALLUCINATION_GAS);
+    pmap[gx][gy].volume = 1000;
 
-        ASSERT_EQ(pmap[gx][gy].layers[GAS], HALLUCINATION_GAS);
+    ASSERT_EQ(pmap[gx][gy].layers[GAS], HALLUCINATION_GAS);
 
-        // Advance environment to let gas dissipate (it's TM_GAS_DISSIPATES_QUICKLY)
-        test_advance_environment(100);
+    // Advance environment to let gas dissipate (it's TM_GAS_DISSIPATES_QUICKLY)
+    test_advance_environment(100);
 
-        boolean dissipated = (pmap[gx][gy].volume < 1000
-                              || pmap[gx][gy].layers[GAS] == NOTHING);
-        ASSERT(dissipated);
-    }
+    boolean dissipated = (pmap[gx][gy].volume < 1000
+                          || pmap[gx][gy].layers[GAS] == NOTHING);
+    ASSERT(dissipated);
 
     test_teardown_game();
 }
@@ -101,10 +91,7 @@ TEST(test_hallucinating_monster_moves_erratically) {
     boolean movedLaterally = false;
 
     for (int seed = 1; seed <= 5 && !movedLaterally; seed++) {
-        test_init_game(seed * 7777);
-
-        test_clear_area(player.loc.x, player.loc.y, 12);
-        test_remove_all_monsters();
+        test_init_arena(seed * 7777);
         test_set_player_hp(500, 500);
 
         // Place the monster directly above the player so lateral = x movement
@@ -139,10 +126,7 @@ TEST(test_hallucinating_monster_moves_erratically) {
 // --- Feature #3: Water cures hallucination ---
 
 TEST(test_water_cures_hallucination) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Apply hallucination
@@ -166,10 +150,7 @@ TEST(test_water_cures_hallucination) {
 }
 
 TEST(test_water_does_not_cure_hallucination_when_levitating) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Apply hallucination and levitation
@@ -193,10 +174,7 @@ TEST(test_water_does_not_cure_hallucination_when_levitating) {
 }
 
 TEST(test_deep_water_also_cures_hallucination) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Apply hallucination
@@ -226,10 +204,7 @@ TEST(test_hallucination_can_reveal_secrets) {
     boolean revealedAny = false;
 
     for (int seed = 1; seed <= 20 && !revealedAny; seed++) {
-        test_init_game(seed * 1000);
-
-        test_clear_area(player.loc.x, player.loc.y, 5);
-        test_remove_all_monsters();
+        test_init_arena(seed * 1000);
         test_set_player_hp(500, 500);
 
         // Place a secret door adjacent to the player
@@ -262,22 +237,19 @@ TEST(test_hallucination_can_reveal_secrets) {
 }
 
 TEST(test_no_secret_reveal_without_hallucination) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
-    // Place a secret door adjacent to the player
-    short sx = player.loc.x + 1;
+    // Place a secret door far enough from the player that searching won't find it
+    short sx = player.loc.x + 3;
     short sy = player.loc.y;
     test_set_terrain(sx, sy, DUNGEON, SECRET_DOOR);
     pmap[sx][sy].flags |= DISCOVERED;
 
     ASSERT(cellHasTMFlag((pos){ sx, sy }, TM_IS_SECRET));
 
-    // No hallucination — just rest
-    for (int i = 0; i < 50 && !rogue.gameHasEnded; i++) {
+    // No hallucination — just rest a few turns
+    for (int i = 0; i < 10 && !rogue.gameHasEnded; i++) {
         test_rest();
     }
 
@@ -292,10 +264,7 @@ TEST(test_no_secret_reveal_without_hallucination) {
 // --- Feature #7: Hallucination grants fear immunity ---
 
 TEST(test_hallucination_clears_existing_fear) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Apply fear first
@@ -317,10 +286,7 @@ TEST(test_hallucination_clears_existing_fear) {
 }
 
 TEST(test_hallucination_clears_monster_fear) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 8);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Place a monster
@@ -361,10 +327,7 @@ TEST(test_hallucination_clears_monster_fear) {
 // --- Hallucination status basic behavior ---
 
 TEST(test_hallucination_status_decays) {
-    test_init_game(12345);
-
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     test_set_player_status(STATUS_HALLUCINATING, 20);

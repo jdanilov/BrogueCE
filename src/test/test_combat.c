@@ -52,33 +52,18 @@ TEST(test_attack_monster_reduces_hp) {
 }
 
 TEST(test_player_takes_damage_from_monster) {
-    test_init_game(12345);
+    test_init_arena(12345);
 
-    short startHP = player.currentHP;
-    ASSERT_GT(startHP, 0);
-
-    // Place a strong monster adjacent to the player
-    pos monsterPos;
-    boolean placed = false;
-    for (short dir = 0; dir < DIRECTION_COUNT && !placed; dir++) {
-        short nx = player.loc.x + nbDirs[dir][0];
-        short ny = player.loc.y + nbDirs[dir][1];
-        if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS
-            && !cellHasTerrainFlag((pos){ nx, ny }, T_OBSTRUCTS_PASSABILITY)
-            && !(pmap[nx][ny].flags & (HAS_MONSTER | HAS_STAIRS))) {
-            monsterPos.x = nx;
-            monsterPos.y = ny;
-            placed = true;
-        }
-    }
-    ASSERT(placed);
-
-    // Place an ogre (hits hard) next to the player
-    creature *ogre = test_place_monster(MK_OGRE, monsterPos.x, monsterPos.y);
+    // Place an ogre (hits hard) adjacent to the player
+    creature *ogre = test_place_monster(MK_OGRE, player.loc.x + 1, player.loc.y);
     ASSERT(ogre != NULL);
 
+    // Boost HP to survive multiple hits
+    test_set_player_hp(200, 200);
+    short startHP = player.currentHP;
+
     // Rest several turns to let the ogre attack us
-    for (int i = 0; i < 5 && !rogue.gameHasEnded; i++) {
+    for (int i = 0; i < 8 && !rogue.gameHasEnded; i++) {
         test_rest();
     }
 

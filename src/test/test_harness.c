@@ -113,6 +113,73 @@ creature *test_place_monster(short monsterID, short x, short y) {
     return monst;
 }
 
+void test_reseed(uint64_t seed) {
+    seedRandomGenerator(seed);
+}
+
+void test_init_arena(uint64_t seed) {
+    // Clear recording path so initRecording() is a no-op
+    currentFilePath[0] = '\0';
+
+    // Use null platform (no rendering, no input)
+    currentConsole = nullConsole;
+
+    // Initialize game variant (sets gameConst)
+    gameVariant = VARIANT_BROGUE;
+    initializeGameVariant();
+
+    // Initialize the game (seeds RNG, creates player, allocates grids)
+    initializeRogue(seed);
+
+    // Skip all confirmation dialogs
+    rogue.autoPlayingLevel = true;
+
+    // Allocate scent map (required by monster AI / pathfinding)
+    levels[0].scentMap = allocGrid();
+    scentMap = levels[0].scentMap;
+    fillGrid(scentMap, 0);
+    levels[0].visited = true;
+
+    // Set up miner's light radius
+    rogue.minersLightRadius = (DCOLS - 1) * FP_FACTOR;
+    rogue.minersLightRadius += FP_FACTOR * 225 / 100;
+
+    // Instead of startLevel/dungeon generation, build a blank floor map.
+    // This avoids consuming RNG during dungeon generation, making the test
+    // fully independent of item/monster table changes.
+    for (short x = 0; x < DCOLS; x++) {
+        for (short y = 0; y < DROWS; y++) {
+            pmap[x][y].layers[DUNGEON] = (x == 0 || x == DCOLS-1 || y == 0 || y == DROWS-1) ? GRANITE : FLOOR;
+            pmap[x][y].layers[LIQUID] = NOTHING;
+            pmap[x][y].layers[GAS] = NOTHING;
+            pmap[x][y].layers[SURFACE] = NOTHING;
+            pmap[x][y].flags = 0;
+            pmap[x][y].volume = 0;
+            pmap[x][y].machineNumber = 0;
+        }
+    }
+
+    // Place the player at the center
+    player.loc.x = DCOLS / 2;
+    player.loc.y = DROWS / 2;
+    pmap[player.loc.x][player.loc.y].flags |= HAS_PLAYER;
+
+    // Seed the RNG to the requested seed so gameplay is deterministic
+    // and independent of whatever initializeRogue consumed
+    seedRandomGenerator(seed);
+
+    updateVision(true);
+
+    // Mark all non-wall cells as discovered so tests don't depend on lighting
+    for (short x = 0; x < DCOLS; x++) {
+        for (short y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] != GRANITE) {
+                pmap[x][y].flags |= DISCOVERED | VISIBLE | IN_FIELD_OF_VIEW;
+            }
+        }
+    }
+}
+
 void test_teleport_player(short x, short y) {
     // Clear old position
     pmap[player.loc.x][player.loc.y].flags &= ~HAS_PLAYER;
@@ -132,6 +199,12 @@ item *test_give_item(unsigned short category, short kind, short enchant) {
 
     theItem->enchant1 = enchant;
     theItem->flags |= ITEM_IDENTIFIED;
+
+    // Recompute derived fields for ranged weapons after enchant override
+    if (category == RANGED) {
+        theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
+        theItem->maxRange = rangedWeaponRange(theItem);
+    }
 
     // Add to player's pack
     addItemToChain(theItem, packItems);

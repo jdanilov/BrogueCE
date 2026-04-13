@@ -162,6 +162,17 @@ boolean test_cell_has_terrain_flag(short x, short y, unsigned long flag);
 // Place a monster directly at a position. Returns the creature.
 creature *test_place_monster(short monsterID, short x, short y);
 
+// Re-seed the RNG to a known state. Call after test_init_game + arena setup
+// to decouple the test's gameplay RNG from dungeon generation.
+// This makes tests immune to changes in item/monster tables.
+void test_reseed(uint64_t seed);
+
+// Initialize a blank arena (no dungeon generation). Creates a walled rectangle
+// of open floor with the player at center. The RNG is seeded to `seed` and is
+// completely independent of item/monster tables. Use this instead of
+// test_init_game for tests that build their own controlled scenario.
+void test_init_arena(uint64_t seed);
+
 // Teleport the player to (x, y). Clears HAS_PLAYER from old cell, sets it on new cell.
 void test_teleport_player(short x, short y);
 
