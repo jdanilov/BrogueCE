@@ -172,6 +172,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     // Fixture machines
     {0,                         0,      0,                          MT_FIXTURE_FOUNTAIN,        FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_RUBBLE_HEAP,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_LONE_STATUE,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -638,6 +639,11 @@ const blueprint blueprintCatalog_Brogue[] = {
         {0,         STATUE_INERT,  DUNGEON,    {1, 1},     1,          0,          -1,         0,              0,              0,          0,          (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING)},
         {0,         RUBBLE,        SURFACE,    {2, 4},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN)},
         {0,         BONES,         SURFACE,    {1, 1},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN)}}},
+
+    {"Fixture: Lone Statue -- imposing figure on a marble pedestal",
+    {1, DEEPEST_LEVEL}, {3, 6},     0,      2,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        {0,         STATUE_INERT,  DUNGEON,    {1, 1},     1,          0,          -1,         0,              0,              0,          0,          (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING)},
+        {0,         MARBLE_FLOOR,  DUNGEON,    {1, 2},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)}}},
 };
 
 // To meter item generation (on level generation):

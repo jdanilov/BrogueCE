@@ -2804,7 +2804,8 @@ enum machineTypes {
 
     // Fixture machines
     MT_FIXTURE_FOUNTAIN,
-    MT_FIXTURE_RUBBLE_HEAP
+    MT_FIXTURE_RUBBLE_HEAP,
+    MT_FIXTURE_LONE_STATUE
 };
 
 typedef struct autoGenerator {

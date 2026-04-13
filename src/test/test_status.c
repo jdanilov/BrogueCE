@@ -54,11 +54,11 @@ TEST(test_nutrition_decreases) {
 }
 
 TEST(test_regeneration) {
-    test_init_game(12345);
+    test_init_arena(12345);
 
-    // Damage the player but don't kill
+    // Damage the player to half HP in a safe, monster-free arena
     short maxHP = player.info.maxHP;
-    player.currentHP = maxHP / 2;
+    test_set_player_hp(maxHP / 2, maxHP);
     short damagedHP = player.currentHP;
 
     // Rest many turns for regen to kick in
