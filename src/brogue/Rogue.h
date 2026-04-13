@@ -1176,7 +1176,7 @@ enum tileFlags {
 #define CROSS_ROOM_MAX_HEIGHT               5
 #define MIN_SCALED_ROOM_DIMENSION           2
 
-#define ROOM_TYPE_COUNT                     8
+#define ROOM_TYPE_COUNT                     18
 
 #define CORRIDOR_WIDTH                      1
 
@@ -2969,6 +2969,7 @@ extern "C" {
                           item *parentSpawnedItems[MACHINES_BUFFER_LENGTH],
                           creature *parentSpawnedMonsters[MACHINES_BUFFER_LENGTH]);
     void attachRooms(short **grid, const dungeonProfile *theDP, short attempts, short maxRoomCount);
+    void designRoomOfType(short **grid, int roomType);
     void digDungeon(void);
     void updateMapToShore(void);
     short levelIsDisconnectedWithBlockingMap(char blockingMap[DCOLS][DROWS], boolean countRegionSize);

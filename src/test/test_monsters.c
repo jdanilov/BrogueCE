@@ -3,11 +3,7 @@
 #include "test_harness.h"
 
 TEST(test_sleeping_monster_wakes_when_adjacent) {
-    test_init_game(12345);
-
-    // Set up a controlled arena around the player
-    test_clear_area(player.loc.x, player.loc.y, 5);
-    test_remove_all_monsters();
+    test_init_arena(12345);
     test_set_player_hp(500, 500);
 
     // Place a rat adjacent to the player
@@ -20,8 +16,10 @@ TEST(test_sleeping_monster_wakes_when_adjacent) {
     rat->creatureState = MONSTER_SLEEPING;
     ASSERT_EQ(rat->creatureState, MONSTER_SLEEPING);
 
-    // Rest a couple turns — the monster should wake up due to player adjacency
-    for (int i = 0; i < 3 && !rogue.gameHasEnded; i++) {
+    // Rest many turns — the monster has a 25% chance per turn to notice
+    // the adjacent player and wake up. 20 turns gives >99.7% probability.
+    test_reseed(12345);
+    for (int i = 0; i < 20 && !rogue.gameHasEnded; i++) {
         test_rest();
     }
 

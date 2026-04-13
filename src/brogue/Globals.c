@@ -970,14 +970,24 @@ const dungeonProfile dungeonProfileCatalog[NUMBER_DUNGEON_PROFILES] = {
     //      5. Cave
     //      6. Cavern (the kind that fills a level)
     //      7. Entrance room (the big upside-down T room at the start of depth 1)
+    //      8. L-shaped room
+    //      9. Pillared hall
+    //      10. Nested/donut room
+    //      11. Trefoil/clover room
+    //      12. Cathedral room
+    //      13. Alcove room
+    //      14. Z-shaped room
+    //      15. T-shaped room
+    //      16. Diamond room
+    //      17. Dumbbell room
 
     // Room frequencies
-    // 0    1   2   3   4   5   6   7   Corridor chance
-    {{2,    1,  1,  1,  7,  1,  0,  0}, 10},    // Basic dungeon generation (further adjusted by depth)
-    {{10,   0,  0,  3,  7,  10, 10, 0}, 0},     // First room for basic dungeon generation (further adjusted by depth)
+    // 0    1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  Corridor chance
+    {{2,    1,  1,  1,  7,  1,  0,  0,  2,  1,  1,  1,  1,  2,  2,  2,  1,  1}, 10},    // Basic dungeon generation (further adjusted by depth)
+    {{10,   0,  0,  3,  7,  10, 10, 0,  3,  2,  2,  2,  3,  2,  3,  3,  2,  2}, 0},     // First room for basic dungeon generation (further adjusted by depth)
 
-    {{0,    0,  1,  0,  0,  0,  0,  0}, 0},     // Goblin warrens
-    {{0,    5,  0,  1,  0,  0,  0,  0}, 0},     // Sentinel sanctuaries
+    {{0,    0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 0},     // Goblin warrens
+    {{0,    5,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 0},     // Sentinel sanctuaries
 };
 
 // radius is in units of 0.01

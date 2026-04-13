@@ -2120,6 +2120,380 @@ static void designChunkyRoom(short **grid) {
     }
 }
 
+// ---- New room designs (types 8-17) ----
+
+// 8. L-shaped room: two rectangles meeting at a corner
+static void designLShapedRoom(short **grid) {
+    short armWidth1, armLength1, armWidth2, armLength2;
+    short cx, cy;
+    short orientation; // 0=TL, 1=TR, 2=BL, 3=BR (which corner the L bends at)
+
+    fillGrid(grid, 0);
+
+    armWidth1 = rand_range(3, 6);
+    armLength1 = rand_range(5, 10);
+    armWidth2 = rand_range(3, 6);
+    armLength2 = rand_range(5, 10);
+    orientation = rand_range(0, 3);
+
+    cx = DCOLS / 2;
+    cy = DROWS / 2;
+
+    switch (orientation) {
+        case 0: // Vertical arm goes up, horizontal arm goes right
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy - armLength1 + armWidth2, armWidth1, armLength1, 1);
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy, armLength2, armWidth2, 1);
+            break;
+        case 1: // Vertical arm goes up, horizontal arm goes left
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy - armLength1 + armWidth2, armWidth1, armLength1, 1);
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2 - armLength2 + armWidth1, cy, armLength2, armWidth2, 1);
+            break;
+        case 2: // Vertical arm goes down, horizontal arm goes right
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy, armWidth1, armLength1, 1);
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy, armLength2, armWidth2, 1);
+            break;
+        case 3: // Vertical arm goes down, horizontal arm goes left
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2, cy, armWidth1, armLength1, 1);
+            drawRectangleOnGrid(grid, cx - armWidth1 / 2 - armLength2 + armWidth1, cy, armLength2, armWidth2, 1);
+            break;
+    }
+}
+
+// 9. Pillared hall: rectangle with interior columns
+static void designPillaredHall(short **grid) {
+    short width, height, x, y, px, py;
+    short pillarMargin;
+
+    fillGrid(grid, 0);
+
+    // Prefer odd dimensions for symmetry
+    width = rand_range(7, 13);
+    if (width % 2 == 0) width++;
+    if (width > 13) width = 13;
+    height = rand_range(5, 9);
+    if (height % 2 == 0) height++;
+    if (height > 9) height = 9;
+
+    x = (DCOLS - width) / 2;
+    y = (DROWS - height) / 2;
+    drawRectangleOnGrid(grid, x, y, width, height, 1);
+
+    // Place pillars inside
+    pillarMargin = rand_range(1, 2);
+    for (px = x + pillarMargin; px < x + width - pillarMargin; px += 2) {
+        for (py = y + pillarMargin; py < y + height - pillarMargin; py += 2) {
+            grid[px][py] = 0;
+        }
+    }
+}
+
+// 10. Nested/donut room: large rectangle with hollow center, one gap
+static void designNestedRoom(short **grid) {
+    short outerW, outerH, innerW, innerH;
+    short ox, oy, ix, iy;
+    short gapSide, gapPos;
+
+    fillGrid(grid, 0);
+
+    outerW = rand_range(7, 11);
+    outerH = rand_range(5, 9);
+    innerW = rand_range(3, min(5, outerW - 4));
+    innerH = rand_range(1, min(3, outerH - 4));
+
+    ox = (DCOLS - outerW) / 2;
+    oy = (DROWS - outerH) / 2;
+    drawRectangleOnGrid(grid, ox, oy, outerW, outerH, 1);
+
+    // Hollow out the center
+    ix = ox + (outerW - innerW) / 2;
+    iy = oy + (outerH - innerH) / 2;
+    drawRectangleOnGrid(grid, ix, iy, innerW, innerH, 0);
+
+    // Add a 1-cell gap on one random side of the inner wall
+    gapSide = rand_range(0, 3);
+    switch (gapSide) {
+        case 0: // top
+            gapPos = ix + rand_range(0, innerW - 1);
+            if (iy > 0) grid[gapPos][iy - 1] = 1;
+            break;
+        case 1: // bottom
+            gapPos = ix + rand_range(0, innerW - 1);
+            if (iy + innerH < DROWS) grid[gapPos][iy + innerH] = 1;
+            break;
+        case 2: // left
+            gapPos = iy + rand_range(0, innerH - 1);
+            if (ix > 0) grid[ix - 1][gapPos] = 1;
+            break;
+        case 3: // right
+            gapPos = iy + rand_range(0, innerH - 1);
+            if (ix + innerW < DCOLS) grid[ix + innerW][gapPos] = 1;
+            break;
+    }
+}
+
+// 11. Trefoil/clover room: three overlapping circles in a triangle
+static void designTrefoilRoom(short **grid) {
+    short radius, cx, cy;
+    short offset;
+
+    fillGrid(grid, 0);
+
+    radius = rand_range(2, 3);
+    cx = DCOLS / 2;
+    cy = DROWS / 2;
+    offset = radius;
+
+    // Three circles arranged in a triangle
+    drawCircleOnGrid(grid, cx, cy - offset, radius, 1);        // top
+    drawCircleOnGrid(grid, cx - offset, cy + offset / 2, radius, 1); // bottom-left
+    drawCircleOnGrid(grid, cx + offset, cy + offset / 2, radius, 1); // bottom-right
+}
+
+// 12. Cathedral room: two overlapping pillared rectangles in a cross
+// 2/3 have pillar rows only near the top and bottom walls (open nave).
+// 1/3 have pillar rows throughout (dense columns).
+static void designCathedralRoom(short **grid) {
+    short mainW, mainH, crossW, crossH;
+    short mx, my, cx2, cy2;
+    short pillarMargin, px, py;
+    boolean fullPillars;
+    short minY, maxY, topPillarLimit, botPillarLimit;
+
+    fillGrid(grid, 0);
+
+    mainW = rand_range(9, 15);
+    mainH = rand_range(5, 7);
+    crossW = rand_range(5, 7);
+    crossH = rand_range(7, 11);
+
+    mx = (DCOLS - mainW) / 2;
+    my = (DROWS - mainH) / 2;
+    cx2 = (DCOLS - crossW) / 2;
+    cy2 = (DROWS - crossH) / 2;
+
+    drawRectangleOnGrid(grid, mx, my, mainW, mainH, 1);
+    drawRectangleOnGrid(grid, cx2, cy2, crossW, crossH, 1);
+
+    // Place pillars in the combined floor area
+    pillarMargin = rand_range(1, 2);
+    fullPillars = rand_percent(33);
+
+    minY = min(my, cy2) + pillarMargin;
+    maxY = max(my + mainH, cy2 + crossH) - pillarMargin;
+
+    for (px = min(mx, cx2) + pillarMargin; px < max(mx + mainW, cx2 + crossW) - pillarMargin; px += 2) {
+        for (py = minY; py < maxY; py += 2) {
+            if (grid[px][py]) {
+                if (fullPillars) {
+                    grid[px][py] = 0;
+                } else {
+                    // Side pillars only: place in the top and bottom pillar rows
+                    topPillarLimit = minY + 1;  // only the first pillar row
+                    botPillarLimit = maxY - 2;  // only the last pillar row
+                    if (py <= topPillarLimit || py >= botPillarLimit) {
+                        grid[px][py] = 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// 13. Alcove room: rectangle with protruding niches along long walls
+static void designAlcoveRoom(short **grid) {
+    short width, height, x, y, i;
+
+    fillGrid(grid, 0);
+
+    width = rand_range(7, 13);
+    if (width % 2 == 0) width++; // Odd for symmetry
+    if (width > 13) width = 13;
+    height = rand_range(4, 7);
+
+    x = (DCOLS - width) / 2;
+    y = (DROWS - height) / 2;
+
+    // Draw main rectangle
+    drawRectangleOnGrid(grid, x, y, width, height, 1);
+
+    // Add niches (1-cell indentations into the wall) along top and bottom
+    // Start 2 cells from each side, then every 2 cells
+    for (i = x + 2; i < x + width - 2; i += 2) {
+        // Top niche (one cell above the room)
+        if (y - 1 >= 0) {
+            grid[i][y - 1] = 1;
+        }
+        // Bottom niche (one cell below the room)
+        if (y + height < DROWS) {
+            grid[i][y + height] = 1;
+        }
+    }
+}
+
+// 14. Z-shaped room: two rectangles connected by a diagonal offset corridor
+static void designZShapedRoom(short **grid) {
+    short armW, armH, connectorW;
+    short x1, y1, x2, y2;
+    short cx, cy, i;
+    boolean flipH;
+
+    fillGrid(grid, 0);
+
+    armW = rand_range(4, 7);
+    armH = rand_range(3, 5);
+    connectorW = rand_range(2, 3);
+
+    cx = DCOLS / 2;
+    cy = DROWS / 2;
+    flipH = rand_percent(50);
+
+    if (flipH) {
+        // Top-right to bottom-left
+        x1 = cx;
+        y1 = cy - armH - 1;
+        x2 = cx - armW;
+        y2 = cy + 1;
+    } else {
+        // Top-left to bottom-right
+        x1 = cx - armW;
+        y1 = cy - armH - 1;
+        x2 = cx;
+        y2 = cy + 1;
+    }
+
+    drawRectangleOnGrid(grid, x1, y1, armW, armH, 1);
+    drawRectangleOnGrid(grid, x2, y2, armW, armH, 1);
+
+    // Draw connector between the two arms
+    for (i = 0; i < connectorW; i++) {
+        grid[cx - connectorW / 2 + i][cy - 1] = 1;
+        grid[cx - connectorW / 2 + i][cy] = 1;
+        grid[cx - connectorW / 2 + i][cy + 1] = 1;
+    }
+}
+
+// 15. T-shaped room: rectangle with perpendicular stem
+static void designTShapedRoom(short **grid) {
+    short barW, barH, stemW, stemH;
+    short bx, by, sx, sy;
+    short orientation; // 0=stem down, 1=stem up, 2=stem left, 3=stem right
+
+    fillGrid(grid, 0);
+
+    orientation = rand_range(0, 3);
+
+    if (orientation <= 1) {
+        // Horizontal bar, vertical stem
+        barW = rand_range(7, 12);
+        barH = rand_range(2, 4);
+        stemW = rand_range(3, 5);
+        stemH = rand_range(3, 6);
+
+        bx = (DCOLS - barW) / 2;
+        sx = (DCOLS - stemW) / 2;
+
+        if (orientation == 0) { // stem goes down
+            by = (DROWS - barH - stemH) / 2;
+            sy = by + barH;
+        } else { // stem goes up
+            sy = (DROWS - barH - stemH) / 2;
+            by = sy + stemH;
+        }
+
+        drawRectangleOnGrid(grid, bx, by, barW, barH, 1);
+        drawRectangleOnGrid(grid, sx, sy, stemW, stemH, 1);
+    } else {
+        // Vertical bar, horizontal stem
+        barH = rand_range(7, 12);
+        barW = rand_range(2, 4);
+        stemH = rand_range(3, 5);
+        stemW = rand_range(3, 6);
+
+        by = (DROWS - barH) / 2;
+        sy = (DROWS - stemH) / 2;
+
+        if (orientation == 2) { // stem goes left
+            bx = (DCOLS - barW - stemW) / 2 + stemW;
+            sx = bx - stemW;
+        } else { // stem goes right
+            bx = (DCOLS - barW - stemW) / 2;
+            sx = bx + barW;
+        }
+
+        drawRectangleOnGrid(grid, bx, by, barW, barH, 1);
+        drawRectangleOnGrid(grid, sx, sy, stemW, stemH, 1);
+    }
+}
+
+// 16. Diamond room: rotated square using manhattan distance
+static void designDiamondRoom(short **grid) {
+    short radius, cx, cy, x, y;
+
+    fillGrid(grid, 0);
+
+    radius = rand_range(3, 5);
+    cx = DCOLS / 2;
+    cy = DROWS / 2;
+
+    for (x = cx - radius; x <= cx + radius; x++) {
+        for (y = cy - radius; y <= cy + radius; y++) {
+            if (x >= 0 && x < DCOLS && y >= 0 && y < DROWS) {
+                if (abs(x - cx) + abs(y - cy) <= radius) {
+                    grid[x][y] = 1;
+                }
+            }
+        }
+    }
+}
+
+// 17. Dumbbell room: two circles connected by a narrow corridor
+static void designDumbbellRoom(short **grid) {
+    short radius, corridorW, corridorLen;
+    short cx, cy;
+    short x, y;
+    boolean horizontal;
+
+    fillGrid(grid, 0);
+
+    radius = rand_range(2, 4);
+    corridorW = rand_range(1, 2);
+    corridorLen = rand_range(2, 4);
+    horizontal = rand_percent(50);
+
+    cx = DCOLS / 2;
+    cy = DROWS / 2;
+
+    if (horizontal) {
+        short offset = radius + corridorLen / 2;
+        // Left circle
+        drawCircleOnGrid(grid, cx - offset, cy, radius, 1);
+        // Right circle
+        drawCircleOnGrid(grid, cx + offset, cy, radius, 1);
+        // Corridor
+        for (x = cx - offset + radius; x <= cx + offset - radius; x++) {
+            for (y = cy - corridorW / 2; y <= cy + corridorW / 2; y++) {
+                if (x >= 0 && x < DCOLS && y >= 0 && y < DROWS) {
+                    grid[x][y] = 1;
+                }
+            }
+        }
+    } else {
+        short offset = radius + corridorLen / 2;
+        // Top circle
+        drawCircleOnGrid(grid, cx, cy - offset, radius, 1);
+        // Bottom circle
+        drawCircleOnGrid(grid, cx, cy + offset, radius, 1);
+        // Corridor
+        for (y = cy - offset + radius; y <= cy + offset - radius; y++) {
+            for (x = cx - corridorW / 2; x <= cx + corridorW / 2; x++) {
+                if (x >= 0 && x < DCOLS && y >= 0 && y < DROWS) {
+                    grid[x][y] = 1;
+                }
+            }
+        }
+    }
+}
+
 // If the indicated tile is a wall on the room stored in grid, and it could be the site of
 // a door out of that room, then return the outbound direction that the door faces.
 // Otherwise, return NO_DIRECTION.
@@ -2270,6 +2644,16 @@ static void attachHallwayTo(short **grid, pos doorSites[4]) {
 //      5. Cave
 //      6. Cavern (the kind that fills a level)
 //      7. Entrance room (the big upside-down T room at the start of depth 1)
+//      8. L-shaped room
+//      9. Pillared hall
+//      10. Nested/donut room
+//      11. Trefoil/clover room
+//      12. Cathedral room
+//      13. Alcove room
+//      14. Z-shaped room
+//      15. T-shaped room
+//      16. Diamond room
+//      17. Dumbbell room
 
 static void designRandomRoom(short **grid, boolean attachHallway, pos doorSites[4],
                       const short roomTypeFrequencies[ROOM_TYPE_COUNT]) {
@@ -2325,6 +2709,36 @@ static void designRandomRoom(short **grid, boolean attachHallway, pos doorSites[
         case 7:
             designEntranceRoom(grid);
             break;
+        case 8:
+            designLShapedRoom(grid);
+            break;
+        case 9:
+            designPillaredHall(grid);
+            break;
+        case 10:
+            designNestedRoom(grid);
+            break;
+        case 11:
+            designTrefoilRoom(grid);
+            break;
+        case 12:
+            designCathedralRoom(grid);
+            break;
+        case 13:
+            designAlcoveRoom(grid);
+            break;
+        case 14:
+            designZShapedRoom(grid);
+            break;
+        case 15:
+            designTShapedRoom(grid);
+            break;
+        case 16:
+            designDiamondRoom(grid);
+            break;
+        case 17:
+            designDumbbellRoom(grid);
+            break;
         default:
             break;
     }
@@ -2339,6 +2753,16 @@ static void designRandomRoom(short **grid, boolean attachHallway, pos doorSites[
             attachHallwayTo(grid, doorSites);
         }
     }
+}
+
+// Public wrapper to generate a specific room type by index. Used by tests.
+void designRoomOfType(short **grid, int roomType) {
+    short frequencies[ROOM_TYPE_COUNT];
+    memset(frequencies, 0, sizeof(frequencies));
+    if (roomType >= 0 && roomType < ROOM_TYPE_COUNT) {
+        frequencies[roomType] = 1;
+    }
+    designRandomRoom(grid, false, NULL, frequencies);
 }
 
 static boolean roomFitsAt(short **dungeonMap, short **roomMap, short roomToDungeonX, short roomToDungeonY) {
@@ -2429,6 +2853,13 @@ static void adjustDungeonProfileForDepth(dungeonProfile *theProfile) {
     theProfile->roomFrequencies[1] += 10 * (100 - descentPercent) / 100;
     theProfile->roomFrequencies[3] +=  7 * (100 - descentPercent) / 100;
     theProfile->roomFrequencies[5] += 10 * descentPercent / 100;
+
+    // New room types: slightly higher frequency at shallow depths
+    theProfile->roomFrequencies[8]  += 3 * (100 - descentPercent) / 100; // L-shaped
+    theProfile->roomFrequencies[9]  += 2 * (100 - descentPercent) / 100; // Pillared hall
+    theProfile->roomFrequencies[13] += 3 * (100 - descentPercent) / 100; // Alcove
+    theProfile->roomFrequencies[14] += 2 * (100 - descentPercent) / 100; // Z-shaped
+    theProfile->roomFrequencies[15] += 3 * (100 - descentPercent) / 100; // T-shaped
 
     theProfile->corridorChance += 80 * (100 - descentPercent) / 100;
 }
