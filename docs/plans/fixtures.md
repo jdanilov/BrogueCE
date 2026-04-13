@@ -80,7 +80,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
 | 9 | **Garden Patch** | 4-7 | GRASS, DF_FOLIAGE (2-3), SHALLOW_WATER (1) | Cavern organic | Lush overgrown garden. Loot: POTION (~30%). |
-| 10 | **Fountain** | 3-5 | DEEP_WATER (1), SHALLOW_WATER (ring), MARBLE_FLOOR (border) | Room center | Classic dungeon fountain. Centerpiece. |
+| 10 | **Fountain** ✅ | 3-5 | STATUE_INERT (center), SHALLOW_WATER (ring), MARBLE_FLOOR (border) | Room center | Classic dungeon fountain. Centerpiece. BP_PURGE_INTERIOR clears foliage. |
 | 11 | **Mushroom Circle** | 3-6 | FUNGUS_FOREST in ring, GRASS center | Cavern organic | Fairy ring in a damp hollow. |
 | 12 | **Sunlit Patch** | 3-5 | DF_SUNLIGHT, GRASS, DF_FOLIAGE | Anywhere | Shaft of light from a crack above. |
 | 13 | **Bird Nest** | 1-2 | HAY (cluster), DF_FOLIAGE around | Cavern corner | Organic nest tucked into a crevice. |

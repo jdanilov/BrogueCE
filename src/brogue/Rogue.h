@@ -2800,7 +2800,10 @@ enum machineTypes {
     MT_SENTINEL_AREA,
 
     // Variant-specific machines
-    MT_REWARD_HEAVY_OR_RUNIC_WEAPON
+    MT_REWARD_HEAVY_OR_RUNIC_WEAPON,
+
+    // Fixture machines
+    MT_FIXTURE_FOUNTAIN
 };
 
 typedef struct autoGenerator {

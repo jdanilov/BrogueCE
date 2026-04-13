@@ -168,6 +168,9 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_TRICK_STATUE_AREA,       FLOOR,      NOTHING,    6,      DEEPEST_LEVEL-1,15,     0,      0,          3},
     {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,10,     0,      0,          2},
     {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,12,     0,      0,          3},
+
+    // Fixture machines
+    {0,                         0,      0,                          MT_FIXTURE_FOUNTAIN,        FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -618,6 +621,16 @@ const blueprint blueprintCatalog_Brogue[] = {
     {1,DEEPEST_LEVEL}, {40, 40},   0,      2,          0,                  (BP_NO_INTERIOR_FLAG), {
         {0,         STATUE_INERT,DUNGEON,       {3, 3},     3,          0,          -1,         MK_SENTINEL,    2,              0,          0,          (MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING | MF_IN_VIEW_OF_ORIGIN)},
         {DF_ASH,    0,          0,              {2, 3},     0,          0,          -1,         0,              0,              0,          0,          0}}},
+
+    // -- FIXTURES --
+
+    {0}, // Index 72: reserved for MT_REWARD_HEAVY_OR_RUNIC_WEAPON (BulletBrogue only)
+
+    {"Fixture: Fountain -- marble statue in a pool, foliage purged for visibility",
+    {1, 8},            {4, 8},     0,      3,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        {0,         STATUE_INERT,  DUNGEON,    {1, 1},     1,          0,          -1,         0,              0,              0,          0,          (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY | MF_TREAT_AS_BLOCKING)},
+        {0,         SHALLOW_WATER, LIQUID,     {2, 4},     1,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)},
+        {0,         MARBLE_FLOOR,  DUNGEON,    {1, 3},     0,          0,          -1,         0,              1,              0,          0,          (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)}}},
 };
 
 // To meter item generation (on level generation):
