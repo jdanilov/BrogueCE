@@ -22,16 +22,16 @@
 
 ### Room Design Functions (`Architect.c:2005-2121`)
 
-| Type | Function | Size | Description |
-|------|----------|------|-------------|
-| 0 | `designCrossRoom()` | 3-12 × 3-7 | Two intersecting rectangles forming a cross |
-| 1 | `designSymmetricalCrossRoom()` | 4-8 × 4-5 | Perfectly symmetric cross |
-| 2 | `designSmallRoom()` | 3-6 × 2-4 | Simple rectangle |
-| 3 | `designCircularRoom()` | r=2-4 (90%) or 4-10 (10%) | Circle, optionally with inner ring |
-| 4 | `designChunkyRoom()` | Variable | Central circle + 2-8 additional r=2 chunks |
-| 5 | Cave (via `designCavern()`) | 3-78 × 4-29 | Cellular automata blob (3 sub-variants by size) |
-| 6 | Cavern | 50-78 × 20-29 | Full-level cellular automata blob |
-| 7 | `designEntranceRoom()` | 8×10 + 20×5 | Depth 1 only, two stacked rectangles |
+| Type | Function                       | Size                      | Description                                     |
+|------|--------------------------------|---------------------------|-------------------------------------------------|
+| 0    | `designCrossRoom()`            | 3-12 × 3-7                | Two intersecting rectangles forming a cross     |
+| 1    | `designSymmetricalCrossRoom()` | 4-8 × 4-5                 | Perfectly symmetric cross                       |
+| 2    | `designSmallRoom()`            | 3-6 × 2-4                 | Simple rectangle                                |
+| 3    | `designCircularRoom()`         | r=2-4 (90%) or 4-10 (10%) | Circle, optionally with inner ring              |
+| 4    | `designChunkyRoom()`           | Variable                  | Central circle + 2-8 additional r=2 chunks      |
+| 5    | Cave (via `designCavern()`)    | 3-78 × 4-29               | Cellular automata blob (3 sub-variants by size) |
+| 6    | Cavern                         | 50-78 × 20-29             | Full-level cellular automata blob               |
+| 7    | `designEntranceRoom()`         | 8×10 + 20×5               | Depth 1 only, two stacked rectangles            |
 
 ### Cellular Automata Blobs (`Grid.c:417`)
 `createBlobOnGrid()`: 5 iterations, 55% threshold, configurable seed patterns. Produces organic cave shapes.
