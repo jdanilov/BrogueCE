@@ -2830,7 +2830,7 @@ void itemDetails(char *buf, item *theItem) {
             if (theItem->kind == SLING) {
                 strcat(buf, " Reloads at full speed even while moving.");
             } else if (theItem->kind == BOW) {
-                strcat(buf, " Reloads at half speed while moving, full speed while stationary.");
+                strcat(buf, " Reloads at quarter speed while moving, full speed while stationary.");
             } else if (theItem->kind == CROSSBOW) {
                 strcat(buf, " Reloads only while you stand still. Pushes the target backward on hit.");
             }
@@ -7052,25 +7052,29 @@ boolean fireRangedWeapon(item *theItem) {
         }
     }
 
-    // Handle explosive runic at impact point
+    // Handle explosion runic at impact point
     if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_EXPLOSIVE) {
-        // Deal AoE damage in diamond shape (radius 2: 12 cells around center)
+        // Radius scales with enchantment: base 2, +1 per 3 enchant levels
+        short enchant = max(0, theItem->enchant1);
+        short explosionRadius = 2 + enchant / 3;
+        fixpt aoeMult = damageFraction(netEnchant(theItem));
+
+        // Deal AoE damage in diamond shape
         short ex, ey;
-        for (ex = hitLoc.x - 2; ex <= hitLoc.x + 2; ex++) {
-            for (ey = hitLoc.y - 2; ey <= hitLoc.y + 2; ey++) {
+        for (ex = hitLoc.x - explosionRadius; ex <= hitLoc.x + explosionRadius; ex++) {
+            for (ey = hitLoc.y - explosionRadius; ey <= hitLoc.y + explosionRadius; ey++) {
                 short dist = abs(ex - hitLoc.x) + abs(ey - hitLoc.y);
-                if (dist > 2 || !coordinatesAreInMap(ex, ey)) continue;
+                if (dist > explosionRadius || !coordinatesAreInMap(ex, ey)) continue;
                 if (!(pmap[ex][ey].flags & HAS_MONSTER)) continue;
                 creature *target = monsterAtLoc((pos){ ex, ey });
                 if (target && !(target->bookkeepingFlags & MB_IS_DYING)) {
-                    short aoeDamage;
-                    if (dist == 0) {
-                        aoeDamage = randClump(theItem->damage); // full damage at center
-                    } else if (dist == 1) {
-                        aoeDamage = randClump(theItem->damage) / 2; // half damage inner ring
-                    } else {
-                        aoeDamage = randClump(theItem->damage) / 4; // quarter damage outer ring
+                    // Base AoE damage scales with enchantment
+                    short aoeDamage = randClump(theItem->damage) * aoeMult / FP_FACTOR;
+                    // Reduce by distance from center
+                    if (dist > 0) {
+                        aoeDamage = aoeDamage * (explosionRadius - dist + 1) / (explosionRadius + 1);
                     }
+                    if (aoeDamage < 1) aoeDamage = 1;
                     if (inflictDamage(&player, target, aoeDamage, &orange, false)) {
                         char targetName[COLS];
                         monsterName(targetName, target, true);
@@ -7083,7 +7087,7 @@ boolean fireRangedWeapon(item *theItem) {
         }
         // Visual explosion effect
         if (playerCanSee(hitLoc.x, hitLoc.y)) {
-            colorFlash(&orange, 0, IN_FIELD_OF_VIEW, 4, 2, hitLoc.x, hitLoc.y);
+            colorFlash(&orange, 0, IN_FIELD_OF_VIEW, 4, explosionRadius, hitLoc.x, hitLoc.y);
         }
     }
 

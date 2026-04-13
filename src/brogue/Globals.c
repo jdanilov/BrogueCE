@@ -1658,7 +1658,7 @@ const char weaponRunicNames[NUMBER_WEAPON_RUNIC_KINDS][30] = {
 const char rangedRunicNames[NUMBER_RANGED_RUNIC_KINDS - NUMBER_WEAPON_RUNIC_KINDS][30] = {
     "piercing",
     "sniper",
-    "explosive",
+    "explosion",
     "chain"
 };
 

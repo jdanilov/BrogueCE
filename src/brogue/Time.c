@@ -1889,7 +1889,7 @@ void rechargeItemsIncrementally(short multiplier) {
             if (theItem->kind == SLING) {
                 rechargeAmount = multiplier * 10; // always full speed
             } else if (theItem->kind == BOW) {
-                rechargeAmount = rogue.playerMovedThisTurn ? multiplier * 5 : multiplier * 10;
+                rechargeAmount = rogue.playerMovedThisTurn ? multiplier * 25 / 10 : multiplier * 10;
             } else if (theItem->kind == CROSSBOW) {
                 if (!rogue.playerMovedThisTurn) {
                     rechargeAmount = multiplier * 10;

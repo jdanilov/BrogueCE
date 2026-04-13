@@ -329,7 +329,7 @@ TEST(test_crossbow_cooldown_pauses_while_moving) {
     test_teardown_game();
 }
 
-TEST(test_bow_reloads_at_half_speed_while_moving) {
+TEST(test_bow_reloads_at_quarter_speed_while_moving) {
     test_init_arena(12345);
     test_set_player_hp(500, 500);
 
@@ -346,11 +346,11 @@ TEST(test_bow_reloads_at_half_speed_while_moving) {
     short afterRest = bow->charges;
     ASSERT_EQ(afterRest, 30); // 40 - 10
 
-    // Move one turn (should reduce by 5 deciturns — half speed)
+    // Move one turn (should reduce by 2 deciturns — 25% speed)
     test_move(RIGHT);
     if (rogue.gameHasEnded) { test_teardown_game(); return; }
     short afterMove = bow->charges;
-    ASSERT_EQ(afterMove, 25); // 30 - 5
+    ASSERT_EQ(afterMove, 28); // 30 - 2
 
     test_teardown_game();
 }
@@ -643,7 +643,7 @@ SUITE(ranged) {
     // Cooldown recharge behavior
     RUN_TEST(test_ranged_weapon_cooldown_ticks_while_stationary);
     RUN_TEST(test_crossbow_cooldown_pauses_while_moving);
-    RUN_TEST(test_bow_reloads_at_half_speed_while_moving);
+    RUN_TEST(test_bow_reloads_at_quarter_speed_while_moving);
     RUN_TEST(test_sling_reloads_at_full_speed_while_moving);
     RUN_TEST(test_ranged_weapon_becomes_ready_after_cooldown);
     RUN_TEST(test_cooldown_decrements_10_deciturns_per_turn);
