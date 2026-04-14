@@ -565,6 +565,93 @@ TEST(test_fixture_cobweb_corner_webs_near_walls) {
     test_teardown_game();
 }
 
+// --- Crumbled Wall ---
+
+TEST(test_fixture_crumbled_wall_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CRUMBLED_WALL];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crumbled_wall_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CRUMBLED_WALL];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crumbled_wall_places_statue_and_rubble) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_CRUMBLED_WALL, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_CRUMBLED_WALL) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crumbled_wall_statue_near_wall) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_CRUMBLED_WALL, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Find a STATUE_INERT tile and verify it has at least one adjacent wall
+    boolean foundStatueNearWall = false;
+    for (int x = 1; x < DCOLS - 1 && !foundStatueNearWall; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundStatueNearWall; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) {
+                    // Also check for adjacent rubble
+                    if (pmap[x-1][y].layers[SURFACE] == RUBBLE
+                        || pmap[x+1][y].layers[SURFACE] == RUBBLE
+                        || pmap[x][y-1].layers[SURFACE] == RUBBLE
+                        || pmap[x][y+1].layers[SURFACE] == RUBBLE) {
+                        foundStatueNearWall = true;
+                    }
+                }
+            }
+        }
+    }
+    ASSERT(foundStatueNearWall);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -598,4 +685,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_cobweb_corner_custom_layout);
     RUN_TEST(test_fixture_cobweb_corner_places_webs);
     RUN_TEST(test_fixture_cobweb_corner_webs_near_walls);
+    RUN_TEST(test_fixture_crumbled_wall_blueprint_depth_range);
+    RUN_TEST(test_fixture_crumbled_wall_custom_layout);
+    RUN_TEST(test_fixture_crumbled_wall_places_statue_and_rubble);
+    RUN_TEST(test_fixture_crumbled_wall_statue_near_wall);
 }

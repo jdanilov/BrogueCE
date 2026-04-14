@@ -1097,6 +1097,106 @@ static boolean applyCobwebCornerLayout(short originX, short originY, char interi
     return true;
 }
 
+// Place a crumbled wall: STATUE_INERT column stub against a wall, with RUBBLE in an L-shape.
+// Finds a wall-adjacent interior cell near the origin, places the column stub there,
+// and scatters 2-3 rubble tiles adjacent to it (forming an L away from the wall).
+// Returns true if layout was placed, false if no suitable wall-adjacent cell.
+static boolean applyCrumbledWallLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Collect interior cells adjacent to at least one wall, near the origin.
+    typedef struct { short x, y; short wallCount; } candidate;
+    candidate candidates[20];
+    short candidateCount = 0;
+
+    for (short dy = -4; dy <= 4 && candidateCount < 20; dy++) {
+        for (short dx = -4; dx <= 4 && candidateCount < 20; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            // Count adjacent walls
+            short walls = 0;
+            if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+
+            if (walls >= 1) {
+                candidates[candidateCount++] = (candidate){x, y, walls};
+            }
+        }
+    }
+
+    if (candidateCount < 1) return false;
+
+    // Sort by wall count descending (prefer corner cells).
+    for (short i = 0; i < candidateCount - 1; i++) {
+        for (short j = i + 1; j < candidateCount; j++) {
+            if (candidates[j].wallCount > candidates[i].wallCount) {
+                candidate tmp = candidates[i];
+                candidates[i] = candidates[j];
+                candidates[j] = tmp;
+            }
+        }
+    }
+
+    // Place column stub (STATUE_INERT) at the best wall-adjacent cell.
+    // Check connectivity: placing a blocking tile must not disconnect the level.
+    short colX = candidates[0].x, colY = candidates[0].y;
+
+    // Check connectivity before placing the blocking statue.
+    char blockingMap[DCOLS][DROWS];
+    zeroOutGrid(blockingMap);
+    blockingMap[colX][colY] = true;
+    if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
+        return false;
+    }
+    pmap[colX][colY].layers[DUNGEON] = STATUE_INERT;
+
+    // Place 2-3 rubble tiles on adjacent interior floor cells (not wall-side).
+    short rubblePlaced = 0;
+    short rubbleTarget = 2 + rand_range(0, 1); // 2-3 rubble
+    // Prefer cells away from the wall (interior direction).
+    for (short dy = -1; dy <= 1 && rubblePlaced < rubbleTarget; dy++) {
+        for (short dx = -1; dx <= 1 && rubblePlaced < rubbleTarget; dx++) {
+            if (dx == 0 && dy == 0) continue;
+            short rx = colX + dx;
+            short ry = colY + dy;
+            if (rx < 1 || rx >= DCOLS - 1 || ry < 1 || ry >= DROWS - 1) continue;
+            if (!interior[rx][ry]) continue;
+            if (pmap[rx][ry].layers[DUNGEON] != FLOOR) continue;
+            if (pmap[rx][ry].layers[SURFACE] != NOTHING) continue;
+            // Skip cells that are also wall-adjacent on the same side (we want rubble spilling inward).
+            pmap[rx][ry].layers[SURFACE] = RUBBLE;
+            rubblePlaced++;
+        }
+    }
+
+    if (rubblePlaced < 2) {
+        // Not enough space for rubble; abort.
+        pmap[colX][colY].layers[DUNGEON] = FLOOR;
+        for (short dy = -1; dy <= 1; dy++) {
+            for (short dx = -1; dx <= 1; dx++) {
+                short rx = colX + dx;
+                short ry = colY + dy;
+                if (rx >= 0 && rx < DCOLS && ry >= 0 && ry < DROWS) {
+                    if (pmap[rx][ry].layers[SURFACE] == RUBBLE) {
+                        pmap[rx][ry].layers[SURFACE] = NOTHING;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    if (outCenter) {
+        outCenter->x = colX;
+        outCenter->y = colY;
+    }
+    return true;
+}
+
 // Place a tight mossy alcove: shallow water at center, surrounded by foliage and grass.
 // Finds a suitable interior cell near the origin and places a 3-5 tile cluster.
 // Returns true if layout was placed, false if insufficient space.
@@ -2009,6 +2109,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_COBWEB_CORNER) {
         if (!applyCobwebCornerLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_CRUMBLED_WALL) {
+        if (!applyCrumbledWallLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
