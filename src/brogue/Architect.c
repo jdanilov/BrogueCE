@@ -958,6 +958,66 @@ static void prepareInteriorWithMachineFlags(char interior[DCOLS][DROWS], short o
     }
 }
 
+// Place a horizontal line of 3-5 shallow water tiles with rubble bookends and dead grass accent.
+// Scans for the longest horizontal run of interior cells near the origin.
+// Returns true if layout was placed (minimum 3 water tiles), false otherwise.
+// Sets *outCenter to the center of the water line.
+static boolean applyDrainageLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    short bestX = 0, bestY = 0, bestLen = 0;
+
+    // Find longest horizontal run of interior cells near origin.
+    for (short y = max(0, originY - 4); y <= min(DROWS - 1, originY + 4); y++) {
+        for (short startX = 0; startX < DCOLS; startX++) {
+            if (!interior[startX][y]) continue;
+            short endX = startX;
+            while (endX + 1 < DCOLS && interior[endX + 1][y]) {
+                endX++;
+            }
+            short len = endX - startX + 1;
+            if (len > bestLen) {
+                bestLen = len;
+                bestX = startX;
+                bestY = y;
+            }
+            startX = endX;
+        }
+    }
+
+    if (bestLen < 5) return false; // need at least rubble + 3 water + rubble
+
+    // Clamp water length to 3-5 tiles, centered in the run.
+    short waterLen = bestLen - 2; // reserve 1 cell each side for rubble
+    if (waterLen > 5) waterLen = 5;
+    if (waterLen < 3) waterLen = 3;
+
+    short totalLen = waterLen + 2; // water + 2 rubble bookends
+    short offsetX = bestX + (bestLen - totalLen) / 2;
+
+    // Place rubble at left end
+    pmap[offsetX][bestY].layers[SURFACE] = RUBBLE;
+    // Place water line
+    for (short i = 1; i <= waterLen; i++) {
+        pmap[offsetX + i][bestY].layers[LIQUID] = SHALLOW_WATER;
+        pmap[offsetX + i][bestY].layers[SURFACE] = NOTHING;
+    }
+    // Place rubble at right end
+    pmap[offsetX + waterLen + 1][bestY].layers[SURFACE] = RUBBLE;
+
+    // Place dead grass accent on an adjacent cell if interior allows
+    short midX = offsetX + 1 + waterLen / 2;
+    if (bestY + 1 < DROWS && interior[midX][bestY + 1]) {
+        pmap[midX][bestY + 1].layers[SURFACE] = DEAD_GRASS;
+    } else if (bestY - 1 >= 0 && interior[midX][bestY - 1]) {
+        pmap[midX][bestY - 1].layers[SURFACE] = DEAD_GRASS;
+    }
+
+    if (outCenter) {
+        outCenter->x = midX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 // Place a 3-wide alternating-row garden pattern (foliage rows / water rows).
 // Extends vertically from the origin, using only cells inside the machine interior.
 // Returns true if layout was placed, false if insufficient space.
@@ -1793,6 +1853,14 @@ boolean buildAMachine(enum machineTypes bp,
 
     // Custom tile layout for fixtures that need precise patterns.
     pos effectiveOrigin = (pos){ originX, originY };
+    if (bp == MT_FIXTURE_DRAINAGE_CHANNEL) {
+        if (!applyDrainageLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
     if (bp == MT_FIXTURE_GARDEN_PATCH) {
         if (!applyGardenLayout(originX, originY, p->interior, &effectiveOrigin)) {
             // Not enough space for the garden pattern; abort and restore.

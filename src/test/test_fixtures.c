@@ -324,6 +324,84 @@ TEST(test_fixture_collapsed_pillar_blueprint_has_statue_feature) {
     test_teardown_game();
 }
 
+// --- Drainage Channel ---
+
+TEST(test_fixture_drainage_channel_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DRAINAGE_CHANNEL];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_drainage_channel_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DRAINAGE_CHANNEL];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_drainage_channel_places_water) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_DRAINAGE_CHANNEL, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_DRAINAGE_CHANNEL) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_drainage_channel_water_line) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_DRAINAGE_CHANNEL, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Find 3 consecutive horizontal shallow water tiles
+    boolean foundLine = false;
+    for (int y = 0; y < DROWS && !foundLine; y++) {
+        for (int x = 0; x < DCOLS - 2 && !foundLine; x++) {
+            if (pmap[x][y].layers[LIQUID] == SHALLOW_WATER
+                && pmap[x + 1][y].layers[LIQUID] == SHALLOW_WATER
+                && pmap[x + 2][y].layers[LIQUID] == SHALLOW_WATER) {
+                foundLine = true;
+            }
+        }
+    }
+    ASSERT(foundLine);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -345,4 +423,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_collapsed_pillar_blueprint_has_features);
     RUN_TEST(test_fixture_collapsed_pillar_places_statue);
     RUN_TEST(test_fixture_collapsed_pillar_blueprint_has_statue_feature);
+    RUN_TEST(test_fixture_drainage_channel_blueprint_depth_range);
+    RUN_TEST(test_fixture_drainage_channel_custom_layout);
+    RUN_TEST(test_fixture_drainage_channel_places_water);
+    RUN_TEST(test_fixture_drainage_channel_water_line);
 }

@@ -175,6 +175,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_LONE_STATUE,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_GARDEN_PATCH,    FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_COLLAPSED_PILLAR,FLOOR,     NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_DRAINAGE_CHANNEL,FLOOR,    NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -655,6 +656,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {1, DEEPEST_LEVEL}, {4, 8},     0,      2,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         {0, STATUE_INERT,  DUNGEON, {1,1}, 1, 0,-1,0, 0, 0,0, (MF_BUILD_AT_ORIGIN|MF_NOT_IN_HALLWAY|MF_TREAT_AS_BLOCKING)},
         {0, RUBBLE,        SURFACE, {2,4}, 0, 0,-1,0, 1, 0,0, (MF_NEAR_ORIGIN)}}},
+    {"Fixture: Drainage Channel -- water seeping through cracked floor with rubble ends",
+    {1, DEEPEST_LEVEL}, {6, 12},    0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyDrainageLayout() in Architect.c
+    }},
 };
 
 // To meter item generation (on level generation):

@@ -69,7 +69,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 1 | **Rubble Heap** ✅ | 3-5 | STATUE_INERT, RUBBLE, BONES | Anywhere | Broken column with scattered debris. BP_PURGE_INTERIOR. |
 | 2 | **Lone Statue** ✅ | 1-2 | STATUE_INERT, MARBLE_FLOOR | Room center | Imposing figure on marble pedestal. |
 | 3 | **Collapsed Pillar** ✅ | 2-4 | STATUE_INERT (1), RUBBLE (around) | Room interior | Broken column with scattered debris. BP_PURGE_INTERIOR. |
-| 4 | **Drainage Channel** | 3-6 | SHALLOW_WATER in a line, RUBBLE at ends | Anywhere | Water seeping through cracked floor. |
+| 4 | **Drainage Channel** ✅ | 3-6 | SHALLOW_WATER in a line, RUBBLE at ends | Anywhere | Water seeping through cracked floor. |
 | 5 | **Mossy Alcove** | 3-5 | GRASS, DF_FOLIAGE, SHALLOW_WATER (1) | Cavern wall-adjacent | Overgrown nook with seeping water. |
 | 6 | **Cobweb Corner** | 2-4 | SPIDERWEB (2-3), BONES (1) | Room corner | Old webs with ancient remains. |
 | 7 | **Crumbled Wall** | 2-4 | RUBBLE (2-3), GRANITE_COLUMN (1) | Wall-adjacent | Partially collapsed wall section. |
