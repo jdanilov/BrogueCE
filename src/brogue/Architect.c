@@ -1018,6 +1018,65 @@ static boolean applyDrainageLayout(short originX, short originY, char interior[D
     return true;
 }
 
+// Place a tight mossy alcove: shallow water at center, surrounded by foliage and grass.
+// Finds a suitable interior cell near the origin and places a 3-5 tile cluster.
+// Returns true if layout was placed, false if insufficient space.
+static boolean applyMossyAlcoveLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find an interior cell near the origin that has at least 2 adjacent interior cells.
+    short bestX = 0, bestY = 0, bestAdj = 0;
+
+    for (short dy = -3; dy <= 3; dy++) {
+        for (short dx = -3; dx <= 3; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+
+            // Count adjacent interior cells
+            short adj = 0;
+            if (interior[x-1][y]) adj++;
+            if (interior[x+1][y]) adj++;
+            if (interior[x][y-1]) adj++;
+            if (interior[x][y+1]) adj++;
+
+            if (adj > bestAdj) {
+                bestAdj = adj;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    if (bestAdj < 2) return false;
+
+    // Place shallow water at center
+    pmap[bestX][bestY].layers[LIQUID] = SHALLOW_WATER;
+    pmap[bestX][bestY].layers[SURFACE] = NOTHING;
+
+    // Place foliage and grass on adjacent interior cells
+    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    short placed = 0;
+    for (short i = 0; i < 4 && placed < 4; i++) {
+        short nx = bestX + dirs[i][0];
+        short ny = bestY + dirs[i][1];
+        if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
+        if (!interior[nx][ny]) continue;
+
+        if (placed % 2 == 0) {
+            pmap[nx][ny].layers[SURFACE] = FOLIAGE;
+        } else {
+            pmap[nx][ny].layers[SURFACE] = GRASS;
+        }
+        placed++;
+    }
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 // Place a 3-wide alternating-row garden pattern (foliage rows / water rows).
 // Extends vertically from the origin, using only cells inside the machine interior.
 // Returns true if layout was placed, false if insufficient space.
@@ -1855,6 +1914,14 @@ boolean buildAMachine(enum machineTypes bp,
     pos effectiveOrigin = (pos){ originX, originY };
     if (bp == MT_FIXTURE_DRAINAGE_CHANNEL) {
         if (!applyDrainageLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_MOSSY_ALCOVE) {
+        if (!applyMossyAlcoveLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

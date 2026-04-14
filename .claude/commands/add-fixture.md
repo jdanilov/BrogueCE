@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_COLLAPSED_PILLAR = 77`
-Blueprint catalog currently has **78 entries** (indices 0–77).
-New fixture will be: enum value **78**, catalog index **78**.
+Current last fixture in the enum: `MT_FIXTURE_MOSSY_ALCOVE = 79`
+Blueprint catalog currently has **80 entries** (indices 0–79).
+New fixture will be: enum value **80**, catalog index **80**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum
@@ -71,10 +71,24 @@ Key files:
 
 ### 3b. Tile placement: blueprint features vs custom layout
 
-**Standard approach: blueprint features** — use `terrain` + `layer` fields (NOT DFs).
-The blueprint system places tiles individually at qualifying locations. Good for scattered/clustered arrangements (rubble, statues, water pools). DFs have propagation behavior — avoid them.
+**IMPORTANT: blueprint features scatter tiles semi-randomly.** `MF_NEAR_ORIGIN` only means "in the closest quarter of the interior" — it does NOT guarantee tiles end up adjacent to each other or to the origin tile. Multi-tile fixtures using blueprint features often look disjointed: water in one corner, foliage in another, with empty floor between them. This is fine for fixtures where scatter IS the aesthetic (rubble, bones), but bad for fixtures that need spatial coherence.
 
-**Custom layout approach** — for fixtures that need precise geometric patterns (rows, grids, rings) that the blueprint system can't produce. Set `featureCount = 0` in the blueprint and add a custom layout function in `Architect.c` (see `applyGardenLayout` as the reference implementation).
+**When to use blueprint features:**
+- The fixture has a single anchor tile (statue, altar) that stands alone
+- Surrounding tiles are thematically "scattered" (rubble, bones, ash, dead grass)
+- It's OK if tiles land 2-4 cells apart with gaps between them
+- Examples: Rubble Heap (statue + scattered rubble), Lone Statue (statue + nearby marble)
+
+**When to use custom layout:**
+- Tiles must be adjacent to each other (water surrounded by foliage, ring patterns)
+- The fixture tells a spatial story (gradient from dry→wet, concentric rings)
+- Geometric precision matters (lines, rows, grids, L-shapes)
+- Multiple tile types need to relate to each other spatially
+- Examples: Garden Patch (alternating rows), Drainage Channel (water line with rubble ends), Mossy Alcove (water with adjacent vegetation)
+
+**Default to custom layout** unless the fixture is clearly a "central anchor + random scatter" pattern. The visual coherence of custom layouts far outweighs the implementation cost.
+
+**Custom layout approach** — Set `featureCount = 0` in the blueprint and add a custom layout function in `Architect.c` (see `applyMossyAlcoveLayout` for a small fixture, `applyGardenLayout` for a larger one).
 
 Custom layouts:
 - Are called from `buildAMachine()` after the interior is established, keyed by machine type enum
@@ -283,3 +297,15 @@ Auto-generator: `{0, 0, 0, MT_FIXTURE_RUBBLE_HEAP, FLOOR, NOTHING, 1, DEEPEST_LE
 }},
 ```
 Auto-generator: `{0, 0, 0, MT_FIXTURE_GARDEN_PATCH, FLOOR, NOTHING, 1, 8, 40, 0, 0, 1}`
+
+```c
+// MT_FIXTURE_MOSSY_ALCOVE = index 79 — CUSTOM LAYOUT (featureCount == 0)
+// Tile placement handled by applyMossyAlcoveLayout() in Architect.c.
+// Places shallow water at center with foliage and grass on adjacent cells.
+// Small fixture (3-5 tiles) — good template for compact custom layouts.
+{"Fixture: Mossy Alcove -- overgrown nook with seeping water",
+{1, DEEPEST_LEVEL},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    // Tile placement handled by applyMossyAlcoveLayout() in Architect.c
+}},
+```
+Auto-generator: `{0, 0, 0, MT_FIXTURE_MOSSY_ALCOVE, FLOOR, NOTHING, 1, DEEPEST_LEVEL, 35, 0, 0, 1}`

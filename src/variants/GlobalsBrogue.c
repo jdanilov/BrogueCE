@@ -176,6 +176,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_GARDEN_PATCH,    FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_COLLAPSED_PILLAR,FLOOR,     NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_DRAINAGE_CHANNEL,FLOOR,    NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_MOSSY_ALCOVE,    FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -659,6 +660,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Drainage Channel -- water seeping through cracked floor with rubble ends",
     {1, DEEPEST_LEVEL}, {6, 12},    0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyDrainageLayout() in Architect.c
+    }},
+    {"Fixture: Mossy Alcove -- overgrown nook with seeping water",
+    {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyMossyAlcoveLayout() in Architect.c
     }},
 };
 

@@ -402,6 +402,88 @@ TEST(test_fixture_drainage_channel_water_line) {
     test_teardown_game();
 }
 
+// --- Mossy Alcove ---
+
+TEST(test_fixture_mossy_alcove_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_MOSSY_ALCOVE];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mossy_alcove_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_MOSSY_ALCOVE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mossy_alcove_places_water) {
+    test_init_game(42);
+
+    rogue.depthLevel = 3;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_MOSSY_ALCOVE, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_MOSSY_ALCOVE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation) {
+    test_init_game(42);
+
+    rogue.depthLevel = 3;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_MOSSY_ALCOVE, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Find shallow water tile, verify at least one adjacent cell has foliage or grass
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[LIQUID] == SHALLOW_WATER) {
+                // Check cardinal neighbors for vegetation
+                if (pmap[x-1][y].layers[SURFACE] == FOLIAGE || pmap[x-1][y].layers[SURFACE] == GRASS
+                    || pmap[x+1][y].layers[SURFACE] == FOLIAGE || pmap[x+1][y].layers[SURFACE] == GRASS
+                    || pmap[x][y-1].layers[SURFACE] == FOLIAGE || pmap[x][y-1].layers[SURFACE] == GRASS
+                    || pmap[x][y+1].layers[SURFACE] == FOLIAGE || pmap[x][y+1].layers[SURFACE] == GRASS) {
+                    foundPattern = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -427,4 +509,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_drainage_channel_custom_layout);
     RUN_TEST(test_fixture_drainage_channel_places_water);
     RUN_TEST(test_fixture_drainage_channel_water_line);
+    RUN_TEST(test_fixture_mossy_alcove_blueprint_depth_range);
+    RUN_TEST(test_fixture_mossy_alcove_custom_layout);
+    RUN_TEST(test_fixture_mossy_alcove_places_water);
+    RUN_TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation);
 }
