@@ -9,6 +9,7 @@ logs
 node_modules
 .env
 .idea
+.ivy-manifest.json
 
 # Release dirs and archives
 BrogueCE-*
