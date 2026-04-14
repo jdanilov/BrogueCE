@@ -1,1 +1,0 @@
-../../../../../ivy/parts/skills/research/scripts/research.ts

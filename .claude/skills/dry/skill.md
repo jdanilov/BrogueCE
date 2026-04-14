@@ -1,1 +1,0 @@
-../../../../ivy/parts/skills/dry/skill.md

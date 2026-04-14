@@ -1,1 +1,0 @@
-../../../../../ivy/cycle/prompts/developer.md

@@ -1,1 +1,0 @@
-../../../../ivy/parts/skills/brainstorm/skill.md

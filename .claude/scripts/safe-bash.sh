@@ -1,1 +1,0 @@
-../../../ivy/parts/scripts/safe-bash.sh

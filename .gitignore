@@ -9,6 +9,7 @@ logs
 node_modules
 .env
 .idea
+.claude
 .ivy-manifest.json
 
 # Release dirs and archives
