@@ -1018,6 +1018,115 @@ static boolean applyDrainageLayout(short originX, short originY, char interior[D
     return true;
 }
 
+// Place a puddle: 1 MUD tile at center, 1-3 SHALLOW_WATER on random adjacent cells,
+// GRASS on remaining open neighbors, FOLIAGE on the outer ring. Asymmetric and organic.
+// Returns true if layout was placed, false if insufficient space.
+static boolean applyPuddleLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find an interior cell near the origin with at least 3 adjacent interior cells.
+    short bestX = 0, bestY = 0, bestAdj = 0;
+
+    for (short dy = -3; dy <= 3; dy++) {
+        for (short dx = -3; dx <= 3; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+
+            short adj = 0;
+            if (interior[x-1][y]) adj++;
+            if (interior[x+1][y]) adj++;
+            if (interior[x][y-1]) adj++;
+            if (interior[x][y+1]) adj++;
+
+            if (adj > bestAdj) {
+                bestAdj = adj;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    if (bestAdj < 3) return false;
+
+    // Place MUD at center
+    pmap[bestX][bestY].layers[LIQUID] = MUD;
+    pmap[bestX][bestY].layers[SURFACE] = NOTHING;
+
+    // Collect adjacent interior cells and shuffle them
+    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    short adjCells[4][2];
+    short adjCount = 0;
+    for (short i = 0; i < 4; i++) {
+        short nx = bestX + dirs[i][0];
+        short ny = bestY + dirs[i][1];
+        if (nx < 1 || nx >= DCOLS - 1 || ny < 1 || ny >= DROWS - 1) continue;
+        if (!interior[nx][ny]) continue;
+        adjCells[adjCount][0] = nx;
+        adjCells[adjCount][1] = ny;
+        adjCount++;
+    }
+
+    // Shuffle adjacent cells for asymmetry
+    for (short i = adjCount - 1; i > 0; i--) {
+        short j = rand_range(0, i);
+        short tmpX = adjCells[i][0], tmpY = adjCells[i][1];
+        adjCells[i][0] = adjCells[j][0]; adjCells[i][1] = adjCells[j][1];
+        adjCells[j][0] = tmpX; adjCells[j][1] = tmpY;
+    }
+
+    // Place 1-3 SHALLOW_WATER on the first random adjacent cells
+    short waterCount = rand_range(1, min(3, adjCount));
+    for (short i = 0; i < waterCount; i++) {
+        pmap[adjCells[i][0]][adjCells[i][1]].layers[LIQUID] = SHALLOW_WATER;
+        pmap[adjCells[i][0]][adjCells[i][1]].layers[SURFACE] = NOTHING;
+    }
+
+    // Place GRASS on remaining adjacent cells
+    for (short i = waterCount; i < adjCount; i++) {
+        pmap[adjCells[i][0]][adjCells[i][1]].layers[SURFACE] = GRASS;
+    }
+
+    // Place FOLIAGE on the outer ring: cells adjacent to the water/mud cluster
+    // that are interior but not already placed
+    for (short i = 0; i < waterCount; i++) {
+        short wx = adjCells[i][0];
+        short wy = adjCells[i][1];
+        for (short d = 0; d < 4; d++) {
+            short fx = wx + dirs[d][0];
+            short fy = wy + dirs[d][1];
+            if (fx < 1 || fx >= DCOLS - 1 || fy < 1 || fy >= DROWS - 1) continue;
+            if (!interior[fx][fy]) continue;
+            if (fx == bestX && fy == bestY) continue; // skip MUD center
+            // Skip cells already used as water or grass
+            if (pmap[fx][fy].layers[LIQUID] == SHALLOW_WATER || pmap[fx][fy].layers[LIQUID] == MUD) continue;
+            if (pmap[fx][fy].layers[SURFACE] == GRASS) continue;
+            pmap[fx][fy].layers[SURFACE] = FOLIAGE;
+        }
+    }
+
+    // Also place foliage around the grass cells
+    for (short i = waterCount; i < adjCount; i++) {
+        short gx = adjCells[i][0];
+        short gy = adjCells[i][1];
+        for (short d = 0; d < 4; d++) {
+            short fx = gx + dirs[d][0];
+            short fy = gy + dirs[d][1];
+            if (fx < 1 || fx >= DCOLS - 1 || fy < 1 || fy >= DROWS - 1) continue;
+            if (!interior[fx][fy]) continue;
+            if (fx == bestX && fy == bestY) continue;
+            if (pmap[fx][fy].layers[LIQUID] == SHALLOW_WATER || pmap[fx][fy].layers[LIQUID] == MUD) continue;
+            if (pmap[fx][fy].layers[SURFACE] == GRASS) continue;
+            pmap[fx][fy].layers[SURFACE] = FOLIAGE;
+        }
+    }
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 // Place spiderwebs on interior cells adjacent to walls, with bones nearby.
 // Finds wall-adjacent interior cells near the origin and clusters webs there.
 // Place a vine trellis: 2-8 foliage tiles hugging a wall in a contiguous line.
@@ -2414,6 +2523,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_VINE_TRELLIS) {
         if (!applyVineTrellisLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_PUDDLE) {
+        if (!applyPuddleLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

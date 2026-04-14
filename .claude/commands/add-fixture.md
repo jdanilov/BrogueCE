@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_VINE_TRELLIS = 86`
-Blueprint catalog currently has **87 entries** (indices 0–86).
-New fixture will be: enum value **87**, catalog index **87**.
+Current last fixture in the enum: `MT_FIXTURE_PUDDLE = 87`
+Blueprint catalog currently has **88 entries** (indices 0–87).
+New fixture will be: enum value **88**, catalog index **88**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum

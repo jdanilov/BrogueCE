@@ -1033,6 +1033,111 @@ TEST(test_fixture_vine_trellis_foliage_near_wall) {
     test_teardown_game();
 }
 
+// --- Puddle ---
+
+TEST(test_fixture_puddle_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_PUDDLE];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_puddle_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_PUDDLE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_puddle_places_mud) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_PUDDLE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_PUDDLE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify MUD tile exists
+    boolean foundMud = false;
+    for (int x = 0; x < DCOLS && !foundMud; x++) {
+        for (int y = 0; y < DROWS && !foundMud; y++) {
+            if (pmap[x][y].layers[LIQUID] == MUD) {
+                foundMud = true;
+            }
+        }
+    }
+    ASSERT(foundMud);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_puddle_mud_surrounded_by_vegetation) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_PUDDLE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find the MUD tile and verify it has vegetation or water on adjacent cells
+    for (int x = 1; x < DCOLS - 1; x++) {
+        for (int y = 1; y < DROWS - 1; y++) {
+            if (pmap[x][y].layers[LIQUID] == MUD) {
+                // Count adjacent cells with water, grass, or foliage
+                int vegOrWater = 0;
+                short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + dirs[d][0];
+                    int ny = y + dirs[d][1];
+                    if (pmap[nx][ny].layers[LIQUID] == SHALLOW_WATER
+                        || pmap[nx][ny].layers[SURFACE] == GRASS
+                        || pmap[nx][ny].layers[SURFACE] == FOLIAGE) {
+                        vegOrWater++;
+                    }
+                }
+                ASSERT_GE(vegOrWater, 3);
+                goto done;
+            }
+        }
+    }
+    done:
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1090,4 +1195,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_vine_trellis_custom_layout);
     RUN_TEST(test_fixture_vine_trellis_places_foliage);
     RUN_TEST(test_fixture_vine_trellis_foliage_near_wall);
+    RUN_TEST(test_fixture_puddle_blueprint_depth_range);
+    RUN_TEST(test_fixture_puddle_custom_layout);
+    RUN_TEST(test_fixture_puddle_places_mud);
+    RUN_TEST(test_fixture_puddle_mud_surrounded_by_vegetation);
 }

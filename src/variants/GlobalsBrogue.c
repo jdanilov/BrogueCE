@@ -186,6 +186,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_SUNLIT_PATCH,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_BIRD_NEST,       FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_VINE_TRELLIS,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_PUDDLE,          FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -709,6 +710,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Vine Trellis -- creeping vines hugging a wall",
     {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyVineTrellisLayout() in Architect.c
+    }},
+    {"Fixture: Puddle -- stagnant water in a muddy depression with overgrowth",
+    {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyPuddleLayout() in Architect.c
     }},
 };
 
