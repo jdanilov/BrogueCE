@@ -8,6 +8,8 @@ Custom Ideas
 
 4. Cavern-based "machines", e.g. pits in the middle of the room, preventing a passage - could be tactical for archery. Some pits may have wooden bridges on top.
 
+5. Improve blood splatter - paint vegetation and walls in red.
+
 Low Complexity
 
 1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.). Or let the player choose starting equipment in the first room: a ranged weapon, a staff, a weapon, a ring.
