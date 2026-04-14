@@ -266,6 +266,64 @@ TEST(test_fixture_garden_patch_alternating_rows) {
     test_teardown_game();
 }
 
+// --- Collapsed Pillar ---
+
+TEST(test_fixture_collapsed_pillar_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_COLLAPSED_PILLAR];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_collapsed_pillar_blueprint_has_features) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_COLLAPSED_PILLAR];
+    ASSERT_GT(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_collapsed_pillar_places_statue) {
+    test_init_arena(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_COLLAPSED_PILLAR, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    boolean found = false;
+    for (int x = 0; x < DCOLS && !found; x++) {
+        for (int y = 0; y < DROWS && !found; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                found = true;
+            }
+        }
+    }
+    ASSERT(found);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_collapsed_pillar_blueprint_has_statue_feature) {
+    test_init_game(77);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_COLLAPSED_PILLAR];
+    ASSERT_EQ(bp->feature[0].terrain, STATUE_INERT);
+    ASSERT_EQ(bp->feature[0].layer, DUNGEON);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -283,4 +341,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_garden_patch_custom_layout);
     RUN_TEST(test_fixture_garden_patch_places_foliage_and_water);
     RUN_TEST(test_fixture_garden_patch_alternating_rows);
+    RUN_TEST(test_fixture_collapsed_pillar_blueprint_depth_range);
+    RUN_TEST(test_fixture_collapsed_pillar_blueprint_has_features);
+    RUN_TEST(test_fixture_collapsed_pillar_places_statue);
+    RUN_TEST(test_fixture_collapsed_pillar_blueprint_has_statue_feature);
 }
