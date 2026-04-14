@@ -664,7 +664,7 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Garden Patch -- overgrown garden with water channels",
     {1, 8},             {12, 21},   0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyGardenLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Collapsed Pillar -- broken column with asymmetric rubble scatter",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      2,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         {0, STATUE_INERT,  DUNGEON, {1,1}, 1, 0,-1,0, 0, 0,0, (MF_BUILD_AT_ORIGIN|MF_NOT_IN_HALLWAY|MF_TREAT_AS_BLOCKING)},
@@ -672,19 +672,19 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Drainage Channel -- water seeping through cracked floor with rubble ends",
     {1, DEEPEST_LEVEL}, {6, 12},    0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyDrainageLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Mossy Alcove -- overgrown nook with seeping water",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyMossyAlcoveLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Cobweb Corner -- old webs with ancient remains near a wall",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyCobwebCornerLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Crumbled Wall -- partially collapsed wall with rubble",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyCrumbledWallLayout() in Architect.c
-    }},
+        {0}}},
 
     {"Fixture: Dust Motes -- undisturbed area with scattered ash and dead grass",
     {1, DEEPEST_LEVEL}, {6, 12},    0,      2,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
@@ -696,7 +696,7 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Mushroom Circle -- glowing fairy ring of fungus around a grassy hollow",
     {1, 8},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyMushroomCircleLayout() in Architect.c
-    }},
+        {0}}},
 
     {"Fixture: Sunlit Patch -- shaft of light from above, vegetation thriving in the glow",
     {1, 8},  {3, 6},  0,  2,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
@@ -708,23 +708,23 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Bird Nest -- silk-bound nest on a stone perch with cracked egg shells",
     {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyBirdNestLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Vine Trellis -- creeping vines hugging a wall",
     {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyVineTrellisLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Puddle -- stagnant water in a muddy depression with overgrowth",
     {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyPuddleLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Forge -- ancient smithy with lava trough and obsidian platform",
     {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyForgeLayout() in Architect.c
-    }},
+        {0}}},
     {"Fixture: Altar Nook -- devotional space with carpet runner and marble dais",
     {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyAltarNookLayout() in Architect.c
-    }},
+        {0}}},
 };
 
 // To meter item generation (on level generation):
