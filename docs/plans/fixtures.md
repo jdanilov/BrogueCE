@@ -168,32 +168,3 @@ Use existing machine feature flags for context sensitivity:
 ### Connectivity Safety
 
 All multi-cell fixtures use `MF_TREAT_AS_BLOCKING` on obstructing tiles (statues, columns, crystal walls) so the pathfinding system rejects placements that would block the level.
-
-## Acceptance Criteria
-
-- [ ] 20+ fixture blueprints defined in variant globals
-- [ ] Fixtures appear ~1 per 1-3 levels during normal play
-- [ ] No new tile types — only existing tiles, DFs, and terrain layers
-- [ ] Fixtures never block level connectivity
-- [ ] Fixtures don't overlap with existing machines
-- [ ] Depth-restricted fixtures only appear in their designated range
-- [ ] Context-sensitive placement works (room/cavern/anywhere)
-- [ ] Minor gameplay effects (steam, light, embers) work via existing DFs
-- [ ] Each fixture has appropriate flavor text visible on mouse-over
-- [ ] All existing tests pass (`make test`, seed catalogs updated)
-- [ ] Determinism maintained — same seed produces same fixtures
-
-## Tasks
-
-- [ ] **Task 1: Define fixture machine types** — Add `MT_FIXTURE_*` enum values (32 entries) to `Rogue.h` machine types enum
-- [ ] **Task 2: Create fixture blueprints** — Add 32 blueprint entries to `GlobalsBrogue.c` (and variant globals if needed), each with 2-4 machineFeatures using existing tiles/DFs. Use placement flags per the Placement Semantics section
-- [ ] **Task 3: Add auto-generator entries** — Either one meta-generator or per-fixture generators in the auto-generator catalog. Tune frequency for ~1 per 1-3 levels
-- [ ] **Task 4: Test placement** — Verify fixtures spawn correctly across depth ranges, don't break connectivity, don't overlap machines. Visual inspection via gameplay
-- [ ] **Task 5: Update seed catalogs** — Run `test/update_seed_catalogs.py` since dungeon generation changes
-- [ ] **Task 6: Write change doc** — Document the fixture system in `docs/changes/`
-
-## Ask User
-(empty)
-
-## Critic Findings
-(empty)
