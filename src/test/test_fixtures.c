@@ -802,6 +802,63 @@ TEST(test_fixture_mushroom_circle_ring_pattern) {
     test_teardown_game();
 }
 
+// --- Sunlit Patch ---
+
+TEST(test_fixture_sunlit_patch_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SUNLIT_PATCH];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sunlit_patch_blueprint_has_features) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SUNLIT_PATCH];
+    ASSERT_GT(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sunlit_patch_places_foliage) {
+    test_init_game(42);
+
+    rogue.depthLevel = 3;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_SUNLIT_PATCH, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_SUNLIT_PATCH) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sunlit_patch_blueprint_has_sunlight_df) {
+    test_init_game(77);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SUNLIT_PATCH];
+    ASSERT_EQ(bp->feature[0].featureDF, DF_SUNLIGHT);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -847,4 +904,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_mushroom_circle_custom_layout);
     RUN_TEST(test_fixture_mushroom_circle_places_fungus);
     RUN_TEST(test_fixture_mushroom_circle_ring_pattern);
+    RUN_TEST(test_fixture_sunlit_patch_blueprint_depth_range);
+    RUN_TEST(test_fixture_sunlit_patch_blueprint_has_features);
+    RUN_TEST(test_fixture_sunlit_patch_places_foliage);
+    RUN_TEST(test_fixture_sunlit_patch_blueprint_has_sunlight_df);
 }

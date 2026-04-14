@@ -169,18 +169,21 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_SENTINEL_AREA,           FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,10,     0,      0,          2},
     {0,                         0,      0,                          MT_WORM_AREA,               FLOOR,      NOTHING,    12,     DEEPEST_LEVEL-1,12,     0,      0,          3},
 
-    // Fixture machines
-    {0,                         0,      0,                          MT_FIXTURE_FOUNTAIN,        FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_RUBBLE_HEAP,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_LONE_STATUE,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_GARDEN_PATCH,    FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_COLLAPSED_PILLAR,FLOOR,     NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_DRAINAGE_CHANNEL,FLOOR,    NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_MOSSY_ALCOVE,    FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_COBWEB_CORNER,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_CRUMBLED_WALL,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_DUST_MOTES,      FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
-    {0,                         0,      0,                          MT_FIXTURE_MUSHROOM_CIRCLE, FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
+    // Fixture machines — frequency 17 per fixture. With 12 eligible on D1-8
+    // and ~50% buildAMachine failure: ~75% ≥1, ~25% ≥2 fixtures per level.
+    // Reduce frequency as more fixtures are added to maintain this distribution.
+    {0,                         0,      0,                          MT_FIXTURE_FOUNTAIN,        FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_RUBBLE_HEAP,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_LONE_STATUE,     FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_GARDEN_PATCH,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_COLLAPSED_PILLAR,FLOOR,     NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_DRAINAGE_CHANNEL,FLOOR,    NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_MOSSY_ALCOVE,    FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_COBWEB_CORNER,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_CRUMBLED_WALL,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_DUST_MOTES,      FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_MUSHROOM_CIRCLE, FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_SUNLIT_PATCH,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -688,6 +691,13 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Mushroom Circle -- glowing fairy ring of fungus around a grassy hollow",
     {1, 8},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyMushroomCircleLayout() in Architect.c
+    }},
+
+    {"Fixture: Sunlit Patch -- shaft of light from above, vegetation thriving in the glow",
+    {1, 8},  {3, 6},  0,  2,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        //         DF              terrain        layer          count      minInst  iCat iKind mKind  space  hFlg iFlg  featureFlags
+        {DF_SUNLIGHT,   FOLIAGE,       SURFACE,       {1, 1},    1,       0,   -1,   0,     0,     0,   0,   (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY)},
+        {0,             GRASS,         SURFACE,       {2, 4},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)},
     }},
 };
 

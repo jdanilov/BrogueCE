@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_MUSHROOM_CIRCLE = 83`
-Blueprint catalog currently has **84 entries** (indices 0–83).
-New fixture will be: enum value **84**, catalog index **84**.
+Current last fixture in the enum: `MT_FIXTURE_SUNLIT_PATCH = 84`
+Blueprint catalog currently has **85 entries** (indices 0–84).
+New fixture will be: enum value **85**, catalog index **85**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum
@@ -154,12 +154,63 @@ Append after the last fixture blueprint entry (before `};` of blueprintCatalog_B
 
 **roomSize guidance:** `{3,6}` tiny · `{4,8}` small · `{6,12}` medium · `{12,21}` for custom layouts needing space
 
-**Depth → frequency guidance for auto-generator:**
-- Universal (all depths): frequency 30–40
-- Early only (D1–8): frequency 35–45
-- Mid (D5–18): frequency 25–35
-- Deep (D10+): frequency 20–30
-- Always maxNumber 1
+**Frequency guidance for auto-generator:**
+- All fixtures use frequency **17** (uniform). Always maxNumber 1.
+- Target distribution: ~75% of levels get ≥1 fixture, ~25% get ≥2.
+
+**How frequency works:** Each auto-generator independently rolls `rand_percent(frequency)`.
+If it succeeds AND `buildAMachine` succeeds, one fixture is placed. With N eligible fixtures
+at frequency f, the theoretical P(0 attempts) = (1 - f/100)^N. However, `buildAMachine`
+has a ~50% failure rate (room too small, connectivity blocked, etc.), so effective per-fixture
+placement is roughly half the frequency value.
+
+**Current tuning (12 fixtures on D1-8 at freq 17):**
+- Theoretical attempts per level: 12 × 0.17 = 2.0
+- After ~50% buildAMachine failure: ~1.0 placed
+- Measured: 25% zero, 40% one, 24% two, 11% three+
+
+**When adding more fixtures, recheck the distribution:**
+```bash
+# Build the counter (one-time):
+cat > /tmp/count_fixtures.c << 'CEOF'
+#include "test_harness.h"
+#include <stdio.h>
+#include <stdlib.h>
+int main(void) {
+    int histogram[20] = {0};
+    int total_seeds = 200;
+    for (int seed = 1; seed <= total_seeds; seed++) {
+        test_init_game(seed);
+        int fixture_count = 0;
+        for (int i = 0; i < rogue.placedMachineCount; i++) {
+            int bp = rogue.placedMachines[i].blueprintIndex;
+            if (bp >= MT_FIXTURE_FOUNTAIN && bp <= MT_FIXTURE_SUNLIT_PATCH) {
+                fixture_count++;
+            }
+        }
+        if (fixture_count < 20) histogram[fixture_count]++;
+        test_teardown_game();
+    }
+    printf("Fixture count distribution on D1 (%d seeds):\n", total_seeds);
+    for (int i = 0; i < 10; i++) {
+        if (histogram[i] > 0)
+            printf("  %d fixtures: %d seeds (%.0f%%)\n", i, histogram[i], 100.0*histogram[i]/total_seeds);
+    }
+    return 0;
+}
+CEOF
+
+GAME_SRCS=$(find src/brogue src/variants -name '*.c') && \
+cc -DDATADIR=. -DBROGUE_SDL -DBROGUE_EXTRA_VERSION='""' \
+   -Isrc/brogue -Isrc/platform -Isrc/variants -Isrc/test \
+   -std=c99 -O2 /tmp/count_fixtures.c $GAME_SRCS \
+   src/platform/null-platform.c src/platform/platformdependent.c \
+   src/test/test_harness.c -o /tmp/count_fixtures && /tmp/count_fixtures
+```
+
+**If distribution is too high**, lower all fixture frequencies uniformly.
+**If distribution is too low on deep levels**, that's expected — more deep fixtures will fill it in.
+Update the `MT_FIXTURE_SUNLIT_PATCH` reference in the counter script to the latest fixture enum.
 
 **Feature flags quick reference:**
 - `MF_BUILD_AT_ORIGIN` — place at machine origin
