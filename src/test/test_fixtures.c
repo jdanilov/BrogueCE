@@ -484,6 +484,87 @@ TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation) {
     test_teardown_game();
 }
 
+// --- Cobweb Corner ---
+
+TEST(test_fixture_cobweb_corner_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_COBWEB_CORNER];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_cobweb_corner_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_COBWEB_CORNER];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_cobweb_corner_places_webs) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_COBWEB_CORNER, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_COBWEB_CORNER) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_cobweb_corner_webs_near_walls) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_COBWEB_CORNER, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Find a spiderweb tile and verify it has at least one adjacent passability-blocking tile
+    boolean foundWebNearWall = false;
+    for (int x = 1; x < DCOLS - 1 && !foundWebNearWall; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundWebNearWall; y++) {
+            if (pmap[x][y].layers[SURFACE] == SPIDERWEB) {
+                if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) {
+                    foundWebNearWall = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundWebNearWall);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -513,4 +594,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_mossy_alcove_custom_layout);
     RUN_TEST(test_fixture_mossy_alcove_places_water);
     RUN_TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation);
+    RUN_TEST(test_fixture_cobweb_corner_blueprint_depth_range);
+    RUN_TEST(test_fixture_cobweb_corner_custom_layout);
+    RUN_TEST(test_fixture_cobweb_corner_places_webs);
+    RUN_TEST(test_fixture_cobweb_corner_webs_near_walls);
 }

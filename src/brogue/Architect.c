@@ -1018,6 +1018,85 @@ static boolean applyDrainageLayout(short originX, short originY, char interior[D
     return true;
 }
 
+// Place spiderwebs on interior cells adjacent to walls, with bones nearby.
+// Finds wall-adjacent interior cells near the origin and clusters webs there.
+// Returns true if layout was placed, false if insufficient wall-adjacent cells.
+static boolean applyCobwebCornerLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Collect interior cells adjacent to at least one wall, near the origin.
+    typedef struct { short x, y; short wallCount; } candidate;
+    candidate candidates[20];
+    short candidateCount = 0;
+
+    for (short dy = -4; dy <= 4 && candidateCount < 20; dy++) {
+        for (short dx = -4; dx <= 4 && candidateCount < 20; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            // Count adjacent walls (non-interior cells that are passability-blocking)
+            short walls = 0;
+            if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+
+            if (walls > 0) {
+                candidates[candidateCount++] = (candidate){x, y, walls};
+            }
+        }
+    }
+
+    if (candidateCount < 2) return false;
+
+    // Sort by wall count descending (prefer corner cells with 2+ walls).
+    for (short i = 0; i < candidateCount - 1; i++) {
+        for (short j = i + 1; j < candidateCount; j++) {
+            if (candidates[j].wallCount > candidates[i].wallCount) {
+                candidate tmp = candidates[i];
+                candidates[i] = candidates[j];
+                candidates[j] = tmp;
+            }
+        }
+    }
+
+    // Place 2-3 spiderwebs on the best wall-adjacent cells.
+    short webCount = min(3, candidateCount);
+    for (short i = 0; i < webCount; i++) {
+        pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = SPIDERWEB;
+    }
+
+    // Place 2-3 bones on nearby interior cells (wall-adjacent candidates or open floor).
+    short bonesPlaced = 0;
+    short bonesTarget = 2 + (candidateCount > 5 ? 1 : 0); // 2-3 bones
+
+    // First, use remaining wall-adjacent candidates after the webs.
+    for (short i = webCount; i < candidateCount && bonesPlaced < bonesTarget; i++) {
+        pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = BONES;
+        bonesPlaced++;
+    }
+
+    // If still need more bones, scatter on open interior cells near the webs.
+    for (short dy = -2; dy <= 2 && bonesPlaced < bonesTarget; dy++) {
+        for (short dx = -2; dx <= 2 && bonesPlaced < bonesTarget; dx++) {
+            short x = candidates[0].x + dx;
+            short y = candidates[0].y + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[SURFACE] != NOTHING) continue;
+            pmap[x][y].layers[SURFACE] = BONES;
+            bonesPlaced++;
+        }
+    }
+
+    if (outCenter) {
+        outCenter->x = candidates[0].x;
+        outCenter->y = candidates[0].y;
+    }
+    return true;
+}
+
 // Place a tight mossy alcove: shallow water at center, surrounded by foliage and grass.
 // Finds a suitable interior cell near the origin and places a 3-5 tile cluster.
 // Returns true if layout was placed, false if insufficient space.
@@ -1922,6 +2001,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_MOSSY_ALCOVE) {
         if (!applyMossyAlcoveLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_COBWEB_CORNER) {
+        if (!applyCobwebCornerLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

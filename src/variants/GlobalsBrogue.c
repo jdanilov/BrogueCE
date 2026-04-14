@@ -177,6 +177,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_COLLAPSED_PILLAR,FLOOR,     NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_DRAINAGE_CHANNEL,FLOOR,    NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_MOSSY_ALCOVE,    FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_COBWEB_CORNER,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -664,6 +665,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Mossy Alcove -- overgrown nook with seeping water",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyMossyAlcoveLayout() in Architect.c
+    }},
+    {"Fixture: Cobweb Corner -- old webs with ancient remains near a wall",
+    {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyCobwebCornerLayout() in Architect.c
     }},
 };
 
