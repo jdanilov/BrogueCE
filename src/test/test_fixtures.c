@@ -946,6 +946,93 @@ TEST(test_fixture_bird_nest_statue_with_adjacent_web) {
     test_teardown_game();
 }
 
+// --- Vine Trellis ---
+
+TEST(test_fixture_vine_trellis_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_VINE_TRELLIS];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_vine_trellis_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_VINE_TRELLIS];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_vine_trellis_places_foliage) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_VINE_TRELLIS, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_VINE_TRELLIS) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_vine_trellis_foliage_near_wall) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_VINE_TRELLIS, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find a FOLIAGE tile and verify it has at least one adjacent wall
+    boolean foundFoliageNearWall = false;
+    for (int x = 1; x < DCOLS - 1 && !foundFoliageNearWall; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundFoliageNearWall; y++) {
+            if (pmap[x][y].layers[SURFACE] == FOLIAGE) {
+                if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) {
+                    foundFoliageNearWall = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundFoliageNearWall);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -999,4 +1086,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_bird_nest_custom_layout);
     RUN_TEST(test_fixture_bird_nest_places_statue);
     RUN_TEST(test_fixture_bird_nest_statue_with_adjacent_web);
+    RUN_TEST(test_fixture_vine_trellis_blueprint_depth_range);
+    RUN_TEST(test_fixture_vine_trellis_custom_layout);
+    RUN_TEST(test_fixture_vine_trellis_places_foliage);
+    RUN_TEST(test_fixture_vine_trellis_foliage_near_wall);
 }

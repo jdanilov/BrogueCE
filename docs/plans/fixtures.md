@@ -84,7 +84,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 11 | **Mushroom Circle** ✅ | 12-21 | FUNGUS_FOREST + LUMINESCENT_FUNGUS ring, GRASS interior | Cavern organic | Glowing fairy ring in a damp hollow. Custom `applyMushroomCircleLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 12 | **Sunlit Patch** ✅ | 3-5 | DF_SUNLIGHT, GRASS, FOLIAGE | Anywhere | Shaft of light from a crack above. DF_SUNLIGHT + FOLIAGE combined in one feature; GRASS scattered nearby. |
 | 13 | **Bird Nest** ✅ | 1-2 | HAY (cluster), FOLIAGE, BONES around | Cavern corner | Organic nest tucked into a crevice with cracked egg shells. |
-| 14 | **Vine Trellis** | 3-5 | DF_FOLIAGE (2-3), GRASS, DEAD_GRASS (1) | Wall-adjacent | Creeping vines along a wall. |
+| 14 | **Vine Trellis** ✅ | 2-8 | FOLIAGE (2-8 line) | Wall-adjacent | Creeping vines hugging a wall. Custom `applyVineTrellisLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 15 | **Puddle** | 2-3 | SHALLOW_WATER (1-2), MUD (1) | Anywhere | Stagnant water collecting in a depression. |
 
 ### Mid Levels (D5-D18)

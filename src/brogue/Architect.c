@@ -1020,6 +1020,93 @@ static boolean applyDrainageLayout(short originX, short originY, char interior[D
 
 // Place spiderwebs on interior cells adjacent to walls, with bones nearby.
 // Finds wall-adjacent interior cells near the origin and clusters webs there.
+// Place a vine trellis: 2-8 foliage tiles hugging a wall in a contiguous line.
+// Finds wall-adjacent interior cells near the origin and grows a line along the wall.
+// Returns true if at least 2 tiles were placed.
+static boolean applyVineTrellisLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Collect wall-adjacent interior floor cells near the origin.
+    typedef struct { short x, y; } cell;
+    cell wallAdj[40];
+    short wallAdjCount = 0;
+
+    for (short dy = -5; dy <= 5 && wallAdjCount < 40; dy++) {
+        for (short dx = -5; dx <= 5 && wallAdjCount < 40; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            // Must be adjacent to at least one wall
+            boolean adjWall = false;
+            if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) adjWall = true;
+            if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) adjWall = true;
+            if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) adjWall = true;
+            if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) adjWall = true;
+
+            if (adjWall) {
+                wallAdj[wallAdjCount++] = (cell){x, y};
+            }
+        }
+    }
+
+    if (wallAdjCount < 2) return false;
+
+    // For each wall-adjacent cell, try to grow the longest contiguous line
+    // along the wall in cardinal directions.
+    short bestLen = 0;
+    cell bestLine[8];
+
+    for (short i = 0; i < wallAdjCount; i++) {
+        // Try horizontal and vertical directions
+        short dirs[2][2] = {{1, 0}, {0, 1}};
+        for (short d = 0; d < 2; d++) {
+            cell line[8];
+            short len = 0;
+            line[len++] = wallAdj[i];
+
+            // Grow in positive direction
+            for (short step = 1; step <= 7 && len < 8; step++) {
+                short nx = wallAdj[i].x + dirs[d][0] * step;
+                short ny = wallAdj[i].y + dirs[d][1] * step;
+                if (nx < 1 || nx >= DCOLS - 1 || ny < 1 || ny >= DROWS - 1) break;
+                if (!interior[nx][ny]) break;
+                if (pmap[nx][ny].layers[DUNGEON] != FLOOR) break;
+
+                // Must also be wall-adjacent
+                boolean adj = false;
+                if (cellHasTerrainFlag((pos){nx-1, ny}, T_OBSTRUCTS_PASSABILITY)) adj = true;
+                if (cellHasTerrainFlag((pos){nx+1, ny}, T_OBSTRUCTS_PASSABILITY)) adj = true;
+                if (cellHasTerrainFlag((pos){nx, ny-1}, T_OBSTRUCTS_PASSABILITY)) adj = true;
+                if (cellHasTerrainFlag((pos){nx, ny+1}, T_OBSTRUCTS_PASSABILITY)) adj = true;
+                if (!adj) break;
+
+                line[len++] = (cell){nx, ny};
+            }
+
+            if (len > bestLen) {
+                bestLen = len;
+                for (short k = 0; k < len; k++) bestLine[k] = line[k];
+            }
+        }
+    }
+
+    if (bestLen < 2) return false;
+
+    // Place foliage on the line
+    for (short i = 0; i < bestLen; i++) {
+        pmap[bestLine[i].x][bestLine[i].y].layers[SURFACE] = FOLIAGE;
+    }
+
+    // Center on the middle of the line
+    short mid = bestLen / 2;
+    if (outCenter) {
+        outCenter->x = bestLine[mid].x;
+        outCenter->y = bestLine[mid].y;
+    }
+    return true;
+}
+
 // Returns true if layout was placed, false if insufficient wall-adjacent cells.
 static boolean applyCobwebCornerLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
     // Collect interior cells adjacent to at least one wall, near the origin.
@@ -2319,6 +2406,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_BIRD_NEST) {
         if (!applyBirdNestLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_VINE_TRELLIS) {
+        if (!applyVineTrellisLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
