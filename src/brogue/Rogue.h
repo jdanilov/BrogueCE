@@ -2482,6 +2482,14 @@ enum gameMode {
     GAME_MODE_EASY
 };
 
+#define MAX_PLACED_MACHINES 50
+
+typedef struct placedMachineInfo {
+    short blueprintIndex;               // index into blueprintCatalog
+    short machineNumber;                // unique machine number on this level
+    pos origin;                         // origin/center of the machine
+} placedMachineInfo;
+
 // these are basically global variables pertaining to the game state and player's unique variables:
 typedef struct playerCharacter {
     enum gameMode mode;                     // in wizard/easy mode
@@ -2555,6 +2563,8 @@ typedef struct playerCharacter {
     item *lastItemThrown;
     short rewardRoomsGenerated;         // to meter the number of reward machines
     short machineNumber;                // so each machine on a level gets a unique number
+    placedMachineInfo placedMachines[MAX_PLACED_MACHINES]; // records of all machines placed on this level
+    short placedMachineCount;           // how many entries in placedMachines are valid
     pos sidebarLocationList[ROWS*2];    // to keep track of which location each line of the sidebar references
 
     // maps
@@ -2805,7 +2815,8 @@ enum machineTypes {
     // Fixture machines
     MT_FIXTURE_FOUNTAIN,
     MT_FIXTURE_RUBBLE_HEAP,
-    MT_FIXTURE_LONE_STATUE
+    MT_FIXTURE_LONE_STATUE,
+    MT_FIXTURE_GARDEN_PATCH
 };
 
 typedef struct autoGenerator {

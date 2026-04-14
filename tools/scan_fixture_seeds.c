@@ -1,5 +1,8 @@
 // scan_fixture_seeds.c — Generic fixture seed scanner.
 //
+// Uses rogue.placedMachines[] metadata recorded by buildAMachine() to find
+// fixtures by blueprint index — no heuristic tile scanning needed.
+//
 // Build:
 //   cd /opt/ed/BrogueCE
 //   GAME_SRCS=$(find src/brogue src/variants -name '*.c') && \
@@ -73,101 +76,66 @@ static char cell_char(int x, int y) {
 }
 
 // ---------------------------------------------------------------------------
-// Detection: return true if this level contains the fixture
-// Strategy: find any cell matching feature[0].terrain on feature[0].layer,
-//           then check a radius-2 neighborhood for feature[1].terrain on
-//           feature[1].layer (if feature[1] exists with terrain != 0).
+// Detection: find the placed machine by blueprint index using metadata
 // ---------------------------------------------------------------------------
 
-static boolean level_has_fixture(int mt) {
-    const blueprint *bp = &blueprintCatalog[mt];
-    if (bp->featureCount == 0) return false;
-
-    // Find first feature with a terrain tile
-    int f0 = -1;
-    for (int i = 0; i < bp->featureCount; i++) {
-        if (bp->feature[i].terrain != 0) { f0 = i; break; }
-    }
-    if (f0 < 0) return false;
-
-    enum tileType t0    = bp->feature[f0].terrain;
-    enum dungeonLayers l0 = bp->feature[f0].layer;
-
-    // Find second feature with a terrain tile (for confirmation)
-    int f1 = -1;
-    for (int i = f0 + 1; i < bp->featureCount; i++) {
-        if (bp->feature[i].terrain != 0) { f1 = i; break; }
-    }
-
-    enum tileType t1    = (f1 >= 0) ? bp->feature[f1].terrain : 0;
-    enum dungeonLayers l1 = (f1 >= 0) ? bp->feature[f1].layer  : 0;
-
-    for (int x = 1; x < DCOLS - 1; x++) {
-        for (int y = 1; y < DROWS - 1; y++) {
-            if (pmap[x][y].layers[l0] != t0) continue;
-
-            // If no second confirmation feature, presence of t0 is enough
-            if (t1 == 0) return true;
-
-            // Check radius 2 for t1/l1
-            for (int dx = -2; dx <= 2; dx++) {
-                for (int dy = -2; dy <= 2; dy++) {
-                    int nx = x + dx, ny = y + dy;
-                    if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
-                    if (pmap[nx][ny].layers[l1] == t1) return true;
-                }
-            }
+static const placedMachineInfo *find_placed_machine(int mt) {
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == mt) {
+            return &rogue.placedMachines[i];
         }
     }
-    return false;
+    return NULL;
 }
 
 // ---------------------------------------------------------------------------
-// Print a 13x9 window centered on the first matching t0 cell
+// Print the fixture: find bounding box of feature tiles near origin + padding
 // ---------------------------------------------------------------------------
 
-static void print_fixture_map(int mt) {
+static void print_fixture_map(const placedMachineInfo *info, int mt) {
     const blueprint *bp = &blueprintCatalog[mt];
-    if (bp->featureCount == 0) return;
+    int ox = info->origin.x;
+    int oy = info->origin.y;
 
-    int f0 = -1;
-    for (int i = 0; i < bp->featureCount; i++) {
-        if (bp->feature[i].terrain != 0) { f0 = i; break; }
-    }
-    if (f0 < 0) return;
+    int minX, maxX, minY, maxY;
 
-    enum tileType t0      = bp->feature[f0].terrain;
-    enum dungeonLayers l0 = bp->feature[f0].layer;
+    if (bp->featureCount > 0) {
+        // Use blueprint roomSize as search radius for feature tiles
+        int radius = bp->roomSize[1];
+        if (radius < 6) radius = 6;
 
-    // Find second feature for confirmation
-    int f1 = -1;
-    for (int i = f0 + 1; i < bp->featureCount; i++) {
-        if (bp->feature[i].terrain != 0) { f1 = i; break; }
-    }
-    enum tileType t1      = (f1 >= 0) ? bp->feature[f1].terrain : 0;
-    enum dungeonLayers l1 = (f1 >= 0) ? bp->feature[f1].layer   : 0;
-
-    // Center on anchor tile that has confirmation tile nearby
-    int cx = -1, cy = -1;
-    for (int x = 1; x < DCOLS - 1 && cx < 0; x++) {
-        for (int y = 1; y < DROWS - 1 && cx < 0; y++) {
-            if (pmap[x][y].layers[l0] != t0) continue;
-            if (t1 == 0) { cx = x; cy = y; break; }
-            for (int dx = -2; dx <= 2 && cx < 0; dx++) {
-                for (int dy = -2; dy <= 2 && cx < 0; dy++) {
-                    int nx = x + dx, ny = y + dy;
-                    if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
-                    if (pmap[nx][ny].layers[l1] == t1) { cx = x; cy = y; }
+        minX = ox; maxX = ox; minY = oy; maxY = oy;
+        for (int x = ox - radius; x <= ox + radius; x++) {
+            for (int y = oy - radius; y <= oy + radius; y++) {
+                if (x < 0 || x >= DCOLS || y < 0 || y >= DROWS) continue;
+                for (int f = 0; f < bp->featureCount; f++) {
+                    if (bp->feature[f].terrain != 0
+                        && pmap[x][y].layers[bp->feature[f].layer] == bp->feature[f].terrain) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
                 }
             }
         }
+    } else {
+        // Custom layout (no blueprint features): show fixed window around origin
+        minX = ox - 3;
+        maxX = ox + 3;
+        minY = oy - 5;
+        maxY = oy + 5;
     }
-    if (cx < 0) return;
 
-    for (int y = cy - 4; y <= cy + 4; y++) {
-        for (int x = cx - 6; x <= cx + 6; x++) {
-            if (x < 0 || x >= DCOLS || y < 0 || y >= DROWS) printf(" ");
-            else printf("%c", cell_char(x, y));
+    // Add 1-cell padding for wall context
+    minX = (minX > 0) ? minX - 1 : 0;
+    minY = (minY > 0) ? minY - 1 : 0;
+    maxX = (maxX < DCOLS - 1) ? maxX + 1 : DCOLS - 1;
+    maxY = (maxY < DROWS - 1) ? maxY + 1 : DROWS - 1;
+
+    for (int y = minY; y <= maxY; y++) {
+        for (int x = minX; x <= maxX; x++) {
+            printf("%c", cell_char(x, y));
         }
         printf("\n");
     }
@@ -188,9 +156,6 @@ int main(int argc, char **argv) {
 
     // Validate: init game briefly to check catalog bounds
     test_init_game(1);
-    int catalog_size = 0;
-    // Count blueprints by walking until depthRange[0]==0 && name==NULL
-    // Actually just trust the user's index; print name as confirmation.
     const blueprint *bp = &blueprintCatalog[mt];
     printf("Machine type %d: %s\n", mt, bp->name ? bp->name : "(unnamed)");
     printf("Depth range: %d–%d   Features: %d\n\n",
@@ -202,8 +167,10 @@ int main(int argc, char **argv) {
         uint64_t seed = (uint64_t)atoll(argv[3]);
         printf("Seed %llu, D%d:\n\n", (unsigned long long)seed, bp->depthRange[0]);
         test_init_game(seed);
-        if (level_has_fixture(mt)) {
-            print_fixture_map(mt);
+        const placedMachineInfo *info = find_placed_machine(mt);
+        if (info) {
+            printf("Origin: (%d, %d)  Machine #%d\n\n", info->origin.x, info->origin.y, info->machineNumber);
+            print_fixture_map(info, mt);
         } else {
             printf("(fixture not found on D1 for this seed)\n");
         }
@@ -220,9 +187,9 @@ int main(int argc, char **argv) {
     uint64_t first_hit = 0;
     for (uint64_t seed = 1; seed <= max_seed; seed++) {
         test_init_game(seed);
-        boolean found = level_has_fixture(mt);
+        const placedMachineInfo *info = find_placed_machine(mt);
         test_teardown_game();
-        if (found) {
+        if (info) {
             printf("Seed %llu D1\n", (unsigned long long)seed);
             if (first_hit == 0) first_hit = seed;
         }

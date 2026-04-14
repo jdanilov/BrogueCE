@@ -79,7 +79,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 9 | **Garden Patch** | 4-7 | GRASS, DF_FOLIAGE (2-3), SHALLOW_WATER (1) | Cavern organic | Lush overgrown garden. Loot: POTION (~30%). |
+| 9 | **Garden Patch** ✅ | 12-21 | FOLIAGE, SHALLOW_WATER (custom layout: 3-wide alternating rows) | Cavern organic | Overgrown garden with water channels. Custom `applyGardenLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 10 | **Fountain** ✅ | 3-5 | STATUE_INERT (center), SHALLOW_WATER (ring), MARBLE_FLOOR (border) | Room center | Classic dungeon fountain. Centerpiece. BP_PURGE_INTERIOR clears foliage. |
 | 11 | **Mushroom Circle** | 3-6 | FUNGUS_FOREST in ring, GRASS center | Cavern organic | Fairy ring in a damp hollow. |
 | 12 | **Sunlit Patch** | 3-5 | DF_SUNLIGHT, GRASS, DF_FOLIAGE | Anywhere | Shaft of light from a crack above. |
@@ -122,13 +122,26 @@ Each fixture becomes a small `blueprint` entry:
 - `roomSize[2]`: footprint in cells, e.g. `{3, 6}` for a 3-6 cell fixture
 - `flags`: `BP_NO_INTERIOR_FLAG` (don't mark as machine room) + context flags
 - `depthRange[2]`: depth bounds from the catalog above
-- `featureCount`: 2-4 machineFeatures per fixture
+- `featureCount`: 2-4 machineFeatures per fixture, OR 0 for custom layout fixtures
 - `frequency`: 0 (driven by auto-generators, not direct machine placement)
 
-Each fixture's `machineFeature` entries place tiles/DFs:
+**Two placement approaches:**
+
+**Standard (blueprint features):** Each fixture's `machineFeature` entries place tiles:
 - Origin feature: the "centerpiece" tile (statue, lava, deep water)
 - Surrounding features: decorative tiles around it (rubble, grass, carpet)
 - Optional: surface-layer DFs for flavor (blood, ash, embers)
+
+**Custom layout (featureCount == 0):** For precise geometric patterns (rows, grids, rings). Blueprint claims the room; a dedicated function in `Architect.c` places tiles programmatically using the machine interior grid. See `applyGardenLayout()` as reference. Custom layouts can abort the machine if the interior shape doesn't fit the pattern.
+
+### Machine Placement Tracking
+
+Every successful `buildAMachine()` call records a `placedMachineInfo` entry in `rogue.placedMachines[]` containing `{ blueprintIndex, machineNumber, origin }`. This enables:
+- `tools/scan_fixture_seeds.c` to find fixtures by blueprint index (instant lookup, no tile scanning)
+- Tests to verify fixture placement via `rogue.placedMachineCount`
+- Custom layouts to store an effective origin different from the machine origin
+
+Defined in `Rogue.h`, reset in `digDungeon()`, max `MAX_PLACED_MACHINES` (50) entries per level.
 
 ### Auto-Generator Integration
 

@@ -26,11 +26,12 @@ TEST(test_fixture_fountain_blueprint_has_features) {
 // --- Placement ---
 
 TEST(test_fixture_fountain_places_statue) {
-    test_init_game(42);
+    test_init_arena(42);
 
     rogue.depthLevel = 3;
 
-    // Try to build the fountain (retry loop because area placement can fail)
+    // The arena provides a large open floor area that reliably satisfies
+    // the fountain blueprint's {4,8} room size and MF_NOT_IN_HALLWAY requirements.
     boolean placed = false;
     for (int i = 0; i < 30; i++) {
         if (buildAMachine(MT_FIXTURE_FOUNTAIN, -1, -1, 0, NULL, NULL, NULL)) {
@@ -185,6 +186,86 @@ TEST(test_fixture_lone_statue_blueprint_has_statue_feature) {
     test_teardown_game();
 }
 
+// --- Garden Patch ---
+
+TEST(test_fixture_garden_patch_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_GARDEN_PATCH];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_garden_patch_custom_layout) {
+    test_init_game(99);
+
+    // Garden uses custom layout (featureCount == 0), so verify that directly.
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_GARDEN_PATCH];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_garden_patch_places_foliage_and_water) {
+    test_init_game(42);
+
+    rogue.depthLevel = 3;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_GARDEN_PATCH, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // The garden is recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_GARDEN_PATCH) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_garden_patch_alternating_rows) {
+    test_init_game(42);
+
+    rogue.depthLevel = 3;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_GARDEN_PATCH, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Find a foliage tile, then verify alternating pattern:
+    // the row below it should be shallow water, the row below that foliage again.
+    boolean foundPattern = false;
+    for (int x = 0; x < DCOLS && !foundPattern; x++) {
+        for (int y = 0; y < DROWS - 2 && !foundPattern; y++) {
+            if (pmap[x][y].layers[SURFACE] == FOLIAGE
+                && pmap[x][y + 1].layers[LIQUID] == SHALLOW_WATER
+                && pmap[x][y + 2].layers[SURFACE] == FOLIAGE) {
+                foundPattern = true;
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -198,4 +279,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_lone_statue_blueprint_has_features);
     RUN_TEST(test_fixture_lone_statue_places_statue);
     RUN_TEST(test_fixture_lone_statue_blueprint_has_statue_feature);
+    RUN_TEST(test_fixture_garden_patch_blueprint_depth_range);
+    RUN_TEST(test_fixture_garden_patch_custom_layout);
+    RUN_TEST(test_fixture_garden_patch_places_foliage_and_water);
+    RUN_TEST(test_fixture_garden_patch_alternating_rows);
 }

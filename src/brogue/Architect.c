@@ -958,6 +958,73 @@ static void prepareInteriorWithMachineFlags(char interior[DCOLS][DROWS], short o
     }
 }
 
+// Place a 3-wide alternating-row garden pattern (foliage rows / water rows).
+// Extends vertically from the origin, using only cells inside the machine interior.
+// Returns true if layout was placed, false if insufficient space.
+// Sets *outCenter to the center of the placed pattern.
+static boolean applyGardenLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // The interior is an irregular blob. Find the best column of 3 that has the
+    // most contiguous vertical rows in the interior.
+    // Try originX first, then scan nearby columns.
+    short bestX = originX, bestMinY = originY, bestMaxY = originY, bestLen = 0;
+
+    for (short cx = originX - 3; cx <= originX + 3; cx++) {
+        if (cx < 1 || cx >= DCOLS - 1) continue;
+
+        // Find contiguous 3-wide vertical runs through this column.
+        for (short startY = 0; startY < DROWS; startY++) {
+            if (!interior[cx][startY] || !interior[cx - 1][startY] || !interior[cx + 1][startY]) continue;
+            short endY = startY;
+            while (endY + 1 < DROWS
+                   && interior[cx][endY + 1]
+                   && interior[cx - 1][endY + 1]
+                   && interior[cx + 1][endY + 1]) {
+                endY++;
+            }
+            short len = endY - startY + 1;
+            if (len > bestLen) {
+                bestLen = len;
+                bestX = cx;
+                bestMinY = startY;
+                bestMaxY = endY;
+            }
+            startY = endY; // skip past this run
+        }
+    }
+
+    // Clamp to 4-7 rows.
+    if (bestLen > 7) {
+        short excess = bestLen - 7;
+        bestMinY += excess / 2;
+        bestMaxY = bestMinY + 6;
+    }
+    bestLen = bestMaxY - bestMinY + 1;
+    if (bestLen < 4) return false; // not enough space
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = (bestMinY + bestMaxY) / 2;
+    }
+
+    // Place alternating rows: even offset = foliage, odd offset = shallow water.
+    for (short y = bestMinY; y <= bestMaxY; y++) {
+        short rowIndex = y - bestMinY;
+        enum tileType terrain = (rowIndex % 2 == 0) ? FOLIAGE : SHALLOW_WATER;
+        enum dungeonLayers layer = (rowIndex % 2 == 0) ? SURFACE : LIQUID;
+        for (short dx = -1; dx <= 1; dx++) {
+            short x = bestX + dx;
+            pmap[x][y].layers[layer] = terrain;
+            // Clear conflicting layers: if placing water, clear surface; if placing foliage, clear liquid.
+            if (layer == LIQUID) {
+                pmap[x][y].layers[SURFACE] = NOTHING;
+            } else {
+                pmap[x][y].layers[LIQUID] = NOTHING;
+            }
+        }
+    }
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -1722,6 +1789,26 @@ boolean buildAMachine(enum machineTypes bp,
         for (int i=0; i<monsterCount; i++) {
             parentSpawnedMonsters[i] = p->spawnedMonsters[i];
         }
+    }
+
+    // Custom tile layout for fixtures that need precise patterns.
+    pos effectiveOrigin = (pos){ originX, originY };
+    if (bp == MT_FIXTURE_GARDEN_PATCH) {
+        if (!applyGardenLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            // Not enough space for the garden pattern; abort and restore.
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+
+    // Record this machine placement for external tools and queries.
+    if (rogue.placedMachineCount < MAX_PLACED_MACHINES) {
+        placedMachineInfo *info = &rogue.placedMachines[rogue.placedMachineCount++];
+        info->blueprintIndex = bp;
+        info->machineNumber = machineNumber;
+        info->origin = effectiveOrigin;
     }
 
     free(p);
@@ -3311,6 +3398,7 @@ void digDungeon(void) {
     short **grid;
 
     rogue.machineNumber = 0;
+    rogue.placedMachineCount = 0;
 
     topBlobMinX = topBlobMinY = blobWidth = blobHeight = 0;
 

@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_LONE_STATUE = 75`
-Blueprint catalog currently has **76 entries** (indices 0–75).
-New fixture will be: enum value **76**, catalog index **76**.
+Current last fixture in the enum: `MT_FIXTURE_GARDEN_PATCH = 76`
+Blueprint catalog currently has **77 entries** (indices 0–76).
+New fixture will be: enum value **77**, catalog index **77**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum
@@ -69,10 +69,20 @@ Key files:
 - `src/test/test_fixtures.c` — test suite
 - `src/test/test_main.c` — suite registration (only if adding a new suite; fixtures suite already exists)
 
-### 3b. Tile placement reference — CRITICAL, read before choosing tiles
+### 3b. Tile placement: blueprint features vs custom layout
 
-**Use direct terrain placement (the `terrain` + `layer` fields), NOT DFs.**
-DFs have propagation behavior and the scanner cannot detect DF-placed tiles. Always use terrain directly.
+**Standard approach: blueprint features** — use `terrain` + `layer` fields (NOT DFs).
+The blueprint system places tiles individually at qualifying locations. Good for scattered/clustered arrangements (rubble, statues, water pools). DFs have propagation behavior — avoid them.
+
+**Custom layout approach** — for fixtures that need precise geometric patterns (rows, grids, rings) that the blueprint system can't produce. Set `featureCount = 0` in the blueprint and add a custom layout function in `Architect.c` (see `applyGardenLayout` as the reference implementation).
+
+Custom layouts:
+- Are called from `buildAMachine()` after the interior is established, keyed by machine type enum
+- Receive `originX`, `originY`, and the `interior[DCOLS][DROWS]` grid
+- Return `boolean` — false aborts the machine (restores level backup)
+- Can return an effective origin via `pos *outCenter` for accurate scanner display
+- Must only place tiles on cells where `interior[x][y]` is true
+- Blueprint still needs appropriate `roomSize` to ensure the interior is large enough
 
 **Verified tileType enum names and their correct layers:**
 
@@ -128,7 +138,7 @@ Append after the last fixture blueprint entry (before `};` of blueprintCatalog_B
 }},
 ```
 
-**roomSize guidance:** `{3,6}` tiny · `{4,8}` small · `{6,12}` medium
+**roomSize guidance:** `{3,6}` tiny · `{4,8}` small · `{6,12}` medium · `{12,21}` for custom layouts needing space
 
 **Depth → frequency guidance for auto-generator:**
 - Universal (all depths): frequency 30–40
@@ -154,20 +164,30 @@ In the `// Fixture machines` comment block at the bottom of autoGeneratorCatalog
 {0, 0, 0, MT_FIXTURE_NAME, FLOOR, NOTHING, minDepth, maxDepth, frequency, 0, 0, 1},
 ```
 
-### 3f. test_fixtures.c — add 4 tests
+### 3f. test_fixtures.c — add tests
 
-Follow the established pattern in the file. Four tests minimum:
+Follow the established pattern in the file. Tests per fixture:
+
+**Standard fixtures (blueprint features):** 4 tests minimum:
 1. Blueprint depth range matches plan
 2. Blueprint featureCount > 0
 3. `buildAMachine(MT_FIXTURE_NAME, ...)` succeeds and a key tile appears in pmap
 4. `blueprintCatalog[MT_FIXTURE_NAME].feature[0]` has the expected terrain/layer
 
+**Custom layout fixtures (featureCount == 0):** 3-4 tests:
+1. Blueprint depth range matches plan
+2. featureCount == 0 (confirming custom layout is used)
+3. `buildAMachine` succeeds and is recorded in `rogue.placedMachines`
+4. The layout pattern is present on the map (e.g. alternating row pattern)
+
 **Test gotchas:**
 - `DEEPEST_LEVEL` macro is NOT available in tests. Use `gameConst->deepestLevel` instead.
 - `BP_NO_INTERIOR_FLAG` means `machineNumber` won't be set on fixture tiles — don't check it.
-- The placement test (buildAMachine) uses `test_init_game()` with a retry loop (up to 30 attempts).
+- Standard fixtures: use `test_init_arena()` for placement tests (reliable open space).
+- Custom layout fixtures: use `test_init_game()` for placement tests (need real room geometry for the interior blob to have the right shape).
+- Placement tests use a retry loop (up to 30 attempts).
 
-Register all four in the `SUITE(fixtures)` block at the bottom of the file.
+Register all tests in the `SUITE(fixtures)` block at the bottom of the file.
 
 ---
 
@@ -177,13 +197,19 @@ Register all four in the `SUITE(fixtures)` block at the bottom of the file.
 make test
 ```
 
-All tests must pass (ignore the pre-existing `test_regeneration` flake). Fix any failures before continuing.
+All tests must pass. Fix any failures before continuing.
 
 ---
 
 ## Step 5 — Find a seed and print ASCII
 
-`tools/scan_fixture_seeds.c` is a **generic scanner** — no editing required. It reads the blueprint at runtime and detects any fixture by its feature tiles.
+`tools/scan_fixture_seeds.c` is a **generic scanner** — no editing required. It uses `rogue.placedMachines[]` metadata recorded by `buildAMachine()` to find fixtures by blueprint index.
+
+**How it works:**
+- Each successful `buildAMachine()` call records `{ blueprintIndex, machineNumber, origin }` in `rogue.placedMachines[]`
+- The scanner searches this array for the target machine type — instant lookup, no heuristic tile scanning
+- For standard fixtures (featureCount > 0): the ASCII display auto-sizes a bounding box around the blueprint's feature terrain tiles near the origin
+- For custom layout fixtures (featureCount == 0): the display shows a fixed 7×11 window centered on the effective origin
 
 **Build once** (only needed if game source changed since last build):
 ```bash
@@ -206,12 +232,10 @@ cc -DDATADIR=. -DBROGUE_SDL -DBROGUE_EXTRA_VERSION='""' \
 **Display a specific seed:**
 ```bash
 ./bin/scan-fixture INDEX -seed N
-# Prints 13x9 ASCII map centered on the fixture's first terrain tile
+# Prints ASCII map centered on the fixture's origin, with machine number
 ```
 
-Detection uses `blueprintCatalog[mt].feature[0].terrain` as the anchor tile and `feature[1].terrain` as a nearby confirmation. The print function centers on the anchor tile that has the confirmation tile within radius 2 — so it finds the actual fixture, not a random occurrence of the anchor tile.
-
-**If no seeds found in 500:** Try 1000, or check that feature[0] uses a terrain tile (not a DF) — the scanner only detects terrain-based features.
+**If no seeds found in 500:** Try 1000. For custom layout fixtures, the layout may reject rooms that are too small — this is expected. Increase roomSize in the blueprint if placement rate is too low.
 
 ---
 
@@ -247,3 +271,15 @@ Auto-generator: `{0, 0, 0, MT_FIXTURE_FOUNTAIN, FLOOR, NOTHING, 1, 8, 40, 0, 0, 
     {0, BONES,         SURFACE, {1,1}, 0, 0,-1,0, 1, 0,0, (MF_NEAR_ORIGIN)}}},
 ```
 Auto-generator: `{0, 0, 0, MT_FIXTURE_RUBBLE_HEAP, FLOOR, NOTHING, 1, DEEPEST_LEVEL, 35, 0, 0, 1}`
+
+```c
+// MT_FIXTURE_GARDEN_PATCH = index 76 — CUSTOM LAYOUT (featureCount == 0)
+// Tile placement handled by applyGardenLayout() in Architect.c.
+// Places 3-wide alternating rows of FOLIAGE and SHALLOW_WATER.
+// Aborts if the interior doesn't have a 3-wide column of 4+ contiguous rows.
+{"Fixture: Garden Patch -- overgrown garden with water channels",
+{1, 8},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    // Tile placement handled by applyGardenLayout() in Architect.c
+}},
+```
+Auto-generator: `{0, 0, 0, MT_FIXTURE_GARDEN_PATCH, FLOOR, NOTHING, 1, 8, 40, 0, 0, 1}`
