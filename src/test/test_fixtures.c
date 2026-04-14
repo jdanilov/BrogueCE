@@ -674,7 +674,7 @@ TEST(test_fixture_dust_motes_blueprint_has_features) {
 }
 
 TEST(test_fixture_dust_motes_places_ash) {
-    test_init_game(42);
+    test_init_arena(42);
 
     rogue.depthLevel = 5;
 
@@ -706,6 +706,98 @@ TEST(test_fixture_dust_motes_blueprint_has_ash_feature) {
     const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DUST_MOTES];
     ASSERT_EQ(bp->feature[0].terrain, ASH);
     ASSERT_EQ(bp->feature[0].layer, SURFACE);
+
+    test_teardown_game();
+}
+
+// --- Mushroom Circle ---
+
+TEST(test_fixture_mushroom_circle_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_MUSHROOM_CIRCLE];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mushroom_circle_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_MUSHROOM_CIRCLE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mushroom_circle_places_fungus) {
+    // Try multiple game seeds since the ring needs a large open room
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_MUSHROOM_CIRCLE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_MUSHROOM_CIRCLE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_mushroom_circle_ring_pattern) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_MUSHROOM_CIRCLE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find a GRASS tile and verify it has adjacent FUNGUS_FOREST or LUMINESCENT_FUNGUS
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[SURFACE] == GRASS) {
+                // Check neighbors for fungus ring
+                for (int dx = -1; dx <= 1 && !foundPattern; dx++) {
+                    for (int dy = -1; dy <= 1 && !foundPattern; dy++) {
+                        if (dx == 0 && dy == 0) continue;
+                        short t = pmap[x+dx][y+dy].layers[SURFACE];
+                        if (t == FUNGUS_FOREST || t == LUMINESCENT_FUNGUS) {
+                            foundPattern = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
 
     test_teardown_game();
 }
@@ -751,4 +843,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_dust_motes_blueprint_has_features);
     RUN_TEST(test_fixture_dust_motes_places_ash);
     RUN_TEST(test_fixture_dust_motes_blueprint_has_ash_feature);
+    RUN_TEST(test_fixture_mushroom_circle_blueprint_depth_range);
+    RUN_TEST(test_fixture_mushroom_circle_custom_layout);
+    RUN_TEST(test_fixture_mushroom_circle_places_fungus);
+    RUN_TEST(test_fixture_mushroom_circle_ring_pattern);
 }

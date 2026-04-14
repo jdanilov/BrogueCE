@@ -81,7 +81,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 |---|------|------|---------------|-----------|-------|
 | 9 | **Garden Patch** ✅ | 12-21 | FOLIAGE, SHALLOW_WATER (custom layout: 3-wide alternating rows) | Cavern organic | Overgrown garden with water channels. Custom `applyGardenLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 10 | **Fountain** ✅ | 3-5 | STATUE_INERT (center), SHALLOW_WATER (ring), MARBLE_FLOOR (border) | Room center | Classic dungeon fountain. Centerpiece. BP_PURGE_INTERIOR clears foliage. |
-| 11 | **Mushroom Circle** | 3-6 | FUNGUS_FOREST in ring, GRASS center | Cavern organic | Fairy ring in a damp hollow. |
+| 11 | **Mushroom Circle** ✅ | 12-21 | FUNGUS_FOREST + LUMINESCENT_FUNGUS ring, GRASS interior | Cavern organic | Glowing fairy ring in a damp hollow. Custom `applyMushroomCircleLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 12 | **Sunlit Patch** | 3-5 | DF_SUNLIGHT, GRASS, DF_FOLIAGE | Anywhere | Shaft of light from a crack above. |
 | 13 | **Bird Nest** | 1-2 | HAY (cluster), DF_FOLIAGE around | Cavern corner | Organic nest tucked into a crevice. |
 | 14 | **Vine Trellis** | 3-5 | DF_FOLIAGE (2-3), GRASS, DEAD_GRASS (1) | Wall-adjacent | Creeping vines along a wall. |

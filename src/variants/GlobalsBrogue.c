@@ -180,6 +180,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_COBWEB_CORNER,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_CRUMBLED_WALL,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_DUST_MOTES,      FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_MUSHROOM_CIRCLE, FLOOR,      NOTHING,    1,      8,              40,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -682,6 +683,11 @@ const blueprint blueprintCatalog_Brogue[] = {
         //         DF          terrain        layer          count      minInst  iCat iKind mKind  space  hFlg iFlg  featureFlags
         {           0,          ASH,           SURFACE,       {4, 6},    0,       0,   -1,   0,     1,     0,   0,   (MF_NOT_IN_HALLWAY)},
         {           0,          DEAD_GRASS,    SURFACE,       {3, 5},    0,       0,   -1,   0,     1,     0,   0,   (MF_NOT_IN_HALLWAY)},
+    }},
+
+    {"Fixture: Mushroom Circle -- glowing fairy ring of fungus around a grassy hollow",
+    {1, 8},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyMushroomCircleLayout() in Architect.c
     }},
 };
 

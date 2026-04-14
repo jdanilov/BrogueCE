@@ -1323,6 +1323,125 @@ static boolean applyGardenLayout(short originX, short originY, char interior[DCO
     return true;
 }
 
+// Count how many ring positions at a given center are inside the interior.
+// Large ring: dist² in {5,8,9} = 16 possible positions (radius ~2.2-3.0).
+// Small ring: dist² in {2,4} = 8 possible positions (radius ~1.4-2.0).
+static void countRingPositions(short cx, short cy, char interior[DCOLS][DROWS],
+                               short *largeRing, short *smallRing) {
+    *largeRing = 0;
+    *smallRing = 0;
+    for (short ry = -3; ry <= 3; ry++) {
+        for (short rx = -3; rx <= 3; rx++) {
+            short d2 = rx * rx + ry * ry;
+            short nx = cx + rx, ny = cy + ry;
+            if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
+            if (!interior[nx][ny]) continue;
+            if (d2 == 5 || d2 == 8 || d2 == 9) (*largeRing)++;
+            if (d2 == 2 || d2 == 4) (*smallRing)++;
+        }
+    }
+}
+
+// Place a glowing fairy ring of fungus around a grassy hollow.
+// Tries large ring first (7x7, dist²{5,8,9} ring around dist²≤4 grass interior).
+// Falls back to small ring (5x5, dist²{2,4} ring around dist²≤1 grass interior).
+// Up to 25% of ring tiles may be missing due to wall clipping for natural irregularity.
+static boolean applyMushroomCircleLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    short bestX = 0, bestY = 0;
+    short bestLarge = 0, bestSmall = 0;
+
+    for (short dy = -5; dy <= 5; dy++) {
+        for (short dx = -5; dx <= 5; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 3 || x >= DCOLS - 3 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+
+            short largeRing, smallRing;
+            countRingPositions(x, y, interior, &largeRing, &smallRing);
+
+            // Prefer large ring; track best of each
+            if (largeRing > bestLarge || (largeRing == bestLarge && smallRing > bestSmall)) {
+                bestLarge = largeRing;
+                bestSmall = smallRing;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    // Large ring: 16 positions, need 75% = 12+
+    // Small ring: 8 positions, need 75% = 6+
+    boolean useLarge = (bestLarge >= 12);
+    if (!useLarge && bestSmall < 6) return false;
+
+    // If we're using the small ring, re-find the best center optimized for small ring
+    if (!useLarge) {
+        short bestSmallScore = 0;
+        for (short dy = -5; dy <= 5; dy++) {
+            for (short dx = -5; dx <= 5; dx++) {
+                short x = originX + dx;
+                short y = originY + dy;
+                if (x < 2 || x >= DCOLS - 2 || y < 2 || y >= DROWS - 2) continue;
+                if (!interior[x][y]) continue;
+
+                short largeRing, smallRing;
+                countRingPositions(x, y, interior, &largeRing, &smallRing);
+
+                if (smallRing > bestSmallScore) {
+                    bestSmallScore = smallRing;
+                    bestX = x;
+                    bestY = y;
+                }
+            }
+        }
+        if (bestSmallScore < 6) return false;
+    }
+
+    // Place tiles
+    short ringCount = 0;
+    short radius = useLarge ? 3 : 2;
+
+    for (short dy = -radius; dy <= radius; dy++) {
+        for (short dx = -radius; dx <= radius; dx++) {
+            short x = bestX + dx;
+            short y = bestY + dy;
+            if (x < 0 || x >= DCOLS || y < 0 || y >= DROWS) continue;
+            if (!interior[x][y]) continue;
+
+            short dist2 = dx * dx + dy * dy;
+            boolean isGrass, isRing;
+
+            if (useLarge) {
+                isGrass = (dist2 <= 4);
+                isRing = (dist2 == 5 || dist2 == 8 || dist2 == 9);
+            } else {
+                isGrass = (dist2 <= 1);
+                isRing = (dist2 == 2 || dist2 == 4);
+            }
+
+            if (isGrass) {
+                pmap[x][y].layers[SURFACE] = GRASS;
+                pmap[x][y].layers[LIQUID] = NOTHING;
+            } else if (isRing) {
+                if (ringCount % 3 == 0) {
+                    pmap[x][y].layers[SURFACE] = LUMINESCENT_FUNGUS;
+                } else {
+                    pmap[x][y].layers[SURFACE] = FUNGUS_FOREST;
+                }
+                pmap[x][y].layers[LIQUID] = NOTHING;
+                ringCount++;
+            }
+        }
+    }
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -2126,6 +2245,14 @@ boolean buildAMachine(enum machineTypes bp,
     if (bp == MT_FIXTURE_GARDEN_PATCH) {
         if (!applyGardenLayout(originX, originY, p->interior, &effectiveOrigin)) {
             // Not enough space for the garden pattern; abort and restore.
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_MUSHROOM_CIRCLE) {
+        if (!applyMushroomCircleLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
