@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_SUNLIT_PATCH = 84`
-Blueprint catalog currently has **85 entries** (indices 0–84).
-New fixture will be: enum value **85**, catalog index **85**.
+Current last fixture in the enum: `MT_FIXTURE_BIRD_NEST = 85`
+Blueprint catalog currently has **86 entries** (indices 0–85).
+New fixture will be: enum value **86**, catalog index **86**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum
@@ -184,7 +184,7 @@ int main(void) {
         int fixture_count = 0;
         for (int i = 0; i < rogue.placedMachineCount; i++) {
             int bp = rogue.placedMachines[i].blueprintIndex;
-            if (bp >= MT_FIXTURE_FOUNTAIN && bp <= MT_FIXTURE_SUNLIT_PATCH) {
+            if (bp >= MT_FIXTURE_FOUNTAIN && bp <= MT_FIXTURE_BIRD_NEST) {
                 fixture_count++;
             }
         }
@@ -210,7 +210,7 @@ cc -DDATADIR=. -DBROGUE_SDL -DBROGUE_EXTRA_VERSION='""' \
 
 **If distribution is too high**, lower all fixture frequencies uniformly.
 **If distribution is too low on deep levels**, that's expected — more deep fixtures will fill it in.
-Update the `MT_FIXTURE_SUNLIT_PATCH` reference in the counter script to the latest fixture enum.
+Update the `MT_FIXTURE_BIRD_NEST` reference in the counter script to the latest fixture enum.
 
 **Feature flags quick reference:**
 - `MF_BUILD_AT_ORIGIN` — place at machine origin

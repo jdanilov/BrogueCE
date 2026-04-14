@@ -184,6 +184,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_DUST_MOTES,      FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_MUSHROOM_CIRCLE, FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_SUNLIT_PATCH,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_BIRD_NEST,       FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -698,6 +699,11 @@ const blueprint blueprintCatalog_Brogue[] = {
         //         DF              terrain        layer          count      minInst  iCat iKind mKind  space  hFlg iFlg  featureFlags
         {DF_SUNLIGHT,   FOLIAGE,       SURFACE,       {1, 1},    1,       0,   -1,   0,     0,     0,   0,   (MF_BUILD_AT_ORIGIN | MF_NOT_IN_HALLWAY)},
         {0,             GRASS,         SURFACE,       {2, 4},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN | MF_NOT_IN_HALLWAY)},
+    }},
+
+    {"Fixture: Bird Nest -- silk-bound nest on a stone perch with cracked egg shells",
+    {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyBirdNestLayout() in Architect.c
     }},
 };
 

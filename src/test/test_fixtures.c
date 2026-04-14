@@ -859,6 +859,93 @@ TEST(test_fixture_sunlit_patch_blueprint_has_sunlight_df) {
     test_teardown_game();
 }
 
+// --- Bird Nest ---
+
+TEST(test_fixture_bird_nest_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BIRD_NEST];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], 8);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bird_nest_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BIRD_NEST];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bird_nest_places_statue) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_BIRD_NEST, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_BIRD_NEST) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bird_nest_statue_with_adjacent_web) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17};
+    for (int s = 0; s < 5 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 3;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_BIRD_NEST, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find a STATUE_INERT with adjacent SPIDERWEB
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                if (pmap[x-1][y].layers[SURFACE] == SPIDERWEB
+                    || pmap[x+1][y].layers[SURFACE] == SPIDERWEB
+                    || pmap[x][y-1].layers[SURFACE] == SPIDERWEB
+                    || pmap[x][y+1].layers[SURFACE] == SPIDERWEB) {
+                    foundPattern = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -908,4 +995,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_sunlit_patch_blueprint_has_features);
     RUN_TEST(test_fixture_sunlit_patch_places_foliage);
     RUN_TEST(test_fixture_sunlit_patch_blueprint_has_sunlight_df);
+    RUN_TEST(test_fixture_bird_nest_blueprint_depth_range);
+    RUN_TEST(test_fixture_bird_nest_custom_layout);
+    RUN_TEST(test_fixture_bird_nest_places_statue);
+    RUN_TEST(test_fixture_bird_nest_statue_with_adjacent_web);
 }

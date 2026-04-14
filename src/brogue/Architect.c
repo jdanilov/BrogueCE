@@ -1197,6 +1197,64 @@ static boolean applyCrumbledWallLayout(short originX, short originY, char interi
     return true;
 }
 
+// Place a bird nest: statue (stone perch) at center, spiderweb + hay + bones on adjacent cells.
+// Finds an interior cell near origin with at least 2 adjacent interior cells.
+static boolean applyBirdNestLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    short bestX = 0, bestY = 0, bestAdj = 0;
+
+    for (short dy = -3; dy <= 3; dy++) {
+        for (short dx = -3; dx <= 3; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+
+            short adj = 0;
+            if (interior[x-1][y]) adj++;
+            if (interior[x+1][y]) adj++;
+            if (interior[x][y-1]) adj++;
+            if (interior[x][y+1]) adj++;
+
+            if (adj > bestAdj) {
+                bestAdj = adj;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    if (bestAdj < 2) return false;
+
+    // Place statue (stone perch) at center
+    pmap[bestX][bestY].layers[DUNGEON] = STATUE_INERT;
+    pmap[bestX][bestY].layers[SURFACE] = NOTHING;
+
+    // Place spiderweb, hay, and bones on adjacent interior cells
+    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    short placed = 0;
+    for (short i = 0; i < 4 && placed < 3; i++) {
+        short nx = bestX + dirs[i][0];
+        short ny = bestY + dirs[i][1];
+        if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
+        if (!interior[nx][ny]) continue;
+
+        if (placed == 0) {
+            pmap[nx][ny].layers[SURFACE] = SPIDERWEB;
+        } else if (placed == 1) {
+            pmap[nx][ny].layers[SURFACE] = HAY;
+        } else {
+            pmap[nx][ny].layers[SURFACE] = BONES;
+        }
+        placed++;
+    }
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 // Place a tight mossy alcove: shallow water at center, surrounded by foliage and grass.
 // Finds a suitable interior cell near the origin and places a 3-5 tile cluster.
 // Returns true if layout was placed, false if insufficient space.
@@ -2253,6 +2311,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_MUSHROOM_CIRCLE) {
         if (!applyMushroomCircleLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_BIRD_NEST) {
+        if (!applyBirdNestLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
