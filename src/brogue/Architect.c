@@ -958,6 +958,85 @@ static void prepareInteriorWithMachineFlags(char interior[DCOLS][DROWS], short o
     }
 }
 
+// --- Rotatable layout infrastructure ---
+// Defines a tile as an (dx,dy) offset from an anchor point, with tile type and layer.
+// Used by applyRotatableLayout() to place patterns in any of 4 cardinal orientations.
+typedef struct {
+    short dx, dy;
+    enum tileType tile;
+    enum dungeonLayers layer;
+    boolean clearConflict; // if true, clear the "other" layer (SURFACE↔LIQUID)
+} layoutTile;
+
+// Rotation matrices: maps (dx,dy) → rotated (rx,ry).
+// Index 0=North(identity), 1=East(90°CW), 2=South(180°), 3=West(270°CW).
+static const short rotationMatrix[4][4] = {
+    { 1,  0,  0,  1},  // N: rx= dx, ry= dy
+    { 0, -1,  1,  0},  // E: rx=-dy, ry= dx
+    {-1,  0,  0, -1},  // S: rx=-dx, ry=-dy
+    { 0,  1, -1,  0},  // W: rx= dy, ry=-dx
+};
+
+// Try all 4 rotations of a tile pattern, pick the placement closest to origin.
+// pattern: array of layoutTile offsets from anchor.
+// centerDx/Dy: offset from anchor to the "center" point (for outCenter), in base orientation.
+// Returns true if placed, false if no rotation fits the interior.
+static boolean applyRotatableLayout(
+    short originX, short originY,
+    char interior[DCOLS][DROWS],
+    const layoutTile *pattern, int patCount,
+    short centerDx, short centerDy,
+    pos *outCenter)
+{
+    short bestAX = 0, bestAY = 0, bestRot = -1;
+    int bestDist = 10000;
+
+    for (short rot = 0; rot < 4; rot++) {
+        const short *r = rotationMatrix[rot];
+        for (short ax = 2; ax < DCOLS - 2; ax++) {
+            for (short ay = 2; ay < DROWS - 2; ay++) {
+                boolean fits = true;
+                for (int t = 0; t < patCount && fits; t++) {
+                    short rx = ax + r[0] * pattern[t].dx + r[1] * pattern[t].dy;
+                    short ry = ay + r[2] * pattern[t].dx + r[3] * pattern[t].dy;
+                    if (rx < 1 || rx >= DCOLS - 1 || ry < 1 || ry >= DROWS - 1) { fits = false; break; }
+                    if (!interior[rx][ry]) fits = false;
+                }
+                if (fits) {
+                    short cx = ax + r[0] * centerDx + r[1] * centerDy;
+                    short cy = ay + r[2] * centerDx + r[3] * centerDy;
+                    int dist = (cx - originX) * (cx - originX) + (cy - originY) * (cy - originY);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestAX = ax;
+                        bestAY = ay;
+                        bestRot = rot;
+                    }
+                }
+            }
+        }
+    }
+
+    if (bestRot < 0) return false;
+
+    const short *r = rotationMatrix[bestRot];
+    for (int t = 0; t < patCount; t++) {
+        short rx = bestAX + r[0] * pattern[t].dx + r[1] * pattern[t].dy;
+        short ry = bestAY + r[2] * pattern[t].dx + r[3] * pattern[t].dy;
+        pmap[rx][ry].layers[pattern[t].layer] = pattern[t].tile;
+        if (pattern[t].clearConflict) {
+            if (pattern[t].layer == LIQUID) pmap[rx][ry].layers[SURFACE] = NOTHING;
+            else if (pattern[t].layer == SURFACE) pmap[rx][ry].layers[LIQUID] = NOTHING;
+        }
+    }
+
+    if (outCenter) {
+        outCenter->x = bestAX + r[0] * centerDx + r[1] * centerDy;
+        outCenter->y = bestAY + r[2] * centerDx + r[3] * centerDy;
+    }
+    return true;
+}
+
 // Place a horizontal line of 3-5 shallow water tiles with rubble bookends and dead grass accent.
 // Scans for the longest horizontal run of interior cells near the origin.
 // Returns true if layout was placed (minimum 3 water tiles), false otherwise.
@@ -1139,60 +1218,59 @@ static boolean applyPuddleLayout(short originX, short originY, char interior[DCO
 //     embers rubble embers
 // Requires a 3-wide, 5-tall interior region near origin.
 static boolean applyForgeLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
-    // Search the entire interior for a 3-wide, 5-tall column of interior cells.
-    // Prefer locations closer to the origin.
-    short bestX = 0, bestY = 0;
-    int bestDist = 10000;
-    boolean found = false;
+    // 3-wide, 5-tall forge: rubble-anvil-obsidian-lava-rubble with embers flanking.
+    // Tries all 4 rotations via shared helper.
+    static const layoutTile forgePat[] = {
+        // Row 0: rubble center, embers flanking
+        {-1, 0, EMBERS,       SURFACE, false},
+        { 0, 0, RUBBLE,       SURFACE, false},
+        { 1, 0, EMBERS,       SURFACE, false},
+        // Row 1: anvil center, embers flanking
+        {-1, 1, EMBERS,       SURFACE, false},
+        { 0, 1, STATUE_INERT, DUNGEON, false},
+        { 1, 1, EMBERS,       SURFACE, false},
+        // Row 2: obsidian center, embers flanking
+        {-1, 2, EMBERS,       SURFACE, false},
+        { 0, 2, OBSIDIAN,     DUNGEON, false},
+        { 1, 2, EMBERS,       SURFACE, false},
+        // Row 3: lava center, embers flanking
+        {-1, 3, EMBERS,       SURFACE, false},
+        { 0, 3, LAVA,         LIQUID,  true},
+        { 1, 3, EMBERS,       SURFACE, false},
+        // Row 4: rubble center, embers flanking
+        {-1, 4, EMBERS,       SURFACE, false},
+        { 0, 4, RUBBLE,       SURFACE, false},
+        { 1, 4, EMBERS,       SURFACE, false},
+    };
+    return applyRotatableLayout(originX, originY, interior,
+                                forgePat, sizeof(forgePat) / sizeof(forgePat[0]),
+                                0, 2, outCenter);
+}
 
-    for (short cx = 2; cx < DCOLS - 2; cx++) {
-        for (short ty = 1; ty < DROWS - 5; ty++) {
-            boolean fits = true;
-            for (short row = 0; row < 5 && fits; row++) {
-                for (short col = -1; col <= 1 && fits; col++) {
-                    if (!interior[cx + col][ty + row]) fits = false;
-                }
-            }
-            if (fits) {
-                int dist = (cx - originX) * (cx - originX) + (ty + 2 - originY) * (ty + 2 - originY);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestX = cx;
-                    bestY = ty;
-                    found = true;
-                }
-            }
-        }
-    }
-
-    if (!found) return false;
-
-    // Place the forge pattern (top to bottom):
-    // Row 0: rubble center, embers left+right
-    // Row 1: anvil center, embers left+right
-    // Row 2: obsidian center, embers left+right
-    // Row 3: lava center, embers left+right
-    // Row 4: rubble center, embers left+right
-
-    // Embers on all left and right columns
-    for (short row = 0; row < 5; row++) {
-        pmap[bestX - 1][bestY + row].layers[SURFACE] = EMBERS;
-        pmap[bestX + 1][bestY + row].layers[SURFACE] = EMBERS;
-    }
-
-    // Center column
-    pmap[bestX][bestY + 0].layers[SURFACE] = RUBBLE;                         // top rubble
-    pmap[bestX][bestY + 1].layers[DUNGEON] = STATUE_INERT;                   // anvil
-    pmap[bestX][bestY + 2].layers[DUNGEON] = OBSIDIAN;                       // obsidian platform
-    pmap[bestX][bestY + 3].layers[LIQUID] = LAVA;                            // lava trough
-    pmap[bestX][bestY + 3].layers[SURFACE] = NOTHING;                        // clear surface over lava
-    pmap[bestX][bestY + 4].layers[SURFACE] = RUBBLE;                         // bottom rubble
-
-    if (outCenter) {
-        outCenter->x = bestX;
-        outCenter->y = bestY + 2; // center of the forge
-    }
-    return true;
+// Place an altar nook: processional carpet runner leading to an altar on a marble dais.
+// Tries all 4 rotations via shared helper.
+static boolean applyAltarNookLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    static const layoutTile altarPat[] = {
+        // Row 0: dais
+        { 0,  0, ALTAR_INERT,  DUNGEON, false},
+        {-1,  0, MARBLE_FLOOR, DUNGEON, false},
+        { 1,  0, MARBLE_FLOOR, DUNGEON, false},
+        // Row 1: marble + carpet + marble
+        {-1,  1, MARBLE_FLOOR, DUNGEON, false},
+        { 0,  1, CARPET,       DUNGEON, false},
+        { 1,  1, MARBLE_FLOOR, DUNGEON, false},
+        // Rows 2-4: carpet runner
+        { 0,  2, CARPET,       DUNGEON, false},
+        { 0,  3, CARPET,       DUNGEON, false},
+        { 0,  4, CARPET,       DUNGEON, false},
+        // Row 5: embers flanking entrance
+        {-1,  5, EMBERS,       SURFACE, false},
+        { 0,  5, CARPET,       DUNGEON, false},
+        { 1,  5, EMBERS,       SURFACE, false},
+    };
+    return applyRotatableLayout(originX, originY, interior,
+                                altarPat, sizeof(altarPat) / sizeof(altarPat[0]),
+                                0, 3, outCenter);
 }
 
 // Place spiderwebs on interior cells adjacent to walls, with bones nearby.
@@ -1583,62 +1661,75 @@ static boolean applyMossyAlcoveLayout(short originX, short originY, char interio
 // Returns true if layout was placed, false if insufficient space.
 // Sets *outCenter to the center of the placed pattern.
 static boolean applyGardenLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
-    // The interior is an irregular blob. Find the best column of 3 that has the
-    // most contiguous vertical rows in the interior.
-    // Try originX first, then scan nearby columns.
-    short bestX = originX, bestMinY = originY, bestMaxY = originY, bestLen = 0;
+    // Find the longest 3-wide run of interior cells in any of 4 directions.
+    // Directions: vertical (dx=0,dy=1), horizontal (dx=1,dy=0), and their reverses.
+    // "3-wide" means the center cell and its two perpendicular neighbors are all interior.
+    static const short dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-    for (short cx = originX - 3; cx <= originX + 3; cx++) {
-        if (cx < 1 || cx >= DCOLS - 1) continue;
+    short bestCX = 0, bestCY = 0, bestDir = -1, bestLen = 0;
 
-        // Find contiguous 3-wide vertical runs through this column.
-        for (short startY = 0; startY < DROWS; startY++) {
-            if (!interior[cx][startY] || !interior[cx - 1][startY] || !interior[cx + 1][startY]) continue;
-            short endY = startY;
-            while (endY + 1 < DROWS
-                   && interior[cx][endY + 1]
-                   && interior[cx - 1][endY + 1]
-                   && interior[cx + 1][endY + 1]) {
-                endY++;
+    for (short d = 0; d < 4; d++) {
+        short mainDx = dirs[d][0], mainDy = dirs[d][1];
+        // Perpendicular direction: rotate 90°
+        short perpDx = -mainDy, perpDy = mainDx;
+
+        for (short cx = 2; cx < DCOLS - 2; cx++) {
+            for (short cy = 2; cy < DROWS - 2; cy++) {
+                // Scan along main direction from (cx, cy)
+                short len = 0;
+                while (len < 10) {
+                    short x = cx + mainDx * len;
+                    short y = cy + mainDy * len;
+                    if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) break;
+                    if (!interior[x][y]) break;
+                    short px1 = x + perpDx, py1 = y + perpDy;
+                    short px2 = x - perpDx, py2 = y - perpDy;
+                    if (px1 < 1 || px1 >= DCOLS-1 || py1 < 1 || py1 >= DROWS-1) break;
+                    if (px2 < 1 || px2 >= DCOLS-1 || py2 < 1 || py2 >= DROWS-1) break;
+                    if (!interior[px1][py1] || !interior[px2][py2]) break;
+                    len++;
+                }
+                if (len > bestLen) {
+                    bestLen = len;
+                    bestCX = cx;
+                    bestCY = cy;
+                    bestDir = d;
+                }
             }
-            short len = endY - startY + 1;
-            if (len > bestLen) {
-                bestLen = len;
-                bestX = cx;
-                bestMinY = startY;
-                bestMaxY = endY;
-            }
-            startY = endY; // skip past this run
         }
     }
 
     // Clamp to 4-7 rows.
     if (bestLen > 7) {
         short excess = bestLen - 7;
-        bestMinY += excess / 2;
-        bestMaxY = bestMinY + 6;
+        bestCX += dirs[bestDir][0] * (excess / 2);
+        bestCY += dirs[bestDir][1] * (excess / 2);
+        bestLen = 7;
     }
-    bestLen = bestMaxY - bestMinY + 1;
-    if (bestLen < 4) return false; // not enough space
+    if (bestLen < 4) return false;
+
+    short mainDx = dirs[bestDir][0], mainDy = dirs[bestDir][1];
+    short perpDx = -mainDy, perpDy = mainDx;
 
     if (outCenter) {
-        outCenter->x = bestX;
-        outCenter->y = (bestMinY + bestMaxY) / 2;
+        outCenter->x = bestCX + mainDx * (bestLen / 2);
+        outCenter->y = bestCY + mainDy * (bestLen / 2);
     }
 
     // Place alternating rows: even offset = foliage, odd offset = shallow water.
-    for (short y = bestMinY; y <= bestMaxY; y++) {
-        short rowIndex = y - bestMinY;
-        enum tileType terrain = (rowIndex % 2 == 0) ? FOLIAGE : SHALLOW_WATER;
-        enum dungeonLayers layer = (rowIndex % 2 == 0) ? SURFACE : LIQUID;
-        for (short dx = -1; dx <= 1; dx++) {
-            short x = bestX + dx;
-            pmap[x][y].layers[layer] = terrain;
-            // Clear conflicting layers: if placing water, clear surface; if placing foliage, clear liquid.
+    for (short i = 0; i < bestLen; i++) {
+        enum tileType terrain = (i % 2 == 0) ? FOLIAGE : SHALLOW_WATER;
+        enum dungeonLayers layer = (i % 2 == 0) ? SURFACE : LIQUID;
+        short x = bestCX + mainDx * i;
+        short y = bestCY + mainDy * i;
+        for (short s = -1; s <= 1; s++) {
+            short px = x + perpDx * s;
+            short py = y + perpDy * s;
+            pmap[px][py].layers[layer] = terrain;
             if (layer == LIQUID) {
-                pmap[x][y].layers[SURFACE] = NOTHING;
+                pmap[px][py].layers[SURFACE] = NOTHING;
             } else {
-                pmap[x][y].layers[LIQUID] = NOTHING;
+                pmap[px][py].layers[LIQUID] = NOTHING;
             }
         }
     }
@@ -2607,6 +2698,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_FORGE) {
         if (!applyForgeLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_ALTAR_NOOK) {
+        if (!applyAltarNookLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

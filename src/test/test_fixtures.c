@@ -249,15 +249,21 @@ TEST(test_fixture_garden_patch_alternating_rows) {
     }
     ASSERT(placed);
 
-    // Find a foliage tile, then verify alternating pattern:
-    // the row below it should be shallow water, the row below that foliage again.
+    // Find a foliage tile, then verify alternating pattern in any cardinal direction:
+    // foliage → water → foliage in a line (works for both vertical and horizontal gardens).
     boolean foundPattern = false;
-    for (int x = 0; x < DCOLS && !foundPattern; x++) {
-        for (int y = 0; y < DROWS - 2 && !foundPattern; y++) {
-            if (pmap[x][y].layers[SURFACE] == FOLIAGE
-                && pmap[x][y + 1].layers[LIQUID] == SHALLOW_WATER
-                && pmap[x][y + 2].layers[SURFACE] == FOLIAGE) {
-                foundPattern = true;
+    short dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[SURFACE] != FOLIAGE) continue;
+            for (int d = 0; d < 4 && !foundPattern; d++) {
+                int nx1 = x + dirs[d][0], ny1 = y + dirs[d][1];
+                int nx2 = x + dirs[d][0]*2, ny2 = y + dirs[d][1]*2;
+                if (nx2 < 0 || nx2 >= DCOLS || ny2 < 0 || ny2 >= DROWS) continue;
+                if (pmap[nx1][ny1].layers[LIQUID] == SHALLOW_WATER
+                    && pmap[nx2][ny2].layers[SURFACE] == FOLIAGE) {
+                    foundPattern = true;
+                }
             }
         }
     }
@@ -1217,15 +1223,126 @@ TEST(test_fixture_forge_anvil_near_lava) {
     }
     ASSERT(placed);
 
-    // Find STATUE_INERT and verify lava is within 2 cells (anvil at row+1, lava at row+3)
+    // Find STATUE_INERT (anvil) and verify lava is 2 cells away in any cardinal direction
     boolean foundPattern = false;
     for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
-        for (int y = 1; y < DROWS - 3 && !foundPattern; y++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
             if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
-                // Lava should be 2 rows below the anvil
-                if (pmap[x][y + 2].layers[LIQUID] == LAVA) {
-                    foundPattern = true;
+                short dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+                for (int d = 0; d < 4 && !foundPattern; d++) {
+                    int lx = x + dirs[d][0] * 2;
+                    int ly = y + dirs[d][1] * 2;
+                    if (lx >= 0 && lx < DCOLS && ly >= 0 && ly < DROWS
+                        && pmap[lx][ly].layers[LIQUID] == LAVA) {
+                        foundPattern = true;
+                    }
                 }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
+// --- Altar Nook ---
+
+TEST(test_fixture_altar_nook_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_ALTAR_NOOK];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_altar_nook_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_ALTAR_NOOK];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_altar_nook_places_altar) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_ALTAR_NOOK, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_ALTAR_NOOK) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify ALTAR_INERT and CARPET exist
+    boolean foundAltar = false, foundCarpet = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == ALTAR_INERT) foundAltar = true;
+            if (pmap[x][y].layers[DUNGEON] == CARPET) foundCarpet = true;
+        }
+    }
+    ASSERT(foundAltar);
+    ASSERT(foundCarpet);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_altar_nook_carpet_runner) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_ALTAR_NOOK, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find ALTAR_INERT and verify a 5-tile carpet runner in any cardinal direction
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] != ALTAR_INERT) continue;
+            // Check all 4 directions for a carpet line of 5
+            short dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+            for (int d = 0; d < 4 && !foundPattern; d++) {
+                boolean allCarpet = true;
+                for (int step = 1; step <= 5; step++) {
+                    int nx = x + dirs[d][0] * step;
+                    int ny = y + dirs[d][1] * step;
+                    if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS
+                        || pmap[nx][ny].layers[DUNGEON] != CARPET) {
+                        allCarpet = false;
+                        break;
+                    }
+                }
+                if (allCarpet) foundPattern = true;
             }
         }
     }
@@ -1299,4 +1416,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_forge_custom_layout);
     RUN_TEST(test_fixture_forge_places_lava_and_anvil);
     RUN_TEST(test_fixture_forge_anvil_near_lava);
+    RUN_TEST(test_fixture_altar_nook_blueprint_depth_range);
+    RUN_TEST(test_fixture_altar_nook_custom_layout);
+    RUN_TEST(test_fixture_altar_nook_places_altar);
+    RUN_TEST(test_fixture_altar_nook_carpet_runner);
 }
