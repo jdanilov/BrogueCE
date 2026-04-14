@@ -187,6 +187,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_BIRD_NEST,       FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_VINE_TRELLIS,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_PUDDLE,          FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_FORGE,           FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -714,6 +715,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Puddle -- stagnant water in a muddy depression with overgrowth",
     {1, 8},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyPuddleLayout() in Architect.c
+    }},
+    {"Fixture: Forge -- ancient smithy with lava trough and obsidian platform",
+    {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyForgeLayout() in Architect.c
     }},
 };
 

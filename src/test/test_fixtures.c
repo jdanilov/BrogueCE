@@ -1138,6 +1138,102 @@ TEST(test_fixture_puddle_mud_surrounded_by_vegetation) {
     test_teardown_game();
 }
 
+// --- Forge ---
+
+TEST(test_fixture_forge_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_FORGE];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_forge_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_FORGE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_forge_places_lava_and_anvil) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_FORGE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_FORGE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify LAVA and STATUE_INERT exist
+    boolean foundLava = false, foundAnvil = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[LIQUID] == LAVA) foundLava = true;
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) foundAnvil = true;
+        }
+    }
+    ASSERT(foundLava);
+    ASSERT(foundAnvil);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_forge_anvil_near_lava) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_FORGE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find STATUE_INERT and verify lava is within 2 cells (anvil at row+1, lava at row+3)
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 3 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                // Lava should be 2 rows below the anvil
+                if (pmap[x][y + 2].layers[LIQUID] == LAVA) {
+                    foundPattern = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1199,4 +1295,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_puddle_custom_layout);
     RUN_TEST(test_fixture_puddle_places_mud);
     RUN_TEST(test_fixture_puddle_mud_surrounded_by_vegetation);
+    RUN_TEST(test_fixture_forge_blueprint_depth_range);
+    RUN_TEST(test_fixture_forge_custom_layout);
+    RUN_TEST(test_fixture_forge_places_lava_and_anvil);
+    RUN_TEST(test_fixture_forge_anvil_near_lava);
 }

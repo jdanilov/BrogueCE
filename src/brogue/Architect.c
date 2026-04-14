@@ -1127,6 +1127,74 @@ static boolean applyPuddleLayout(short originX, short originY, char interior[DCO
     return true;
 }
 
+// Forge layout: anvil (STATUE_INERT) at head of a 2-tile vertical lava trough,
+// flanked by obsidian work floor. Embers radiate outward, rubble at edges.
+// Pattern (relative to anvil at 0,0):
+//     embers rubble embers
+//     embers anvil  embers
+//     embers obsid  embers
+//     embers lava   embers
+//     embers obsid  embers
+//     embers lava   embers
+//     embers rubble embers
+// Requires a 3-wide, 5-tall interior region near origin.
+static boolean applyForgeLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Search the entire interior for a 3-wide, 5-tall column of interior cells.
+    // Prefer locations closer to the origin.
+    short bestX = 0, bestY = 0;
+    int bestDist = 10000;
+    boolean found = false;
+
+    for (short cx = 2; cx < DCOLS - 2; cx++) {
+        for (short ty = 1; ty < DROWS - 5; ty++) {
+            boolean fits = true;
+            for (short row = 0; row < 5 && fits; row++) {
+                for (short col = -1; col <= 1 && fits; col++) {
+                    if (!interior[cx + col][ty + row]) fits = false;
+                }
+            }
+            if (fits) {
+                int dist = (cx - originX) * (cx - originX) + (ty + 2 - originY) * (ty + 2 - originY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestX = cx;
+                    bestY = ty;
+                    found = true;
+                }
+            }
+        }
+    }
+
+    if (!found) return false;
+
+    // Place the forge pattern (top to bottom):
+    // Row 0: rubble center, embers left+right
+    // Row 1: anvil center, embers left+right
+    // Row 2: obsidian center, embers left+right
+    // Row 3: lava center, embers left+right
+    // Row 4: rubble center, embers left+right
+
+    // Embers on all left and right columns
+    for (short row = 0; row < 5; row++) {
+        pmap[bestX - 1][bestY + row].layers[SURFACE] = EMBERS;
+        pmap[bestX + 1][bestY + row].layers[SURFACE] = EMBERS;
+    }
+
+    // Center column
+    pmap[bestX][bestY + 0].layers[SURFACE] = RUBBLE;                         // top rubble
+    pmap[bestX][bestY + 1].layers[DUNGEON] = STATUE_INERT;                   // anvil
+    pmap[bestX][bestY + 2].layers[DUNGEON] = OBSIDIAN;                       // obsidian platform
+    pmap[bestX][bestY + 3].layers[LIQUID] = LAVA;                            // lava trough
+    pmap[bestX][bestY + 3].layers[SURFACE] = NOTHING;                        // clear surface over lava
+    pmap[bestX][bestY + 4].layers[SURFACE] = RUBBLE;                         // bottom rubble
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY + 2; // center of the forge
+    }
+    return true;
+}
+
 // Place spiderwebs on interior cells adjacent to walls, with bones nearby.
 // Finds wall-adjacent interior cells near the origin and clusters webs there.
 // Place a vine trellis: 2-8 foliage tiles hugging a wall in a contiguous line.
@@ -2531,6 +2599,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_PUDDLE) {
         if (!applyPuddleLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_FORGE) {
+        if (!applyForgeLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

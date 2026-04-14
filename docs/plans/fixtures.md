@@ -91,7 +91,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 16 | **Forge** | 4-6 | LAVA (1), RUBBLE (surround), STATUE_INERT (1 anvil) | Room interior | Ancient smithy. Minor effect: ember DF. Loot: WEAPON (~40%). |
+| 16 | **Forge** ✅ | 15-25 | LAVA (1), OBSIDIAN (1), STATUE_INERT (1 anvil), EMBERS (10), RUBBLE (2) | Room interior | Ancient smithy with lava trough and obsidian platform. Custom `applyForgeLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 17 | **Altar Nook** | 2-4 | ALTAR_INERT (1), CARPET (2-3 around) | Room center | Devotional space. Loot: SCROLL or POTION (~30%). |
 | 18 | **Crystal Outcrop** | 2-4 | CRYSTAL_WALL (1-2), LUMINESCENT_FUNGUS around | Cavern wall-adjacent | Glowing mineral vein. Light effect. Loot: GEM (~30%). |
 | 19 | **Steam Vent** | 1-3 | CHASM (1), DF_STEAM_PUFF periodic | Anywhere | Geothermal fissure. Minor effect: occasional steam. |

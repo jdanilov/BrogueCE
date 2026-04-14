@@ -2827,7 +2827,8 @@ enum machineTypes {
     MT_FIXTURE_SUNLIT_PATCH,
     MT_FIXTURE_BIRD_NEST,
     MT_FIXTURE_VINE_TRELLIS,
-    MT_FIXTURE_PUDDLE
+    MT_FIXTURE_PUDDLE,
+    MT_FIXTURE_FORGE
 };
 
 typedef struct autoGenerator {
