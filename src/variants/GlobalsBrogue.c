@@ -188,6 +188,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_VINE_TRELLIS,    FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_PUDDLE,          FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_FORGE,           FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_ALTAR_NOOK,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -719,6 +720,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Forge -- ancient smithy with lava trough and obsidian platform",
     {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyForgeLayout() in Architect.c
+    }},
+    {"Fixture: Altar Nook -- devotional space with carpet runner and marble dais",
+    {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyAltarNookLayout() in Architect.c
     }},
 };
 

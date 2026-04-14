@@ -2828,7 +2828,8 @@ enum machineTypes {
     MT_FIXTURE_BIRD_NEST,
     MT_FIXTURE_VINE_TRELLIS,
     MT_FIXTURE_PUDDLE,
-    MT_FIXTURE_FORGE
+    MT_FIXTURE_FORGE,
+    MT_FIXTURE_ALTAR_NOOK
 };
 
 typedef struct autoGenerator {

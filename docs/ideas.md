@@ -2,13 +2,11 @@ Custom Ideas
 
 1. Unique fixtures (landmarks): e.g. a forge with lava tile, an altar, a fountain, etc. Added into the rooms / caverns as unique, memorable decorations. Should not be too frequent, maybe one per 1-3 levels. Decorative. Memorable.
 
-2. Weighted item assignments - try to place items into interesting rooms, fixtures, near stationary monsters first.
+2. Weighted item & monster placement - try to place items and stationary / sleeping into interesting rooms, near fixtures.
 
 3. Items on monsters - make 1/3 of all items appear on monsters, so chasing and killing monsters incentivised. Could be an interesting mechanics, e.g. assign special item pools to special monsters (e.g. mango to monkeys - need to think this through).
 
-4. Cavern-based "machines", e.g. pits in the middle of the room, preventing a passage - could be tactical for archery. Some pits may have wooden bridges on top.
-
-5. Improve blood splatter - paint vegetation and walls in red.
+4. Improve blood splatter - paint vegetation and walls in red.
 
 Low Complexity
 
