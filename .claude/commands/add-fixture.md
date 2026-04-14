@@ -59,9 +59,9 @@ Wait for the user's answer before proceeding.
 
 ### 3a. Current state (read before editing)
 
-Current last fixture in the enum: `MT_FIXTURE_CRUMBLED_WALL = 81`
-Blueprint catalog currently has **82 entries** (indices 0–81).
-New fixture will be: enum value **82**, catalog index **82**.
+Current last fixture in the enum: `MT_FIXTURE_DUST_MOTES = 82`
+Blueprint catalog currently has **83 entries** (indices 0–82).
+New fixture will be: enum value **83**, catalog index **83**.
 
 Key files:
 - `src/brogue/Rogue.h` — machineTypes enum

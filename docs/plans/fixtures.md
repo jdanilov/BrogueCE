@@ -73,7 +73,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 5 | **Mossy Alcove** ✅ | 3-5 | GRASS, FOLIAGE, SHALLOW_WATER (1) | Cavern wall-adjacent | Overgrown nook with seeping water. BP_PURGE_INTERIOR. |
 | 6 | **Cobweb Corner** ✅ | 2-4 | SPIDERWEB (2-3), BONES (1) | Room corner | Old webs with ancient remains. Custom `applyCobwebCornerLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 7 | **Crumbled Wall** ✅ | 2-4 | RUBBLE (2-3), STATUE_INERT (1) | Wall-adjacent | Partially collapsed wall section. Custom `applyCrumbledWallLayout()` in Architect.c. BP_PURGE_INTERIOR. |
-| 8 | **Dust Motes** | 2-3 | DF_ASH (2), DEAD_GRASS (1) | Anywhere | Undisturbed for ages. |
+| 8 | **Dust Motes** ✅ | 7-11 | ASH (4-6), DEAD_GRASS (3-5) | Anywhere | Undisturbed for ages. Scattered ash and dried grass. BP_PURGE_INTERIOR. |
 
 ### Early Levels (D1-D8)
 

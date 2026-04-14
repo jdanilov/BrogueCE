@@ -179,6 +179,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_MOSSY_ALCOVE,    FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_COBWEB_CORNER,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_CRUMBLED_WALL,   FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_DUST_MOTES,      FLOOR,      NOTHING,    1,      DEEPEST_LEVEL,  35,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -674,6 +675,13 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Crumbled Wall -- partially collapsed wall with rubble",
     {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyCrumbledWallLayout() in Architect.c
+    }},
+
+    {"Fixture: Dust Motes -- undisturbed area with scattered ash and dead grass",
+    {1, DEEPEST_LEVEL}, {6, 12},    0,      2,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        //         DF          terrain        layer          count      minInst  iCat iKind mKind  space  hFlg iFlg  featureFlags
+        {           0,          ASH,           SURFACE,       {4, 6},    0,       0,   -1,   0,     1,     0,   0,   (MF_NOT_IN_HALLWAY)},
+        {           0,          DEAD_GRASS,    SURFACE,       {3, 5},    0,       0,   -1,   0,     1,     0,   0,   (MF_NOT_IN_HALLWAY)},
     }},
 };
 

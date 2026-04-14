@@ -652,6 +652,64 @@ TEST(test_fixture_crumbled_wall_statue_near_wall) {
     test_teardown_game();
 }
 
+// --- Dust Motes ---
+
+TEST(test_fixture_dust_motes_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DUST_MOTES];
+    ASSERT_EQ(bp->depthRange[0], 1);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_dust_motes_blueprint_has_features) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DUST_MOTES];
+    ASSERT_GT(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_dust_motes_places_ash) {
+    test_init_game(42);
+
+    rogue.depthLevel = 5;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_DUST_MOTES, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    boolean foundAsh = false;
+    for (int x = 0; x < DCOLS && !foundAsh; x++) {
+        for (int y = 0; y < DROWS && !foundAsh; y++) {
+            if (pmap[x][y].layers[SURFACE] == ASH) {
+                foundAsh = true;
+            }
+        }
+    }
+    ASSERT(foundAsh);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_dust_motes_blueprint_has_ash_feature) {
+    test_init_game(77);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_DUST_MOTES];
+    ASSERT_EQ(bp->feature[0].terrain, ASH);
+    ASSERT_EQ(bp->feature[0].layer, SURFACE);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -689,4 +747,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_crumbled_wall_custom_layout);
     RUN_TEST(test_fixture_crumbled_wall_places_statue_and_rubble);
     RUN_TEST(test_fixture_crumbled_wall_statue_near_wall);
+    RUN_TEST(test_fixture_dust_motes_blueprint_depth_range);
+    RUN_TEST(test_fixture_dust_motes_blueprint_has_features);
+    RUN_TEST(test_fixture_dust_motes_places_ash);
+    RUN_TEST(test_fixture_dust_motes_blueprint_has_ash_feature);
 }
