@@ -2055,6 +2055,102 @@ static boolean applyWeaponRackLayout(short originX, short originY, char interior
     return true;
 }
 
+// Place a toppled bookcase in a wall nook (floor cell with 3 cardinal walls).
+// STATUE_INERT for the bookcase frame, JUNK on the open side for spilled books.
+// ~40% chance of a SCROLL item on the junk tile.
+static boolean applyToppledBookcaseLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find interior floor cells with exactly 3 cardinal walls (a nook/alcove).
+    typedef struct { short x, y; } candidate;
+    candidate candidates[40];
+    short candidateCount = 0;
+
+    for (short dy = -5; dy <= 5 && candidateCount < 40; dy++) {
+        for (short dx = -5; dx <= 5 && candidateCount < 40; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            short walls = 0;
+            short openX = 0, openY = 0;
+            short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+            for (short d = 0; d < 4; d++) {
+                short nx = x + dirs[d][0];
+                short ny = y + dirs[d][1];
+                if (cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
+                    walls++;
+                } else {
+                    openX = nx;
+                    openY = ny;
+                }
+            }
+
+            if (walls == 3) {
+                // Verify the open neighbor is interior floor for junk placement.
+                if (openX >= 1 && openX < DCOLS - 1 && openY >= 1 && openY < DROWS - 1
+                    && interior[openX][openY]
+                    && pmap[openX][openY].layers[DUNGEON] == FLOOR) {
+                    candidates[candidateCount++] = (candidate){x, y};
+                }
+            }
+        }
+    }
+
+    if (candidateCount < 1) return false;
+
+    // Pick the candidate closest to origin.
+    short bestIdx = 0;
+    short bestDist = 10000;
+    for (short i = 0; i < candidateCount; i++) {
+        short dist = (candidates[i].x - originX) * (candidates[i].x - originX)
+                   + (candidates[i].y - originY) * (candidates[i].y - originY);
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestIdx = i;
+        }
+    }
+
+    short nookX = candidates[bestIdx].x;
+    short nookY = candidates[bestIdx].y;
+
+    // Find the open cardinal neighbor again.
+    short junkX = 0, junkY = 0;
+    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    for (short d = 0; d < 4; d++) {
+        short nx = nookX + dirs[d][0];
+        short ny = nookY + dirs[d][1];
+        if (!cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
+            junkX = nx;
+            junkY = ny;
+            break;
+        }
+    }
+
+    // Connectivity check — the bookcase blocks pathing.
+    char blockingMap[DCOLS][DROWS];
+    zeroOutGrid(blockingMap);
+    blockingMap[nookX][nookY] = true;
+    if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
+        return false;
+    }
+
+    pmap[nookX][nookY].layers[DUNGEON] = STATUE_INERT;
+    pmap[junkX][junkY].layers[SURFACE] = JUNK;
+
+    if (outCenter) {
+        *outCenter = (pos){nookX, nookY};
+    }
+
+    // ~40% chance to spawn a SCROLL on the junk tile.
+    if (rand_percent(40)) {
+        item *loot = generateItem(SCROLL, -1);
+        placeItemAt(loot, (pos){junkX, junkY});
+    }
+
+    return true;
+}
+
 // Place an abandoned camp: bedroll (HAY), fire ring (RUBBLE+EMBERS), marker post (STATUE_INERT),
 // with scattered bones and junk. ~40% chance of FOOD or POTION loot.
 // Tries all 4 rotations via shared helper.
@@ -3149,6 +3245,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_LICHEN_GARDEN) {
         if (!applyLichenGardenLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_TOPPLED_BOOKCASE) {
+        if (!applyToppledBookcaseLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

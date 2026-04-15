@@ -1878,6 +1878,116 @@ TEST(test_fixture_scorched_earth_blueprint_has_embers_feature) {
     test_teardown_game();
 }
 
+// --- Toppled Bookcase ---
+
+TEST(test_fixture_toppled_bookcase_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_TOPPLED_BOOKCASE];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_toppled_bookcase_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_TOPPLED_BOOKCASE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_toppled_bookcase_places_statue_and_junk) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600};
+    for (int s = 0; s < 7 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_TOPPLED_BOOKCASE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_TOPPLED_BOOKCASE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify STATUE_INERT and JUNK exist
+    boolean foundStatue = false, foundJunk = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) foundStatue = true;
+            if (pmap[x][y].layers[SURFACE] == JUNK) foundJunk = true;
+        }
+    }
+    ASSERT(foundStatue);
+    ASSERT(foundJunk);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_toppled_bookcase_statue_in_nook) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600};
+    for (int s = 0; s < 7 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_TOPPLED_BOOKCASE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find the STATUE_INERT tile placed by the bookcase and verify it has 3 wall neighbors
+    boolean foundNook = false;
+    for (int x = 1; x < DCOLS - 1 && !foundNook; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundNook; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                short walls = 0;
+                if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+                if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+                if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+                if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+                // The bookcase statue itself obstructs, but we check its neighbors.
+                // It should have been placed in a 3-wall nook.
+                if (walls >= 3) {
+                    // Check that adjacent open cell has JUNK
+                    if (!cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)
+                        && pmap[x-1][y].layers[SURFACE] == JUNK) foundNook = true;
+                    if (!cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)
+                        && pmap[x+1][y].layers[SURFACE] == JUNK) foundNook = true;
+                    if (!cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)
+                        && pmap[x][y-1].layers[SURFACE] == JUNK) foundNook = true;
+                    if (!cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)
+                        && pmap[x][y+1].layers[SURFACE] == JUNK) foundNook = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundNook);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1971,4 +2081,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_lichen_garden_custom_layout);
     RUN_TEST(test_fixture_lichen_garden_places_water_and_fungus);
     RUN_TEST(test_fixture_lichen_garden_luminescent_fungus_adjacent_to_water);
+    RUN_TEST(test_fixture_toppled_bookcase_blueprint_depth_range);
+    RUN_TEST(test_fixture_toppled_bookcase_custom_layout);
+    RUN_TEST(test_fixture_toppled_bookcase_places_statue_and_junk);
+    RUN_TEST(test_fixture_toppled_bookcase_statue_in_nook);
 }

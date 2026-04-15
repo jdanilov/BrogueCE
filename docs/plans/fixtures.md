@@ -99,7 +99,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 21 | **Weapon Rack** ✅ | 2-3 | STATUE_INERT (1), JUNK (1-2) | Wall-adjacent | Broken equipment on wall. Custom `applyWeaponRackLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: WEAPON (~30%). |
 | 22 | **Scorched Earth** ✅ | 7-11 | ASH (4-6), EMBERS (1-2), DEAD_GRASS (2-3) | Anywhere | Aftermath of an old fire. BP_PURGE_INTERIOR. |
 | 23 | **Lichen Garden** ✅ | 20-30 | SHALLOW_WATER (pools), LUMINESCENT_FUNGUS (bridges), FUNGUS_FOREST (ring), DEAD_GRASS (fringe) | Cavern organic | Grand bioluminescent fungal archipelago. Custom `applyLichenGardenLayout()` in Architect.c. BP_PURGE_INTERIOR. |
-| 24 | **Toppled Bookcase** | 2-3 | JUNK (2), RUBBLE (1) | Room wall-adjacent | Rotting shelves. Loot: SCROLL (~40%). |
+| 24 | **Toppled Bookcase** ✅ | 2 | STATUE_INERT (1 bookcase), JUNK (1 books) | Wall nook (3-wall alcove) | Bookcase in wall nook with scattered books. Custom `applyToppledBookcaseLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: SCROLL (~40%). |
 
 ### Deep Levels (D10+)
 

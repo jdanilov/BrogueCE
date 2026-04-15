@@ -195,6 +195,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_WEAPON_RACK,     FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_SCORCHED_EARTH,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_LICHEN_GARDEN,   FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_TOPPLED_BOOKCASE,FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -762,6 +763,12 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Lichen Garden -- bioluminescent fungal archipelago around moisture pools",
     {5, 18},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyLichenGardenLayout() in Architect.c
+        {0}}},
+    // Bookcase standing in a 3-wall nook with scattered books on the floor.
+    // ~40% chance of a SCROLL item. Custom layout finds natural wall alcoves.
+    {"Fixture: Toppled Bookcase -- rotting shelves in a wall nook with scattered books",
+    {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyToppledBookcaseLayout() in Architect.c
         {0}}},
 };
 
