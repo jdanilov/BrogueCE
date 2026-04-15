@@ -169,8 +169,10 @@ int main(int argc, char **argv) {
         int display_depth = bp->depthRange[0];
         printf("Seed %llu, D%d:\n\n", (unsigned long long)seed, display_depth);
         test_init_game(seed);
+        // Each level has a pre-computed seed; reseed RNG and regenerate at target depth
         if (display_depth > 1) {
             rogue.depthLevel = display_depth;
+            seedRandomGenerator(levels[display_depth - 1].levelSeed);
             digDungeon();
         }
         const placedMachineInfo *info = find_placed_machine(mt);
@@ -195,8 +197,10 @@ int main(int argc, char **argv) {
     uint64_t first_hit = 0;
     for (uint64_t seed = 1; seed <= max_seed; seed++) {
         test_init_game(seed);
+        // Each level has a pre-computed seed; reseed RNG and regenerate at target depth
         if (scan_depth > 1) {
             rogue.depthLevel = scan_depth;
+            seedRandomGenerator(levels[scan_depth - 1].levelSeed);
             digDungeon();
         }
         const placedMachineInfo *info = find_placed_machine(mt);
