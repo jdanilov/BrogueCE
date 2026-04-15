@@ -10,22 +10,17 @@ Custom Ideas
 
 Low Complexity
 
-1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.). Or let the player choose starting equipment in the first room: a ranged weapon, a staff, a weapon, a ring.
-   This immediately changes early combat feel each run.
+1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.). Or let the player choose starting equipment in the first room: a ranged weapon, a staff, a weapon, a ring. This immediately changes early combat feel each run. [skip: too balance-changing]
 
-2. Early interactive terrain — Increase the frequency of pressure plates, trap doors, steam vents, and flammable grass on D1-D3. These create tactical puzzles even with weak
-   monsters.
+2. Early interactive terrain — Increase the frequency of pressure plates, trap doors, steam vents, and flammable grass on D1-D3. These create tactical puzzles even with weak monsters [skip: mediocre output].
 
-3. Minor consumable variety — Guarantee 1-2 identified potions/scrolls on D1 (e.g., a potion of fire immunity next to a lava vent, or a scroll of teleportation in a dead end). Gives
-   the player meaningful choices from turn one.
+3. Minor consumable variety — Guarantee 1-2 identified potions/scrolls on D1 (e.g., a potion of fire immunity next to a lava vent, or a scroll of teleportation in a dead end). Gives the player meaningful choices from turn one. [skip: too balance-changing and mediocre output]
 
 Medium Complexity
 
-4. Early mini-vaults / puzzles — Add new machine blueprints that can spawn on D1-D3: a locked room with a visible item and a hidden key, a flooded corridor with stepping stones, a
-   goblin camp around a campfire. These give each early floor a unique identity.
+4. Early mini-vaults / puzzles — Add new machine blueprints that can spawn on D1-D3: a locked room with a visible item and a hidden key, a flooded corridor with stepping stones, a goblin camp around a campfire. These give each early floor a unique identity. [interesting: new balanced machines for first levels is a good approach]
 
-5. NPC encounters — A trapped adventurer you can free (becomes a temporary ally), a merchant offering a choice of 2 items, or a dying explorer who identifies one of your scrolls.
-   Adds narrative texture.
+5. NPC encounters — A trapped adventurer you can free (becomes a temporary ally), a merchant offering a choice of 2 items, or a dying explorer who identifies one of your scrolls. Adds narrative texture. [skip: difficult to justify finding NPCs in the dungeon thematically. Same result can be reached via new custom machines in point (4)]
 
 6. Environmental storytelling rooms — Pre-built "set pieces" — a collapsed library with a guaranteed scroll, a flooded alchemy lab with potions, an abandoned forge near a weapon.
    Connects loot to place.
