@@ -166,8 +166,13 @@ int main(int argc, char **argv) {
     // Mode: display a specific seed
     if (argc >= 4 && strcmp(argv[2], "-seed") == 0) {
         uint64_t seed = (uint64_t)atoll(argv[3]);
-        printf("Seed %llu, D%d:\n\n", (unsigned long long)seed, bp->depthRange[0]);
+        int display_depth = bp->depthRange[0];
+        printf("Seed %llu, D%d:\n\n", (unsigned long long)seed, display_depth);
         test_init_game(seed);
+        if (display_depth > 1) {
+            rogue.depthLevel = display_depth;
+            digDungeon();
+        }
         const placedMachineInfo *info = find_placed_machine(mt);
         if (info) {
             printf("Origin: (%d, %d)  Machine #%d\n\n", info->origin.x, info->origin.y, info->machineNumber);
@@ -181,17 +186,23 @@ int main(int argc, char **argv) {
     }
 
     // Mode: scan seeds 1..max_seed
+    // Use the fixture's minimum depth for scanning (deep fixtures won't appear on D1).
+    int scan_depth = bp->depthRange[0];
     uint64_t max_seed = (argc >= 3) ? (uint64_t)atoll(argv[2]) : 200;
-    printf("Scanning seeds 1–%llu for machine type %d on D1...\n\n",
-           (unsigned long long)max_seed, mt);
+    printf("Scanning seeds 1–%llu for machine type %d on D%d...\n\n",
+           (unsigned long long)max_seed, mt, scan_depth);
 
     uint64_t first_hit = 0;
     for (uint64_t seed = 1; seed <= max_seed; seed++) {
         test_init_game(seed);
+        if (scan_depth > 1) {
+            rogue.depthLevel = scan_depth;
+            digDungeon();
+        }
         const placedMachineInfo *info = find_placed_machine(mt);
         test_teardown_game();
         if (info) {
-            printf("Seed %llu D1\n", (unsigned long long)seed);
+            printf("Seed %llu D%d\n", (unsigned long long)seed, scan_depth);
             if (first_hit == 0) first_hit = seed;
         }
     }

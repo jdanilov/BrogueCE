@@ -1988,6 +1988,111 @@ TEST(test_fixture_toppled_bookcase_statue_in_nook) {
     test_teardown_game();
 }
 
+// --- Bone Throne ---
+
+TEST(test_fixture_bone_throne_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BONE_THRONE];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bone_throne_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BONE_THRONE];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bone_throne_places_statue_and_carpet) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_BONE_THRONE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_BONE_THRONE) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify STATUE_INERT and CARPET exist
+    boolean foundStatue = false, foundCarpet = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) foundStatue = true;
+            if (pmap[x][y].layers[DUNGEON] == CARPET) foundCarpet = true;
+        }
+    }
+    ASSERT(foundStatue);
+    ASSERT(foundCarpet);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_bone_throne_carpet_runner) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_BONE_THRONE, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find STATUE_INERT and verify carpet runner extends from it in some direction
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                // Check 4 cardinal directions for carpet at distance 1 and 2
+                short dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+                for (int d = 0; d < 4 && !foundPattern; d++) {
+                    int cx1 = x + dirs[d][0];
+                    int cy1 = y + dirs[d][1];
+                    int cx2 = x + dirs[d][0] * 2;
+                    int cy2 = y + dirs[d][1] * 2;
+                    if (cx2 >= 0 && cx2 < DCOLS && cy2 >= 0 && cy2 < DROWS
+                        && pmap[cx1][cy1].layers[DUNGEON] == CARPET
+                        && pmap[cx2][cy2].layers[DUNGEON] == CARPET) {
+                        foundPattern = true;
+                    }
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2085,4 +2190,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_toppled_bookcase_custom_layout);
     RUN_TEST(test_fixture_toppled_bookcase_places_statue_and_junk);
     RUN_TEST(test_fixture_toppled_bookcase_statue_in_nook);
+    RUN_TEST(test_fixture_bone_throne_blueprint_depth_range);
+    RUN_TEST(test_fixture_bone_throne_custom_layout);
+    RUN_TEST(test_fixture_bone_throne_places_statue_and_carpet);
+    RUN_TEST(test_fixture_bone_throne_carpet_runner);
 }

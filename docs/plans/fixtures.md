@@ -105,7 +105,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
-| 25 | **Bone Throne** | 3-5 | BONES (cluster), STATUE_INERT (1 center) | Room center | Grim seat of power. Loot: RING or GOLD (~30%). |
+| 25 | **Bone Throne** ✅ | 15-20 | STATUE_INERT (1 throne), MARBLE_FLOOR (4), CARPET (3 runner), BONES (3-5 random), RED_BLOOD (3-5 random) | Room center | Grand throne on marble dais with carpet runner, bones and blood randomly scattered. Custom `applyBoneThroneLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: RING or GOLD (~30%). |
 | 26 | **Blood Pool** | 2-4 | DF_RED_BLOOD (spread), SHALLOW_WATER (1 center) | Cavern organic | Something died here, slowly. |
 | 27 | **Obsidian Formation** | 2-4 | OBSIDIAN (2-3), ASH around | Anywhere | Cooled lava remnants from an ancient flow. |
 | 28 | **Ember Pit** | 3-5 | EMBERS (center), ASH (ring), BONES (1) | Cavern organic | Still smoldering. Minor effect: embers DF. |

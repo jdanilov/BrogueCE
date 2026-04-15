@@ -2199,6 +2199,95 @@ static boolean applyAbandonedCampLayout(short originX, short originY, char inter
     return true;
 }
 
+// Place a bone throne: STATUE_INERT throne on marble dais with carpet runner.
+// Bones and blood are randomly scattered on nearby interior cells for organic variety.
+// ~30% chance of RING or GOLD loot near the throne.
+// Tries all 4 rotations via shared helper.
+static boolean applyBoneThroneLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Fixed structure: throne on marble dais with carpet runner
+    static const layoutTile thronePat[] = {
+        // Row 0: throne on marble dais
+        { 0, 0, STATUE_INERT, DUNGEON, false},
+        {-1, 0, MARBLE_FLOOR, DUNGEON, false},
+        { 1, 0, MARBLE_FLOOR, DUNGEON, false},
+        // Row 1: marble flanking carpet
+        {-1, 1, MARBLE_FLOOR, DUNGEON, false},
+        { 0, 1, CARPET,       DUNGEON, false},
+        { 1, 1, MARBLE_FLOOR, DUNGEON, false},
+        // Rows 2-3: carpet runner
+        { 0, 2, CARPET,       DUNGEON, false},
+        { 0, 3, CARPET,       DUNGEON, false},
+    };
+    if (!applyRotatableLayout(originX, originY, interior,
+                              thronePat, sizeof(thronePat) / sizeof(thronePat[0]),
+                              0, 1, outCenter)) {
+        return false;
+    }
+
+    // Scatter bones and blood randomly on nearby interior floor cells.
+    // Collect eligible cells within 3 steps of the effective center.
+    if (!outCenter) return true;
+    short cx = outCenter->x;
+    short cy = outCenter->y;
+
+    typedef struct { short x, y; } cell;
+    cell candidates[60];
+    short candCount = 0;
+
+    for (short dy = -3; dy <= 3 && candCount < 60; dy++) {
+        for (short dx = -3; dx <= 3 && candCount < 60; dx++) {
+            short x = cx + dx;
+            short y = cy + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            // Skip cells already used by the fixed pattern
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+            candidates[candCount++] = (cell){x, y};
+        }
+    }
+
+    // Shuffle candidates
+    for (short i = candCount - 1; i > 0; i--) {
+        short j = rand_range(0, i);
+        cell tmp = candidates[i];
+        candidates[i] = candidates[j];
+        candidates[j] = tmp;
+    }
+
+    // Place 3-5 bones and 3-5 blood stains from the shuffled list
+    short bonesTarget = rand_range(3, 5);
+    short bloodTarget = rand_range(3, 5);
+    short bonesPlaced = 0, bloodPlaced = 0;
+
+    for (short i = 0; i < candCount && (bonesPlaced < bonesTarget || bloodPlaced < bloodTarget); i++) {
+        if (bonesPlaced < bonesTarget) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = BONES;
+            bonesPlaced++;
+        } else if (bloodPlaced < bloodTarget) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = RED_BLOOD;
+            bloodPlaced++;
+        }
+    }
+
+    // ~30% chance to spawn a RING or GOLD item near the throne.
+    if (rand_percent(30)) {
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (short i = 0; i < 4; i++) {
+            short ix = cx + dirs[i][0];
+            short iy = cy + dirs[i][1];
+            if (ix < 1 || ix >= DCOLS - 1 || iy < 1 || iy >= DROWS - 1) continue;
+            if (!interior[ix][iy]) continue;
+            if (pmap[ix][iy].layers[DUNGEON] != FLOOR && pmap[ix][iy].layers[DUNGEON] != CARPET) continue;
+            unsigned short category = rand_percent(50) ? RING : GOLD;
+            item *loot = generateItem(category, -1);
+            placeItemAt(loot, (pos){ix, iy});
+            break;
+        }
+    }
+
+    return true;
+}
+
 // Place a lichen garden: 2-3 shallow water pools connected by luminescent fungus,
 // surrounded by rings of fungus forest and dead grass fringe.
 // Uses Chebyshev distance from water cells to paint concentric growth rings.
@@ -3253,6 +3342,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_TOPPLED_BOOKCASE) {
         if (!applyToppledBookcaseLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_BONE_THRONE) {
+        if (!applyBoneThroneLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

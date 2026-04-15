@@ -196,6 +196,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_SCORCHED_EARTH,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_LICHEN_GARDEN,   FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_TOPPLED_BOOKCASE,FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_BONE_THRONE,     FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -769,6 +770,13 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Toppled Bookcase -- rotting shelves in a wall nook with scattered books",
     {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyToppledBookcaseLayout() in Architect.c
+        {0}}},
+    // Throne of bones: STATUE_INERT throne on marble dais with carpet runner,
+    // bones and blood scattered randomly in surrounding cells.
+    // ~30% chance of RING or GOLD loot. Custom applyBoneThroneLayout() in Architect.c.
+    {"Fixture: Bone Throne -- grim seat of power amid scattered remains",
+    {10, DEEPEST_LEVEL},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyBoneThroneLayout() in Architect.c
         {0}}},
 };
 
