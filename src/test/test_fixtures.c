@@ -1708,6 +1708,70 @@ TEST(test_fixture_weapon_rack_statue_near_wall) {
     test_teardown_game();
 }
 
+// --- Scorched Earth ---
+
+TEST(test_fixture_scorched_earth_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SCORCHED_EARTH];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_scorched_earth_blueprint_has_features) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SCORCHED_EARTH];
+    ASSERT_GT(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_scorched_earth_places_ash_or_embers) {
+    test_init_arena(42);
+
+    rogue.depthLevel = 8;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_SCORCHED_EARTH, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    boolean foundAshOrEmbers = false;
+    for (int x = 0; x < DCOLS && !foundAshOrEmbers; x++) {
+        for (int y = 0; y < DROWS && !foundAshOrEmbers; y++) {
+            if (pmap[x][y].layers[SURFACE] == ASH || pmap[x][y].layers[SURFACE] == EMBERS) {
+                foundAshOrEmbers = true;
+            }
+        }
+    }
+    ASSERT(foundAshOrEmbers);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_scorched_earth_blueprint_has_embers_feature) {
+    test_init_game(77);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SCORCHED_EARTH];
+    // Embers are the last feature so they overwrite ash on shared cells
+    boolean foundEmbers = false;
+    for (int f = 0; f < bp->featureCount; f++) {
+        if (bp->feature[f].terrain == EMBERS && bp->feature[f].layer == SURFACE) {
+            foundEmbers = true;
+        }
+    }
+    ASSERT(foundEmbers);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1793,4 +1857,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_weapon_rack_custom_layout);
     RUN_TEST(test_fixture_weapon_rack_places_statue_and_junk);
     RUN_TEST(test_fixture_weapon_rack_statue_near_wall);
+    RUN_TEST(test_fixture_scorched_earth_blueprint_depth_range);
+    RUN_TEST(test_fixture_scorched_earth_blueprint_has_features);
+    RUN_TEST(test_fixture_scorched_earth_places_ash_or_embers);
+    RUN_TEST(test_fixture_scorched_earth_blueprint_has_embers_feature);
 }
