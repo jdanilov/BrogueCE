@@ -1605,6 +1605,109 @@ TEST(test_fixture_abandoned_camp_statue_near_embers) {
     test_teardown_game();
 }
 
+// --- Weapon Rack ---
+
+TEST(test_fixture_weapon_rack_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_WEAPON_RACK];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_weapon_rack_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_WEAPON_RACK];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_weapon_rack_places_statue_and_junk) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_WEAPON_RACK, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_WEAPON_RACK) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify STATUE_INERT and JUNK exist
+    boolean foundStatue = false, foundJunk = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) foundStatue = true;
+            if (pmap[x][y].layers[SURFACE] == JUNK) foundJunk = true;
+        }
+    }
+    ASSERT(foundStatue);
+    ASSERT(foundJunk);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_weapon_rack_statue_near_wall) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_WEAPON_RACK, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find STATUE_INERT and verify it has at least one adjacent wall and adjacent junk
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                boolean hasWall = cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)
+                    || cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY);
+                boolean hasJunk = pmap[x-1][y].layers[SURFACE] == JUNK
+                    || pmap[x+1][y].layers[SURFACE] == JUNK
+                    || pmap[x][y-1].layers[SURFACE] == JUNK
+                    || pmap[x][y+1].layers[SURFACE] == JUNK;
+                if (hasWall && hasJunk) {
+                    foundPattern = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1686,4 +1789,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_abandoned_camp_custom_layout);
     RUN_TEST(test_fixture_abandoned_camp_places_hay_and_embers);
     RUN_TEST(test_fixture_abandoned_camp_statue_near_embers);
+    RUN_TEST(test_fixture_weapon_rack_blueprint_depth_range);
+    RUN_TEST(test_fixture_weapon_rack_custom_layout);
+    RUN_TEST(test_fixture_weapon_rack_places_statue_and_junk);
+    RUN_TEST(test_fixture_weapon_rack_statue_near_wall);
 }

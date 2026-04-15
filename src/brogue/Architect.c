@@ -1953,6 +1953,108 @@ static boolean applyCrystalOutcropLayout(short originX, short originY, char inte
     return true;
 }
 
+// Place a weapon rack against a wall: STATUE_INERT (rack) with 1-2 JUNK tiles flanking it.
+// ~30% chance to spawn a WEAPON item adjacent to the rack.
+static boolean applyWeaponRackLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find wall-adjacent interior floor cells near origin.
+    typedef struct { short x, y; short wallCount; } candidate;
+    candidate candidates[20];
+    short candidateCount = 0;
+
+    for (short dy = -4; dy <= 4 && candidateCount < 20; dy++) {
+        for (short dx = -4; dx <= 4 && candidateCount < 20; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            short walls = 0;
+            if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+
+            if (walls >= 1) {
+                candidates[candidateCount++] = (candidate){x, y, walls};
+            }
+        }
+    }
+
+    if (candidateCount < 1) return false;
+
+    // Sort by wall count descending (prefer corner cells).
+    for (short i = 0; i < candidateCount - 1; i++) {
+        for (short j = i + 1; j < candidateCount; j++) {
+            if (candidates[j].wallCount > candidates[i].wallCount) {
+                candidate tmp = candidates[i];
+                candidates[i] = candidates[j];
+                candidates[j] = tmp;
+            }
+        }
+    }
+
+    short rackX = candidates[0].x, rackY = candidates[0].y;
+
+    // Check connectivity before placing the blocking statue.
+    char blockingMap[DCOLS][DROWS];
+    zeroOutGrid(blockingMap);
+    blockingMap[rackX][rackY] = true;
+    if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
+        return false;
+    }
+    pmap[rackX][rackY].layers[DUNGEON] = STATUE_INERT;
+
+    // Place 1-2 junk tiles on adjacent interior floor cells (prefer non-wall side).
+    short junkPlaced = 0;
+    short junkTarget = 1 + rand_range(0, 1); // 1-2 junk
+    for (short dy = -1; dy <= 1 && junkPlaced < junkTarget; dy++) {
+        for (short dx = -1; dx <= 1 && junkPlaced < junkTarget; dx++) {
+            if (dx == 0 && dy == 0) continue;
+            if (dx != 0 && dy != 0) continue; // cardinal only
+            short jx = rackX + dx;
+            short jy = rackY + dy;
+            if (jx < 1 || jx >= DCOLS - 1 || jy < 1 || jy >= DROWS - 1) continue;
+            if (!interior[jx][jy]) continue;
+            if (pmap[jx][jy].layers[DUNGEON] != FLOOR) continue;
+            if (pmap[jx][jy].layers[SURFACE] != NOTHING) continue;
+            // Skip cells that are wall-adjacent (prefer spilling inward).
+            if (cellHasTerrainFlag((pos){jx, jy}, T_OBSTRUCTS_PASSABILITY)) continue;
+            pmap[jx][jy].layers[SURFACE] = JUNK;
+            junkPlaced++;
+        }
+    }
+
+    if (junkPlaced < 1) {
+        // Not enough space; abort.
+        pmap[rackX][rackY].layers[DUNGEON] = FLOOR;
+        return false;
+    }
+
+    if (outCenter) {
+        *outCenter = (pos){rackX, rackY};
+    }
+
+    // ~30% chance to spawn a WEAPON item nearby.
+    if (rand_percent(30)) {
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (short i = 0; i < 4; i++) {
+            short ix = rackX + dirs[i][0];
+            short iy = rackY + dirs[i][1];
+            if (ix < 1 || ix >= DCOLS - 1 || iy < 1 || iy >= DROWS - 1) continue;
+            if (!interior[ix][iy]) continue;
+            if (pmap[ix][iy].layers[DUNGEON] != FLOOR) continue;
+            if (pmap[ix][iy].layers[SURFACE] == NOTHING || pmap[ix][iy].layers[SURFACE] == JUNK) {
+                item *loot = generateItem(WEAPON, -1);
+                placeItemAt(loot, (pos){ix, iy});
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 // Place an abandoned camp: bedroll (HAY), fire ring (RUBBLE+EMBERS), marker post (STATUE_INERT),
 // with scattered bones and junk. ~40% chance of FOOD or POTION loot.
 // Tries all 4 rotations via shared helper.
@@ -2868,6 +2970,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_ABANDONED_CAMP) {
         if (!applyAbandonedCampLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_WEAPON_RACK) {
+        if (!applyWeaponRackLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

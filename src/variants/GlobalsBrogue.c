@@ -192,6 +192,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_CRYSTAL_OUTCROP, FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_STEAM_VENT,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_ABANDONED_CAMP,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_WEAPON_RACK,     FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -741,6 +742,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Abandoned Camp -- fire ring camp with bedroll and marker post",
     {5, 18},  {6, 12},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyAbandonedCampLayout() in Architect.c
+        {0}}},
+    {"Fixture: Weapon Rack -- broken equipment on wall",
+    {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyWeaponRackLayout() in Architect.c
         {0}}},
 };
 
