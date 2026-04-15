@@ -1708,6 +1708,112 @@ TEST(test_fixture_weapon_rack_statue_near_wall) {
     test_teardown_game();
 }
 
+// --- Lichen Garden ---
+
+TEST(test_fixture_lichen_garden_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_LICHEN_GARDEN];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_lichen_garden_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_LICHEN_GARDEN];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_lichen_garden_places_water_and_fungus) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    int depths[] = {8, 10, 12, 8, 10, 12, 8, 10, 12, 8};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = depths[s];
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_LICHEN_GARDEN, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_LICHEN_GARDEN) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify SHALLOW_WATER, LUMINESCENT_FUNGUS, and FUNGUS_FOREST exist
+    boolean foundWater = false, foundLumFungus = false, foundFungusForest = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[LIQUID] == SHALLOW_WATER) foundWater = true;
+            if (pmap[x][y].layers[SURFACE] == LUMINESCENT_FUNGUS) foundLumFungus = true;
+            if (pmap[x][y].layers[SURFACE] == FUNGUS_FOREST) foundFungusForest = true;
+        }
+    }
+    ASSERT(foundWater);
+    ASSERT(foundLumFungus);
+    ASSERT(foundFungusForest);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_lichen_garden_luminescent_fungus_adjacent_to_water) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    int depths[] = {8, 10, 12, 8, 10, 12, 8, 10, 12, 8};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = depths[s];
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_LICHEN_GARDEN, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find a LUMINESCENT_FUNGUS tile and verify it has adjacent SHALLOW_WATER
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[SURFACE] == LUMINESCENT_FUNGUS) {
+                if (pmap[x-1][y].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x+1][y].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x][y-1].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x][y+1].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x-1][y-1].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x+1][y-1].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x-1][y+1].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x+1][y+1].layers[LIQUID] == SHALLOW_WATER) {
+                    foundPattern = true;
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 // --- Scorched Earth ---
 
 TEST(test_fixture_scorched_earth_blueprint_depth_range) {
@@ -1861,4 +1967,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_scorched_earth_blueprint_has_features);
     RUN_TEST(test_fixture_scorched_earth_places_ash_or_embers);
     RUN_TEST(test_fixture_scorched_earth_blueprint_has_embers_feature);
+    RUN_TEST(test_fixture_lichen_garden_blueprint_depth_range);
+    RUN_TEST(test_fixture_lichen_garden_custom_layout);
+    RUN_TEST(test_fixture_lichen_garden_places_water_and_fungus);
+    RUN_TEST(test_fixture_lichen_garden_luminescent_fungus_adjacent_to_water);
 }

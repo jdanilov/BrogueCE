@@ -194,6 +194,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_ABANDONED_CAMP,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_WEAPON_RACK,     FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_SCORCHED_EARTH,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_LICHEN_GARDEN,   FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -754,6 +755,14 @@ const blueprint blueprintCatalog_Brogue[] = {
         {           0,          DEAD_GRASS,    SURFACE,       {2, 3},    0,       0,   -1,   0,     1,     0,   0,   (MF_NOT_IN_HALLWAY)},
         {           0,          ASH,           SURFACE,       {3, 5},    0,       0,   -1,   0,     0,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)},
         {           0,          EMBERS,        SURFACE,       {6, 8},    0,       0,   -1,   0,     0,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)}}},
+    // MT_FIXTURE_LICHEN_GARDEN = index 95 — CUSTOM LAYOUT (featureCount == 0)
+    // Tile placement handled by applyLichenGardenLayout() in Architect.c.
+    // Places 2-3 shallow water pools connected by luminescent fungus bridges,
+    // surrounded by fungus forest and dead grass fringe. Grand bioluminescent archipelago.
+    {"Fixture: Lichen Garden -- bioluminescent fungal archipelago around moisture pools",
+    {5, 18},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyLichenGardenLayout() in Architect.c
+        {0}}},
 };
 
 // To meter item generation (on level generation):

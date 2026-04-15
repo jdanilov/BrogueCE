@@ -2103,6 +2103,169 @@ static boolean applyAbandonedCampLayout(short originX, short originY, char inter
     return true;
 }
 
+// Place a lichen garden: 2-3 shallow water pools connected by luminescent fungus,
+// surrounded by rings of fungus forest and dead grass fringe.
+// Uses Chebyshev distance from water cells to paint concentric growth rings.
+static boolean applyLichenGardenLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find best center with ample open interior (score = interior cells in 9x7 area)
+    short bestX = 0, bestY = 0, bestScore = 0;
+    for (short dy = -6; dy <= 6; dy++) {
+        for (short dx = -6; dx <= 6; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 4 || x >= DCOLS - 4 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+            short score = 0;
+            for (short ry = -3; ry <= 3; ry++) {
+                for (short rx = -4; rx <= 4; rx++) {
+                    short nx = x + rx, ny = y + ry;
+                    if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS && interior[nx][ny]) {
+                        score++;
+                    }
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+    if (bestScore < 15) return false;
+
+    // Track water cells with a grid
+    char waterGrid[DCOLS][DROWS];
+    zeroOutGrid(waterGrid);
+
+    short waterCells[20][2];
+    short waterCount = 0;
+
+    // Pool 1: at center + 1 adjacent tile
+    waterGrid[bestX][bestY] = true;
+    waterCells[waterCount][0] = bestX;
+    waterCells[waterCount][1] = bestY;
+    waterCount++;
+
+    short card[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+    for (int i = 3; i > 0; i--) {
+        int j = rand_range(0, i);
+        short t0 = card[i][0], t1 = card[i][1];
+        card[i][0] = card[j][0]; card[i][1] = card[j][1];
+        card[j][0] = t0; card[j][1] = t1;
+    }
+    for (int d = 0; d < 4 && waterCount < 2; d++) {
+        short wx = bestX + card[d][0], wy = bestY + card[d][1];
+        if (wx >= 1 && wx < DCOLS-1 && wy >= 1 && wy < DROWS-1
+            && interior[wx][wy] && !waterGrid[wx][wy]) {
+            waterGrid[wx][wy] = true;
+            waterCells[waterCount][0] = wx;
+            waterCells[waterCount][1] = wy;
+            waterCount++;
+        }
+    }
+
+    // Satellite pool offsets (shuffled for variety)
+    short satOffsets[8][2] = {
+        {3, 0}, {-3, 0}, {0, 2}, {0, -2},
+        {2, 2}, {2, -2}, {-2, 2}, {-2, -2}
+    };
+    for (int i = 7; i > 0; i--) {
+        int j = rand_range(0, i);
+        short t0 = satOffsets[i][0], t1 = satOffsets[i][1];
+        satOffsets[i][0] = satOffsets[j][0]; satOffsets[i][1] = satOffsets[j][1];
+        satOffsets[j][0] = t0; satOffsets[j][1] = t1;
+    }
+
+    short numSatellites = rand_range(1, 2);
+    short satPlaced = 0;
+    for (int s = 0; s < 8 && satPlaced < numSatellites; s++) {
+        short px = bestX + satOffsets[s][0];
+        short py = bestY + satOffsets[s][1];
+        if (px < 1 || px >= DCOLS-1 || py < 1 || py >= DROWS-1) continue;
+        if (!interior[px][py] || waterGrid[px][py]) continue;
+
+        waterGrid[px][py] = true;
+        waterCells[waterCount][0] = px;
+        waterCells[waterCount][1] = py;
+        waterCount++;
+
+        // Add 1-2 adjacent cells to this satellite pool
+        short adj[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+        for (int i = 3; i > 0; i--) {
+            int j = rand_range(0, i);
+            short t0 = adj[i][0], t1 = adj[i][1];
+            adj[i][0] = adj[j][0]; adj[i][1] = adj[j][1];
+            adj[j][0] = t0; adj[j][1] = t1;
+        }
+        short extra = rand_range(1, 2);
+        for (int d = 0; d < 4 && extra > 0 && waterCount < 20; d++) {
+            short wx = px + adj[d][0], wy = py + adj[d][1];
+            if (wx < 1 || wx >= DCOLS-1 || wy < 1 || wy >= DROWS-1) continue;
+            if (!interior[wx][wy] || waterGrid[wx][wy]) continue;
+            waterGrid[wx][wy] = true;
+            waterCells[waterCount][0] = wx;
+            waterCells[waterCount][1] = wy;
+            waterCount++;
+            extra--;
+        }
+        satPlaced++;
+    }
+
+    if (waterCount < 3) return false;
+
+    // Place water on the map
+    for (int i = 0; i < waterCount; i++) {
+        pmap[waterCells[i][0]][waterCells[i][1]].layers[LIQUID] = SHALLOW_WATER;
+        pmap[waterCells[i][0]][waterCells[i][1]].layers[SURFACE] = NOTHING;
+    }
+
+    // Paint concentric rings by Chebyshev distance to nearest water cell:
+    //   dist 1: LUMINESCENT_FUNGUS (glows!)
+    //   dist 2: FUNGUS_FOREST
+    //   dist 3: DEAD_GRASS (60% chance, for organic fringe)
+    short totalPlaced = waterCount;
+    short minY = (bestY - 7 > 1) ? bestY - 7 : 1;
+    short maxY = (bestY + 7 < DROWS - 2) ? bestY + 7 : DROWS - 2;
+    short minX = (bestX - 8 > 1) ? bestX - 8 : 1;
+    short maxX = (bestX + 8 < DCOLS - 2) ? bestX + 8 : DCOLS - 2;
+
+    for (short y = minY; y <= maxY; y++) {
+        for (short x = minX; x <= maxX; x++) {
+            if (!interior[x][y] || waterGrid[x][y]) continue;
+
+            // Find min Chebyshev distance to any water cell
+            short minDist = 999;
+            for (int w = 0; w < waterCount; w++) {
+                short adx = abs(x - waterCells[w][0]);
+                short ady = abs(y - waterCells[w][1]);
+                short d = (adx > ady) ? adx : ady;
+                if (d < minDist) minDist = d;
+            }
+
+            if (minDist == 1) {
+                pmap[x][y].layers[SURFACE] = LUMINESCENT_FUNGUS;
+                pmap[x][y].layers[LIQUID] = NOTHING;
+                totalPlaced++;
+            } else if (minDist == 2) {
+                pmap[x][y].layers[SURFACE] = FUNGUS_FOREST;
+                pmap[x][y].layers[LIQUID] = NOTHING;
+                totalPlaced++;
+            } else if (minDist == 3 && rand_percent(60)) {
+                pmap[x][y].layers[SURFACE] = DEAD_GRASS;
+                totalPlaced++;
+            }
+        }
+    }
+
+    if (totalPlaced < 15) return false;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -2978,6 +3141,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_WEAPON_RACK) {
         if (!applyWeaponRackLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_LICHEN_GARDEN) {
+        if (!applyLichenGardenLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
