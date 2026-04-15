@@ -1855,6 +1855,104 @@ static boolean applyMushroomCircleLayout(short originX, short originY, char inte
     return true;
 }
 
+// Place a crystal outcrop: 2 crystal walls side-by-side against a wall, with luminescent fungus around them.
+// Finds wall-adjacent interior floor cells and places crystals + fungus in a coherent cluster.
+static boolean applyCrystalOutcropLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Collect interior cells adjacent to at least one wall, near the origin.
+    typedef struct { short x, y; short wallCount; } candidate;
+    candidate candidates[30];
+    short candidateCount = 0;
+
+    for (short dy = -5; dy <= 5 && candidateCount < 30; dy++) {
+        for (short dx = -5; dx <= 5 && candidateCount < 30; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            short walls = 0;
+            if (cellHasTerrainFlag((pos){x-1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x+1, y}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y-1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+            if (cellHasTerrainFlag((pos){x, y+1}, T_OBSTRUCTS_PASSABILITY)) walls++;
+
+            if (walls >= 1) {
+                candidates[candidateCount++] = (candidate){x, y, walls};
+            }
+        }
+    }
+
+    if (candidateCount < 2) return false;
+
+    // Sort by wall count descending (prefer cells with more wall contact).
+    for (short i = 0; i < candidateCount - 1; i++) {
+        for (short j = i + 1; j < candidateCount; j++) {
+            if (candidates[j].wallCount > candidates[i].wallCount) {
+                candidate tmp = candidates[i];
+                candidates[i] = candidates[j];
+                candidates[j] = tmp;
+            }
+        }
+    }
+
+    // Find a pair of adjacent wall-adjacent candidates for the two crystal walls.
+    short c1x = -1, c1y = -1, c2x = -1, c2y = -1;
+    for (short i = 0; i < candidateCount && c1x < 0; i++) {
+        for (short j = i + 1; j < candidateCount && c1x < 0; j++) {
+            short dx = candidates[i].x - candidates[j].x;
+            short dy = candidates[i].y - candidates[j].y;
+            if (abs(dx) + abs(dy) == 1) { // cardinally adjacent
+                c1x = candidates[i].x; c1y = candidates[i].y;
+                c2x = candidates[j].x; c2y = candidates[j].y;
+            }
+        }
+    }
+
+    if (c1x < 0) return false; // no adjacent pair found
+
+    // Check connectivity: placing two blocking tiles must not disconnect the level.
+    char blockingMap[DCOLS][DROWS];
+    zeroOutGrid(blockingMap);
+    blockingMap[c1x][c1y] = true;
+    blockingMap[c2x][c2y] = true;
+    if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
+        return false;
+    }
+
+    // Place the two crystal walls.
+    pmap[c1x][c1y].layers[DUNGEON] = CRYSTAL_WALL;
+    pmap[c2x][c2y].layers[DUNGEON] = CRYSTAL_WALL;
+
+    // Place luminescent fungus on adjacent interior floor cells.
+    short fungusPlaced = 0;
+    short fungusTarget = 3 + rand_range(0, 2); // 3-5 fungus
+    for (short dy = -1; dy <= 1 && fungusPlaced < fungusTarget; dy++) {
+        for (short dx = -1; dx <= 1 && fungusPlaced < fungusTarget; dx++) {
+            if (dx == 0 && dy == 0) continue;
+            // Check around both crystal positions.
+            for (int c = 0; c < 2; c++) {
+                short fx = (c == 0 ? c1x : c2x) + dx;
+                short fy = (c == 0 ? c1y : c2y) + dy;
+                if (fx < 1 || fx >= DCOLS - 1 || fy < 1 || fy >= DROWS - 1) continue;
+                if (!interior[fx][fy]) continue;
+                if (pmap[fx][fy].layers[DUNGEON] != FLOOR) continue;
+                if (pmap[fx][fy].layers[SURFACE] != NOTHING) continue;
+                pmap[fx][fy].layers[SURFACE] = LUMINESCENT_FUNGUS;
+                fungusPlaced++;
+                if (fungusPlaced >= fungusTarget) break;
+            }
+        }
+    }
+
+    // Center on the midpoint of the two crystals.
+    if (outCenter) {
+        outCenter->x = (c1x + c2x) / 2;
+        outCenter->y = (c1y + c2y) / 2;
+    }
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -2706,6 +2804,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_ALTAR_NOOK) {
         if (!applyAltarNookLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_CRYSTAL_OUTCROP) {
+        if (!applyCrystalOutcropLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

@@ -1351,6 +1351,98 @@ TEST(test_fixture_altar_nook_carpet_runner) {
     test_teardown_game();
 }
 
+TEST(test_fixture_crystal_outcrop_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CRYSTAL_OUTCROP];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crystal_outcrop_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CRYSTAL_OUTCROP];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crystal_outcrop_places_crystals) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_CRYSTAL_OUTCROP, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_CRYSTAL_OUTCROP) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify CRYSTAL_WALL and LUMINESCENT_FUNGUS exist
+    int crystalCount = 0;
+    boolean foundFungus = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == CRYSTAL_WALL) crystalCount++;
+            if (pmap[x][y].layers[SURFACE] == LUMINESCENT_FUNGUS) foundFungus = true;
+        }
+    }
+    ASSERT(crystalCount >= 2);
+    ASSERT(foundFungus);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_crystal_outcrop_crystals_adjacent) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_CRYSTAL_OUTCROP, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find two crystal walls and verify they are cardinally adjacent
+    boolean foundAdjacent = false;
+    for (int x = 1; x < DCOLS - 1 && !foundAdjacent; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundAdjacent; y++) {
+            if (pmap[x][y].layers[DUNGEON] != CRYSTAL_WALL) continue;
+            if (pmap[x+1][y].layers[DUNGEON] == CRYSTAL_WALL) foundAdjacent = true;
+            if (pmap[x][y+1].layers[DUNGEON] == CRYSTAL_WALL) foundAdjacent = true;
+        }
+    }
+    ASSERT(foundAdjacent);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1420,4 +1512,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_altar_nook_custom_layout);
     RUN_TEST(test_fixture_altar_nook_places_altar);
     RUN_TEST(test_fixture_altar_nook_carpet_runner);
+    RUN_TEST(test_fixture_crystal_outcrop_blueprint_depth_range);
+    RUN_TEST(test_fixture_crystal_outcrop_custom_layout);
+    RUN_TEST(test_fixture_crystal_outcrop_places_crystals);
+    RUN_TEST(test_fixture_crystal_outcrop_crystals_adjacent);
 }

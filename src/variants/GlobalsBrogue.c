@@ -189,6 +189,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_PUDDLE,          FLOOR,      NOTHING,    1,      8,              17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_FORGE,           FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_ALTAR_NOOK,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_CRYSTAL_OUTCROP, FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -724,6 +725,10 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Altar Nook -- devotional space with carpet runner and marble dais",
     {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyAltarNookLayout() in Architect.c
+        {0}}},
+    {"Fixture: Crystal Outcrop -- glowing mineral vein emerging from wall",
+    {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyCrystalOutcropLayout() in Architect.c
         {0}}},
 };
 
