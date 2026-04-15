@@ -190,6 +190,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_FORGE,           FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_ALTAR_NOOK,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_CRYSTAL_OUTCROP, FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_STEAM_VENT,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -730,6 +731,12 @@ const blueprint blueprintCatalog_Brogue[] = {
     {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyCrystalOutcropLayout() in Architect.c
         {0}}},
+    {"Fixture: Steam Vent -- geothermal fissure venting scalding steam",
+    {5, 18},  {3, 6},  0,  3,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        //         DF          terrain        layer          count      minInst  iCat iKind mKind  space  hFlg iFlg  featureFlags
+        {           0,          STEAM_VENT,    DUNGEON,       {1, 1},    1,       0,   -1,   0,     0,     0,   0,   (MF_BUILD_AT_ORIGIN|MF_NOT_IN_HALLWAY)},
+        {           0,          EMBERS,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)},
+        {           0,          RUBBLE,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)}}},
 };
 
 // To meter item generation (on level generation):

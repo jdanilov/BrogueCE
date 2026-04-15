@@ -39,6 +39,7 @@ static char cell_char(int x, int y) {
     enum tileType surf = pmap[x][y].layers[SURFACE];
 
     // DUNGEON layer — draw priority 0 wins
+    if (dun == STEAM_VENT)         return '=';  // G_VENT — periodic steam
     if (dun == STATUE_INERT)       return 'S';  // G_STATUE = eszett in real term
     if (dun == CRYSTAL_WALL)       return '#';
     if (dun == ALTAR_INERT)        return '|';
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
         } else {
             printf("(fixture not found on D1 for this seed)\n");
         }
-        printf("\nLegend: S statue  ~ water/lava  ' shallow/embers  : marble/web  , bones/rubble  ^ foliage  \" grass  . floor  # wall\n");
+        printf("\nLegend: S statue  = vent  ~ water/lava  ' shallow/embers  : marble/web  , bones/rubble  ^ foliage  \" grass  . floor  # wall\n");
         test_teardown_game();
         return 0;
     }

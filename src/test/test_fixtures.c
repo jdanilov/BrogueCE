@@ -1443,6 +1443,65 @@ TEST(test_fixture_crystal_outcrop_crystals_adjacent) {
     test_teardown_game();
 }
 
+// --- Steam Vent ---
+
+TEST(test_fixture_steam_vent_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_STEAM_VENT];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_steam_vent_blueprint_has_features) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_STEAM_VENT];
+    ASSERT_GT(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_steam_vent_places_vent) {
+    test_init_arena(42);
+
+    rogue.depthLevel = 8;
+
+    boolean placed = false;
+    for (int i = 0; i < 30; i++) {
+        if (buildAMachine(MT_FIXTURE_STEAM_VENT, -1, -1, 0, NULL, NULL, NULL)) {
+            placed = true;
+            break;
+        }
+    }
+    ASSERT(placed);
+
+    // Verify at least one STEAM_VENT tile exists on the level
+    boolean found = false;
+    for (int x = 0; x < DCOLS && !found; x++) {
+        for (int y = 0; y < DROWS && !found; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STEAM_VENT) {
+                found = true;
+            }
+        }
+    }
+    ASSERT(found);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_steam_vent_blueprint_has_vent_feature) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_STEAM_VENT];
+    ASSERT_EQ(bp->feature[0].terrain, STEAM_VENT);
+    ASSERT_EQ(bp->feature[0].layer, DUNGEON);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1516,4 +1575,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_crystal_outcrop_custom_layout);
     RUN_TEST(test_fixture_crystal_outcrop_places_crystals);
     RUN_TEST(test_fixture_crystal_outcrop_crystals_adjacent);
+    RUN_TEST(test_fixture_steam_vent_blueprint_depth_range);
+    RUN_TEST(test_fixture_steam_vent_blueprint_has_features);
+    RUN_TEST(test_fixture_steam_vent_places_vent);
+    RUN_TEST(test_fixture_steam_vent_blueprint_has_vent_feature);
 }

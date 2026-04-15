@@ -2830,7 +2830,8 @@ enum machineTypes {
     MT_FIXTURE_PUDDLE,
     MT_FIXTURE_FORGE,
     MT_FIXTURE_ALTAR_NOOK,
-    MT_FIXTURE_CRYSTAL_OUTCROP
+    MT_FIXTURE_CRYSTAL_OUTCROP,
+    MT_FIXTURE_STEAM_VENT
 };
 
 typedef struct autoGenerator {
