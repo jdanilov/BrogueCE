@@ -1502,6 +1502,109 @@ TEST(test_fixture_steam_vent_blueprint_has_vent_feature) {
     test_teardown_game();
 }
 
+// --- Abandoned Camp ---
+
+TEST(test_fixture_abandoned_camp_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_ABANDONED_CAMP];
+    ASSERT_EQ(bp->depthRange[0], 5);
+    ASSERT_EQ(bp->depthRange[1], 18);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_abandoned_camp_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_ABANDONED_CAMP];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_abandoned_camp_places_hay_and_embers) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_ABANDONED_CAMP, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify it was recorded in placedMachines
+    boolean foundRecord = false;
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        if (rogue.placedMachines[i].blueprintIndex == MT_FIXTURE_ABANDONED_CAMP) {
+            foundRecord = true;
+            break;
+        }
+    }
+    ASSERT(foundRecord);
+
+    // Verify HAY, EMBERS, and STATUE_INERT exist
+    boolean foundHay = false, foundEmbers = false, foundStatue = false;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[SURFACE] == HAY) foundHay = true;
+            if (pmap[x][y].layers[SURFACE] == EMBERS) foundEmbers = true;
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) foundStatue = true;
+        }
+    }
+    ASSERT(foundHay);
+    ASSERT(foundEmbers);
+    ASSERT(foundStatue);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_abandoned_camp_statue_near_embers) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 8;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_ABANDONED_CAMP, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find STATUE_INERT and verify EMBERS is within 3 cells (same camp)
+    boolean foundPattern = false;
+    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
+        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                for (int dx = -3; dx <= 3 && !foundPattern; dx++) {
+                    for (int dy = -3; dy <= 3 && !foundPattern; dy++) {
+                        int nx = x + dx, ny = y + dy;
+                        if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS
+                            && pmap[nx][ny].layers[SURFACE] == EMBERS) {
+                            foundPattern = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ASSERT(foundPattern);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -1579,4 +1682,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_steam_vent_blueprint_has_features);
     RUN_TEST(test_fixture_steam_vent_places_vent);
     RUN_TEST(test_fixture_steam_vent_blueprint_has_vent_feature);
+    RUN_TEST(test_fixture_abandoned_camp_blueprint_depth_range);
+    RUN_TEST(test_fixture_abandoned_camp_custom_layout);
+    RUN_TEST(test_fixture_abandoned_camp_places_hay_and_embers);
+    RUN_TEST(test_fixture_abandoned_camp_statue_near_embers);
 }

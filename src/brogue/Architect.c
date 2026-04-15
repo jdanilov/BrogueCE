@@ -1953,6 +1953,54 @@ static boolean applyCrystalOutcropLayout(short originX, short originY, char inte
     return true;
 }
 
+// Place an abandoned camp: bedroll (HAY), fire ring (RUBBLE+EMBERS), marker post (STATUE_INERT),
+// with scattered bones and junk. ~40% chance of FOOD or POTION loot.
+// Tries all 4 rotations via shared helper.
+static boolean applyAbandonedCampLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    static const layoutTile campPat[] = {
+        // Row 0: bedroll
+        { 0, 0, HAY,          SURFACE, false},
+        { 1, 0, HAY,          SURFACE, false},
+        // Row 1: meal scraps
+        { 0, 1, BONES,        SURFACE, false},
+        // Row 2: fire ring (rubble flanking embers)
+        {-1, 2, RUBBLE,       SURFACE, false},
+        { 0, 2, EMBERS,       SURFACE, false},
+        { 1, 2, RUBBLE,       SURFACE, false},
+        // Row 3: fire ring base + junk
+        { 0, 3, RUBBLE,       SURFACE, false},
+        { 1, 3, JUNK,         SURFACE, false},
+        // Row 4: marker post
+        { 0, 4, STATUE_INERT, DUNGEON, false},
+    };
+    if (!applyRotatableLayout(originX, originY, interior,
+                              campPat, sizeof(campPat) / sizeof(campPat[0]),
+                              0, 2, outCenter)) {
+        return false;
+    }
+
+    // ~40% chance to spawn a FOOD or POTION item near the marker post.
+    if (outCenter && rand_percent(40)) {
+        // Find an open floor cell adjacent to the effective center for the item.
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (short i = 0; i < 4; i++) {
+            short ix = outCenter->x + dirs[i][0];
+            short iy = outCenter->y + dirs[i][1];
+            if (ix < 1 || ix >= DCOLS - 1 || iy < 1 || iy >= DROWS - 1) continue;
+            if (!interior[ix][iy]) continue;
+            if (pmap[ix][iy].layers[DUNGEON] != FLOOR) continue;
+            if (pmap[ix][iy].layers[SURFACE] == NOTHING) {
+                unsigned short category = rand_percent(50) ? FOOD : POTION;
+                item *loot = generateItem(category, -1);
+                placeItemAt(loot, (pos){ix, iy});
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -2812,6 +2860,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_CRYSTAL_OUTCROP) {
         if (!applyCrystalOutcropLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_ABANDONED_CAMP) {
+        if (!applyAbandonedCampLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

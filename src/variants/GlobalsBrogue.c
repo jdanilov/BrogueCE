@@ -191,6 +191,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_ALTAR_NOOK,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_CRYSTAL_OUTCROP, FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_STEAM_VENT,      FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_ABANDONED_CAMP,  FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -737,6 +738,10 @@ const blueprint blueprintCatalog_Brogue[] = {
         {           0,          STEAM_VENT,    DUNGEON,       {1, 1},    1,       0,   -1,   0,     0,     0,   0,   (MF_BUILD_AT_ORIGIN|MF_NOT_IN_HALLWAY)},
         {           0,          EMBERS,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)},
         {           0,          RUBBLE,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)}}},
+    {"Fixture: Abandoned Camp -- fire ring camp with bedroll and marker post",
+    {5, 18},  {6, 12},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyAbandonedCampLayout() in Architect.c
+        {0}}},
 };
 
 // To meter item generation (on level generation):

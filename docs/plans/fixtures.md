@@ -95,7 +95,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 17 | **Altar Nook** ✅ | 10-13 | ALTAR_INERT (1), MARBLE_FLOOR (4), CARPET (4), EMBERS (2) | Room center | Processional hall: carpet runner to altar on marble dais, flanked by embers. Custom `applyAltarNookLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 18 | **Crystal Outcrop** ✅ | 2-4 | CRYSTAL_WALL (1-2), LUMINESCENT_FUNGUS around | Cavern wall-adjacent | Glowing mineral vein. Light effect. Loot: GEM (~30%). |
 | 19 | **Steam Vent** ✅ | 1-3 | STEAM_VENT (1), EMBERS (1-2), RUBBLE (1-2) | Anywhere | Geothermal fissure venting scalding steam. Uses existing STEAM_VENT tile with periodic DF_STEAM_PUFF. BP_PURGE_INTERIOR. |
-| 20 | **Abandoned Camp** | 4-7 | HAY (2), JUNK (1-2), BONES (1), EMBERS (1) | Room interior | Someone stayed here once. Loot: FOOD or POTION (~40%). |
+| 20 | **Abandoned Camp** ✅ | 9-10 | STATUE_INERT (1 post), HAY (2 bedroll), EMBERS (1 fire), RUBBLE (3 fire ring), JUNK (1), BONES (1) | Room interior | Fire ring camp with bedroll and marker post. Custom `applyAbandonedCampLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: FOOD or POTION (~40%). |
 | 21 | **Weapon Rack** | 2-3 | STATUE_INERT (1), JUNK (1-2) | Wall-adjacent | Broken equipment on wall. Loot: WEAPON (~30%). |
 | 22 | **Scorched Earth** | 3-5 | ASH (2-3), EMBERS (1), DEAD_GRASS (1) | Anywhere | Aftermath of an old fire. |
 | 23 | **Lichen Garden** | 3-5 | FUNGUS_FOREST (2), DEAD_GRASS (2), SHALLOW_WATER (1) | Cavern organic | Bioluminescent growth around moisture. |
