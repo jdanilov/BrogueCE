@@ -2035,8 +2035,8 @@ static boolean applyWeaponRackLayout(short originX, short originY, char interior
         *outCenter = (pos){rackX, rackY};
     }
 
-    // ~30% chance to spawn a WEAPON item nearby.
-    if (rand_percent(30)) {
+    // ~60% chance to spawn a WEAPON item nearby.
+    if (rand_percent(60)) {
         short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
         for (short i = 0; i < 4; i++) {
             short ix = rackX + dirs[i][0];
@@ -2142,8 +2142,8 @@ static boolean applyToppledBookcaseLayout(short originX, short originY, char int
         *outCenter = (pos){nookX, nookY};
     }
 
-    // ~40% chance to spawn a SCROLL on the junk tile.
-    if (rand_percent(40)) {
+    // ~80% chance to spawn a SCROLL on the junk tile.
+    if (rand_percent(80)) {
         item *loot = generateItem(SCROLL, -1);
         placeItemAt(loot, (pos){junkX, junkY});
     }
