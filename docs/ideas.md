@@ -8,29 +8,11 @@ Custom Ideas
 
 4. Improve blood splatter - paint vegetation and walls in red. [planned]
 
-Low Complexity
-
-1. More varied starting equipment — Instead of always starting with a dagger + leather armor, randomize from a small pool (short sword, rapier, mace, etc.). Or let the player choose starting equipment in the first room: a ranged weapon, a staff, a weapon, a ring. This immediately changes early combat feel each run. [skip: too balance-changing]
-
-2. Early interactive terrain — Increase the frequency of pressure plates, trap doors, steam vents, and flammable grass on D1-D3. These create tactical puzzles even with weak monsters [skip: mediocre output].
-
-3. Minor consumable variety — Guarantee 1-2 identified potions/scrolls on D1 (e.g., a potion of fire immunity next to a lava vent, or a scroll of teleportation in a dead end). Gives the player meaningful choices from turn one. [skip: too balance-changing and mediocre output]
-
-Medium Complexity
-
-4. Early mini-vaults / puzzles — Add new machine blueprints that can spawn on D1-D3: a locked room with a visible item and a hidden key, a flooded corridor with stepping stones, a goblin camp around a campfire. These give each early floor a unique identity. [interesting: new balanced machines for first levels is a good approach]
-
-5. NPC encounters — A trapped adventurer you can free (becomes a temporary ally), a merchant offering a choice of 2 items, or a dying explorer who identifies one of your scrolls. Adds narrative texture. [skip: difficult to justify finding NPCs in the dungeon thematically. Same result can be reached via new custom machines in point (4)]
+5. Early mini-vaults / puzzles — Add new machine blueprints that can spawn on D1-D3: a locked room with a visible item and a hidden key, a flooded corridor with stepping stones, a goblin camp around a campfire. These give each early floor a unique identity. An undead merchant offering a choice of 2 items, a dying explorer who identifies one of your scrolls. Adds narrative texture. [interesting: new balanced machines for first levels is a good approach]
 
 6. Environmental storytelling rooms — Pre-built "set pieces" — a collapsed library with a guaranteed scroll, a flooded alchemy lab with potions, an abandoned forge near a weapon. Connects loot to place. [interesting]
 
 7. Nemesis system — An ogre or troll that appears on D2, flees if wounded, and returns stronger later. Gives the player a recurring antagonist and a reason to care about early floors. [interesting: could be improved, e.g. an invisible stalker that shrieks from time to time aggravating monsters]
 
-Higher Complexity
-
-8. Quest seeds — D1-D3 contain clues (inscriptions, maps) pointing to vaults deeper in the dungeon. "A crumbling note reads: treasure behind the waterfall on depth 8." Ties early exploration to later payoff. [skip]
-
-9. Branching paths — Occasional alternate staircases on early floors leading to a small side-dungeon (2-3 rooms) with better loot but tougher enemies. Risk/reward from the start. [skip]
-
-10. Dynamic monster behavior — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
+8. Dynamic monster behavior — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
 
