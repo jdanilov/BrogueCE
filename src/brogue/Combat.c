@@ -797,7 +797,7 @@ boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distanc
     itemName(theItem, theItemName, false, false, NULL);
     monsterName(targetName, monst, true);
 
-    // Alerting the monster
+    // Alert the target (even on miss — it sees/hears the projectile)
     monst->status[STATUS_ENTRANCED] = 0;
     if (monst != &player
         && monst->creatureMode != MODE_PERM_FLEEING
@@ -879,6 +879,10 @@ boolean hitMonsterWithRangedWeapon(creature *monst, item *theItem, short distanc
                     setMonsterLocation(monst, (pos){ newX, newY });
                 }
             }
+        }
+        // Wake nearby allies/teammates on confirmed hit (not on miss)
+        if (monst != &player && !(monst->bookkeepingFlags & MB_IS_DYING)) {
+            wakeUp(monst);
         }
         moralAttack(&player, monst);
         if (armorRunicString[0]) {
