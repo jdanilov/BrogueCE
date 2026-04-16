@@ -2093,6 +2093,172 @@ TEST(test_fixture_bone_throne_carpet_runner) {
     test_teardown_game();
 }
 
+// --- Blood Pool ---
+
+TEST(test_fixture_blood_pool_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BLOOD_POOL];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_blood_pool_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_BLOOD_POOL];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_blood_pool_places_altar_and_blood) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_BLOOD_POOL, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify ALTAR_INERT exists
+    boolean foundAltar = false;
+    short bloodCount = 0;
+    for (int x = 0; x < DCOLS && !foundAltar; x++) {
+        for (int y = 0; y < DROWS && !foundAltar; y++) {
+            if (pmap[x][y].layers[DUNGEON] == ALTAR_INERT) {
+                foundAltar = true;
+            }
+        }
+    }
+    ASSERT(foundAltar);
+
+    // Verify significant blood spread
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[SURFACE] == RED_BLOOD) {
+                bloodCount++;
+            }
+        }
+    }
+    ASSERT_GE(bloodCount, 8);
+
+    test_teardown_game();
+}
+
+// --- Obsidian Formation ---
+
+TEST(test_fixture_obsidian_formation_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_OBSIDIAN_FORMATION];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_obsidian_formation_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_OBSIDIAN_FORMATION];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_obsidian_formation_places_obsidian_and_embers) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_OBSIDIAN_FORMATION, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify OBSIDIAN exists
+    boolean foundObsidian = false;
+    short embersCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == OBSIDIAN) {
+                foundObsidian = true;
+            }
+            if (pmap[x][y].layers[SURFACE] == EMBERS) {
+                embersCount++;
+            }
+        }
+    }
+    ASSERT(foundObsidian);
+    ASSERT_GT(embersCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_obsidian_formation_concentric_rings) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_OBSIDIAN_FORMATION, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find center of obsidian cluster
+    short centerX = 0, centerY = 0;
+    short obsCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == OBSIDIAN) {
+                centerX += x;
+                centerY += y;
+                obsCount++;
+            }
+        }
+    }
+    ASSERT_GT(obsCount, 0);
+    centerX /= obsCount;
+    centerY /= obsCount;
+
+    // Verify obsidian is concentrated near center (all within dist 3 of centroid)
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == OBSIDIAN) {
+                short dist = max(abs(x - centerX), abs(y - centerY));
+                ASSERT_LE(dist, 3);
+            }
+        }
+    }
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2194,4 +2360,11 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_bone_throne_custom_layout);
     RUN_TEST(test_fixture_bone_throne_places_statue_and_carpet);
     RUN_TEST(test_fixture_bone_throne_carpet_runner);
+    RUN_TEST(test_fixture_blood_pool_blueprint_depth_range);
+    RUN_TEST(test_fixture_blood_pool_custom_layout);
+    RUN_TEST(test_fixture_blood_pool_places_altar_and_blood);
+    RUN_TEST(test_fixture_obsidian_formation_blueprint_depth_range);
+    RUN_TEST(test_fixture_obsidian_formation_custom_layout);
+    RUN_TEST(test_fixture_obsidian_formation_places_obsidian_and_embers);
+    RUN_TEST(test_fixture_obsidian_formation_concentric_rings);
 }

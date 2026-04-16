@@ -106,8 +106,8 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | # | Name | Size | Tiles/DFs Used | Placement | Notes |
 |---|------|------|---------------|-----------|-------|
 | 25 | **Bone Throne** ✅ | 15-20 | STATUE_INERT (1 throne), MARBLE_FLOOR (4), CARPET (3 runner), BONES (3-5 random), RED_BLOOD (3-5 random) | Room center | Grand throne on marble dais with carpet runner, bones and blood randomly scattered. Custom `applyBoneThroneLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: RING or GOLD (~30%). |
-| 26 | **Blood Pool** | 2-4 | DF_RED_BLOOD (spread), SHALLOW_WATER (1 center) | Cavern organic | Something died here, slowly. |
-| 27 | **Obsidian Formation** | 2-4 | OBSIDIAN (2-3), ASH around | Anywhere | Cooled lava remnants from an ancient flow. |
+| 26 | **Blood Pool** ✅ | 20-25 | ALTAR_INERT (1 center), RED_BLOOD (large irregular spread), BONES (3-6 scattered) | Cavern organic | Grand altar rising from a lake of ancient blood. Custom `applyBloodPoolLayout()` in Architect.c. BP_PURGE_INTERIOR. |
+| 27 | **Obsidian Formation** ✅ | 20-25 | OBSIDIAN (core), EMBERS (ring), ASH (perimeter) | Anywhere | Cooled lava remnants with concentric thermal rings. Custom `applyObsidianFormationLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 28 | **Ember Pit** | 3-5 | EMBERS (center), ASH (ring), BONES (1) | Cavern organic | Still smoldering. Minor effect: embers DF. |
 | 29 | **Claw Marks** | 1-3 | RUBBLE (wall-adjacent), BONES (1) | Wall-adjacent | Deep gouges — something large passed through. |
 | 30 | **Sacrificial Slab** | 2-4 | MARBLE_FLOOR (1), DF_RED_BLOOD (around), BONES (1) | Room center | Dark stains on polished stone. Loot: POTION (~30%). |

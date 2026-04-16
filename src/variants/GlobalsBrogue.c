@@ -197,6 +197,8 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_LICHEN_GARDEN,   FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_TOPPLED_BOOKCASE,FLOOR,      NOTHING,    5,      18,             17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_BONE_THRONE,     FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_BLOOD_POOL,      FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_OBSIDIAN_FORMATION, FLOOR,   NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -777,6 +779,19 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Bone Throne -- grim seat of power amid scattered remains",
     {10, DEEPEST_LEVEL},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyBoneThroneLayout() in Architect.c
+        {0}}},
+    // Grand altar rising from a lake of dried blood with bones scattered throughout.
+    // Custom layout paints irregular blood spread around altar, bones at random positions.
+    {"Fixture: Blood Pool -- altar rising from a lake of ancient blood",
+    {10, DEEPEST_LEVEL},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyBloodPoolLayout() in Architect.c
+        {0}}},
+    // MT_FIXTURE_OBSIDIAN_FORMATION = index 100 — CUSTOM LAYOUT (featureCount == 0)
+    // Tile placement handled by applyObsidianFormationLayout() in Architect.c.
+    // Places concentric rings: obsidian core, embers ring, ash perimeter.
+    {"Fixture: Obsidian Formation -- cooled lava remnants with concentric thermal rings",
+    {10, DEEPEST_LEVEL},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applyObsidianFormationLayout() in Architect.c
         {0}}},
 };
 

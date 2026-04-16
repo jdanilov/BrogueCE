@@ -2288,6 +2288,181 @@ static boolean applyBoneThroneLayout(short originX, short originY, char interior
     return true;
 }
 
+// Place a blood pool: altar rising from a grand irregular lake of dried blood.
+// Altar at center, large blood spread around it, bones scattered irregularly.
+static boolean applyBloodPoolLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find best center with ample open interior (score = interior cells in 7x7 area)
+    short bestX = 0, bestY = 0, bestScore = 0;
+    for (short dy = -6; dy <= 6; dy++) {
+        for (short dx = -6; dx <= 6; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 4 || x >= DCOLS - 4 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+            short score = 0;
+            for (short ry = -3; ry <= 3; ry++) {
+                for (short rx = -3; rx <= 3; rx++) {
+                    short cx = x + rx, cy = y + ry;
+                    if (cx >= 0 && cx < DCOLS && cy >= 0 && cy < DROWS && interior[cx][cy]) {
+                        score++;
+                    }
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+    // Need at least a 5x5 open area to look grand
+    if (bestScore < 20) return false;
+
+    // Place altar at center
+    pmap[bestX][bestY].layers[DUNGEON] = ALTAR_INERT;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+
+    // Collect interior cells within radius 4 of the altar, excluding the altar itself
+    typedef struct { short x, y; } cell;
+    cell candidates[120];
+    short candCount = 0;
+
+    for (short dy = -4; dy <= 4 && candCount < 120; dy++) {
+        for (short dx = -4; dx <= 4 && candCount < 120; dx++) {
+            if (dx == 0 && dy == 0) continue;
+            short x = bestX + dx;
+            short y = bestY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+            candidates[candCount++] = (cell){x, y};
+        }
+    }
+
+    // Paint blood on cells close to the altar (Chebyshev distance <= 3),
+    // with decreasing probability further out for irregular edges
+    short bloodCount = 0;
+    for (short i = 0; i < candCount; i++) {
+        short dx = candidates[i].x - bestX;
+        short dy = candidates[i].y - bestY;
+        short dist = max(abs(dx), abs(dy));
+        short chance;
+        if (dist <= 1) chance = 95;
+        else if (dist == 2) chance = 80;
+        else if (dist == 3) chance = 55;
+        else chance = 25;
+        if (rand_percent(chance)) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = RED_BLOOD;
+            bloodCount++;
+        }
+    }
+
+    // Need a meaningful amount of blood
+    if (bloodCount < 8) return false;
+
+    // Shuffle candidates for bone placement
+    for (short i = candCount - 1; i > 0; i--) {
+        short j = rand_range(0, i);
+        cell tmp = candidates[i];
+        candidates[i] = candidates[j];
+        candidates[j] = tmp;
+    }
+
+    // Scatter 3-6 bones irregularly among the blood-stained cells
+    short bonesTarget = rand_range(3, 6);
+    short bonesPlaced = 0;
+    for (short i = 0; i < candCount && bonesPlaced < bonesTarget; i++) {
+        if (pmap[candidates[i].x][candidates[i].y].layers[SURFACE] == RED_BLOOD) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = BONES;
+            bonesPlaced++;
+        }
+    }
+
+    return true;
+}
+
+// Place an obsidian formation: concentric thermal rings — obsidian core,
+// embers ring, ash perimeter. Cooled lava remnants from an ancient flow.
+static boolean applyObsidianFormationLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find best center with ample open interior (score = interior cells in 7x7 area)
+    short bestX = 0, bestY = 0, bestScore = 0;
+    for (short dy = -6; dy <= 6; dy++) {
+        for (short dx = -6; dx <= 6; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 3 || x >= DCOLS - 3 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+            short score = 0;
+            for (short ry = -3; ry <= 3; ry++) {
+                for (short rx = -3; rx <= 3; rx++) {
+                    short nx = x + rx, ny = y + ry;
+                    if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS && interior[nx][ny]) {
+                        score++;
+                    }
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+    // Need at least a 5x5 open area
+    if (bestScore < 20) return false;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+
+    // Paint concentric rings based on Chebyshev distance from center.
+    // Distance 0-1: obsidian core, 2: embers ring, 3: ash perimeter.
+    // Use randomized thresholds for irregular edges.
+    for (short dy = -4; dy <= 4; dy++) {
+        for (short dx = -4; dx <= 4; dx++) {
+            short x = bestX + dx;
+            short y = bestY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            short dist = max(abs(dx), abs(dy));
+            if (dist <= 1) {
+                // Core: always obsidian
+                pmap[x][y].layers[DUNGEON] = OBSIDIAN;
+            } else if (dist == 2) {
+                // Inner ring: obsidian or embers
+                if (rand_percent(40)) {
+                    pmap[x][y].layers[DUNGEON] = OBSIDIAN;
+                } else {
+                    pmap[x][y].layers[SURFACE] = EMBERS;
+                }
+            } else if (dist == 3) {
+                // Outer ring: embers or ash with falloff
+                if (rand_percent(70)) {
+                    if (rand_percent(35)) {
+                        pmap[x][y].layers[SURFACE] = EMBERS;
+                    } else {
+                        pmap[x][y].layers[SURFACE] = ASH;
+                    }
+                }
+            } else if (dist == 4) {
+                // Fringe: sparse ash
+                if (rand_percent(30)) {
+                    pmap[x][y].layers[SURFACE] = ASH;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 // Place a lichen garden: 2-3 shallow water pools connected by luminescent fungus,
 // surrounded by rings of fungus forest and dead grass fringe.
 // Uses Chebyshev distance from water cells to paint concentric growth rings.
@@ -3350,6 +3525,22 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_BONE_THRONE) {
         if (!applyBoneThroneLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_BLOOD_POOL) {
+        if (!applyBloodPoolLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_OBSIDIAN_FORMATION) {
+        if (!applyObsidianFormationLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
