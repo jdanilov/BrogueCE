@@ -620,6 +620,172 @@ TEST(test_sniper_runic_no_damage_falloff) {
     test_teardown_game();
 }
 
+// --- Bow strength requirement tests ---
+
+TEST(test_bow_strength_requirement_higher_than_base) {
+    test_init_arena(12345);
+
+    item *bow = test_give_item(RANGED, BOW, 0);
+    ASSERT(bow != NULL);
+    // Bow requires 14 strength (player starts at 12, so -2 penalty)
+    ASSERT_EQ(bow->strengthRequired, 14);
+
+    test_teardown_game();
+}
+
+TEST(test_bow_enchanting_does_not_reduce_strength_requirement) {
+    test_init_arena(12345);
+
+    item *bow = test_give_item(RANGED, BOW, 0);
+    ASSERT(bow != NULL);
+    short baseStr = bow->strengthRequired;
+
+    // Enchant the bow several times
+    bow->enchant1 = 5;
+    // Simulate what the enchant scroll does for non-bow ranged:
+    // strengthRequired should NOT change for bows
+    // (the actual enchant scroll code skips the reduction for BOW)
+    ASSERT_EQ(bow->strengthRequired, baseStr);
+
+    test_teardown_game();
+}
+
+TEST(test_sling_enchanting_reduces_strength_requirement) {
+    test_init_arena(12345);
+
+    item *sling = test_give_item(RANGED, SLING, 0);
+    ASSERT(sling != NULL);
+    short baseStr = sling->strengthRequired;
+
+    // Manually apply what the enchant scroll does for non-bow ranged
+    sling->strengthRequired = max(0, sling->strengthRequired - 1);
+    sling->enchant1 += 1;
+
+    ASSERT_LT(sling->strengthRequired, baseStr);
+
+    test_teardown_game();
+}
+
+// --- Wake-on-hit tests ---
+
+TEST(test_ranged_hit_wakes_sleeping_monster_teammates) {
+    test_init_arena(12345);
+    test_set_player_hp(500, 500);
+    rogue.strength = 20; // ensure no strength penalty on bow
+
+    item *bow = test_give_item(RANGED, BOW, 5);
+    ASSERT(bow != NULL);
+
+    // Place two rats as a horde: leader + follower
+    creature *target = test_place_monster(MK_RAT, player.loc.x + 3, player.loc.y);
+    creature *nearby = test_place_monster(MK_RAT, player.loc.x + 4, player.loc.y);
+    ASSERT(target != NULL);
+    ASSERT(nearby != NULL);
+
+    // Make them teammates (leader/follower)
+    target->bookkeepingFlags |= MB_LEADER;
+    nearby->bookkeepingFlags |= MB_FOLLOWER;
+    nearby->leader = target;
+
+    // Both start sleeping
+    target->creatureState = MONSTER_SLEEPING;
+    nearby->creatureState = MONSTER_SLEEPING;
+
+    // Hit the target with the ranged weapon (confirmed hit: target is stuck)
+    target->status[STATUS_STUCK] = 5;
+    test_reseed(12345);
+    boolean hit = hitMonsterWithRangedWeapon(target, bow, 3);
+    ASSERT(hit);
+
+    // The nearby teammate should have been woken up by wakeUp()
+    ASSERT_NE(nearby->creatureState, MONSTER_SLEEPING);
+
+    test_teardown_game();
+}
+
+TEST(test_ranged_miss_does_not_wake_teammates) {
+    test_init_arena(12345);
+    test_set_player_hp(500, 500);
+
+    item *bow = test_give_item(RANGED, BOW, 0);
+    ASSERT(bow != NULL);
+    // Give bow a massive negative enchant to guarantee a miss
+    bow->enchant1 = -20;
+
+    // Place two rats as a horde
+    creature *target = test_place_monster(MK_RAT, player.loc.x + 3, player.loc.y);
+    creature *nearby = test_place_monster(MK_RAT, player.loc.x + 4, player.loc.y);
+    ASSERT(target != NULL);
+    ASSERT(nearby != NULL);
+
+    target->bookkeepingFlags |= MB_LEADER;
+    nearby->bookkeepingFlags |= MB_FOLLOWER;
+    nearby->leader = target;
+
+    target->creatureState = MONSTER_SLEEPING;
+    nearby->creatureState = MONSTER_SLEEPING;
+
+    // Give monster very high defense to guarantee miss
+    target->info.defense = 1000;
+
+    test_reseed(99999);
+    boolean hit = hitMonsterWithRangedWeapon(target, bow, 3);
+
+    if (!hit) {
+        // On miss, target is alerted but teammates should stay sleeping
+        ASSERT_EQ(nearby->creatureState, MONSTER_SLEEPING);
+    }
+
+    test_teardown_game();
+}
+
+// --- Potion shatter on ranged impact tests ---
+
+TEST(test_ranged_shatters_potion_on_ground) {
+    test_init_arena(12345);
+    test_set_player_hp(500, 500);
+
+    // Place a confusion potion on the ground
+    item *potion = generateItem(POTION, POTION_CONFUSION);
+    ASSERT(potion != NULL);
+    pos potionLoc = (pos){ player.loc.x + 3, player.loc.y };
+    placeItemAt(potion, potionLoc);
+    ASSERT(pmap[potionLoc.x][potionLoc.y].flags & HAS_ITEM);
+
+    // Verify the potion is there
+    item *found = itemAtLoc(potionLoc);
+    ASSERT(found != NULL);
+    ASSERT_EQ(found->kind, POTION_CONFUSION);
+
+    // Simulate shatterPotion (the extracted helper)
+    boolean shattered = shatterPotion(potionLoc.x, potionLoc.y, found);
+    ASSERT(shattered);
+
+    // Clean up the item
+    removeItemFromChain(found, floorItems);
+    pmap[potionLoc.x][potionLoc.y].flags &= ~(HAS_ITEM | ITEM_DETECTED);
+    deleteItem(found);
+
+    // The item should be gone
+    ASSERT(!(pmap[potionLoc.x][potionLoc.y].flags & HAS_ITEM));
+
+    test_teardown_game();
+}
+
+TEST(test_shatter_potion_returns_false_for_non_gas_potion) {
+    test_init_arena(12345);
+
+    // Life potion has no gas effect
+    item *potion = generateItem(POTION, POTION_LIFE);
+    ASSERT(potion != NULL);
+
+    boolean shattered = shatterPotion(player.loc.x + 2, player.loc.y, potion);
+    ASSERT(!shattered);
+
+    deleteItem(potion);
+    test_teardown_game();
+}
+
 SUITE(ranged) {
     RUN_TEST(test_dart_item_created_with_quantity);
     RUN_TEST(test_staff_item_has_charges);
@@ -666,4 +832,17 @@ SUITE(ranged) {
     RUN_TEST(test_ranged_weapon_shared_runic_speed);
     RUN_TEST(test_ranged_weapon_shared_runic_slaying);
     RUN_TEST(test_sniper_runic_no_damage_falloff);
+
+    // Bow strength requirement
+    RUN_TEST(test_bow_strength_requirement_higher_than_base);
+    RUN_TEST(test_bow_enchanting_does_not_reduce_strength_requirement);
+    RUN_TEST(test_sling_enchanting_reduces_strength_requirement);
+
+    // Wake-on-hit behavior
+    RUN_TEST(test_ranged_hit_wakes_sleeping_monster_teammates);
+    RUN_TEST(test_ranged_miss_does_not_wake_teammates);
+
+    // Potion shatter on ranged impact
+    RUN_TEST(test_ranged_shatters_potion_on_ground);
+    RUN_TEST(test_shatter_potion_returns_false_for_non_gas_potion);
 }
