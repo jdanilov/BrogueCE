@@ -2949,6 +2949,75 @@ static boolean applyClawMarksLayout(short originX, short originY, char interior[
     return true;
 }
 
+// Place sulfur crust: STEAM_VENT at center, ASH on cardinal neighbors, EMBERS on one diagonal.
+// Small ring pattern (5 tiles) representing yellow deposits around a geothermal fumarole.
+static boolean applySulfurCrustLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find an interior cell near origin with at least 4 cardinal + 1 diagonal neighbor in interior
+    short bestX = 0, bestY = 0, bestAdj = 0;
+
+    for (short dy = -3; dy <= 3; dy++) {
+        for (short dx = -3; dx <= 3; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            // Count cardinal interior neighbors that are floor
+            short adj = 0;
+            short cardinals[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+            for (short i = 0; i < 4; i++) {
+                short nx = x + cardinals[i][0], ny = y + cardinals[i][1];
+                if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS
+                    && interior[nx][ny] && pmap[nx][ny].layers[DUNGEON] == FLOOR) {
+                    adj++;
+                }
+            }
+            if (adj > bestAdj) {
+                bestAdj = adj;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+
+    // Need all 4 cardinal neighbors available
+    if (bestAdj < 4) return false;
+
+    // Check that at least one diagonal is also interior floor (for embers)
+    short diags[4][2] = {{-1,-1},{1,-1},{-1,1},{1,1}};
+    short emberDiag = -1;
+    for (short i = 0; i < 4; i++) {
+        short nx = bestX + diags[i][0], ny = bestY + diags[i][1];
+        if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS
+            && interior[nx][ny] && pmap[nx][ny].layers[DUNGEON] == FLOOR) {
+            emberDiag = i;
+            break;
+        }
+    }
+    if (emberDiag < 0) return false;
+
+    // Place STEAM_VENT at center
+    pmap[bestX][bestY].layers[DUNGEON] = STEAM_VENT;
+
+    // Place ASH on all 4 cardinal neighbors
+    short cardinals[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    for (short i = 0; i < 4; i++) {
+        short nx = bestX + cardinals[i][0], ny = bestY + cardinals[i][1];
+        pmap[nx][ny].layers[SURFACE] = ASH;
+    }
+
+    // Place EMBERS on one diagonal
+    short ex = bestX + diags[emberDiag][0], ey = bestY + diags[emberDiag][1];
+    pmap[ex][ey].layers[SURFACE] = EMBERS;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+    return true;
+}
+
 // Place a sacrificial slab: marble cross at center, blood ring, luminescent
 // fungus perimeter for eerie glow, scattered bones. Grand ritual site.
 static boolean applySacrificialSlabLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
@@ -4034,6 +4103,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_SACRIFICIAL_SLAB) {
         if (!applySacrificialSlabLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_SULFUR_CRUST) {
+        if (!applySulfurCrustLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

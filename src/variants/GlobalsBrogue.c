@@ -202,6 +202,7 @@ const autoGenerator autoGeneratorCatalog_Brogue[] = {
     {0,                         0,      0,                          MT_FIXTURE_EMBER_PIT,       FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_CLAW_MARKS,      FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
     {0,                         0,      0,                          MT_FIXTURE_SACRIFICIAL_SLAB,FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
+    {0,                         0,      0,                          MT_FIXTURE_SULFUR_CRUST,   FLOOR,      NOTHING,    10,     DEEPEST_LEVEL,  17,     0,      0,          1},
 };
 
 const blueprint blueprintCatalog_Brogue[] = {
@@ -818,6 +819,13 @@ const blueprint blueprintCatalog_Brogue[] = {
     {"Fixture: Sacrificial Slab -- grand ritual stone stained with ancient blood",
     {10, DEEPEST_LEVEL},  {12, 21},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applySacrificialSlabLayout() in Architect.c
+        {0}}},
+    // MT_FIXTURE_SULFUR_CRUST — CUSTOM LAYOUT (featureCount == 0)
+    // Tile placement handled by applySulfurCrustLayout() in Architect.c.
+    // Ring pattern: STEAM_VENT at center, ASH on cardinal neighbors, EMBERS on one diagonal.
+    {"Fixture: Sulfur Crust -- yellow deposits around a geothermal fumarole",
+    {10, DEEPEST_LEVEL},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+        // Tile placement handled by applySulfurCrustLayout() in Architect.c
         {0}}},
 };
 

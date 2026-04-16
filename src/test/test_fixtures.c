@@ -2523,6 +2523,107 @@ TEST(test_fixture_sacrificial_slab_marble_cross_pattern) {
     test_teardown_game();
 }
 
+TEST(test_fixture_sulfur_crust_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SULFUR_CRUST];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sulfur_crust_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SULFUR_CRUST];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sulfur_crust_places_vent_and_ash) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_SULFUR_CRUST, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify steam vent, ash, and embers are present
+    int ventCount = 0;
+    int ashCount = 0;
+    int emberCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STEAM_VENT) ventCount++;
+            if (pmap[x][y].layers[SURFACE] == ASH) ashCount++;
+            if (pmap[x][y].layers[SURFACE] == EMBERS) emberCount++;
+        }
+    }
+    ASSERT_GE(ventCount, 1);
+    ASSERT_GE(ashCount, 4);
+    ASSERT_GE(emberCount, 1);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sulfur_crust_ring_pattern) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_SULFUR_CRUST, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find steam vent and verify ash on all 4 cardinal neighbors
+    for (int x = 1; x < DCOLS - 1; x++) {
+        for (int y = 1; y < DROWS - 1; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STEAM_VENT) {
+                int ashCardinals = 0;
+                if (pmap[x-1][y].layers[SURFACE] == ASH) ashCardinals++;
+                if (pmap[x+1][y].layers[SURFACE] == ASH) ashCardinals++;
+                if (pmap[x][y-1].layers[SURFACE] == ASH) ashCardinals++;
+                if (pmap[x][y+1].layers[SURFACE] == ASH) ashCardinals++;
+                ASSERT_EQ(ashCardinals, 4);
+
+                // Verify at least one diagonal has embers
+                int emberDiags = 0;
+                if (pmap[x-1][y-1].layers[SURFACE] == EMBERS) emberDiags++;
+                if (pmap[x+1][y-1].layers[SURFACE] == EMBERS) emberDiags++;
+                if (pmap[x-1][y+1].layers[SURFACE] == EMBERS) emberDiags++;
+                if (pmap[x+1][y+1].layers[SURFACE] == EMBERS) emberDiags++;
+                ASSERT_GE(emberDiags, 1);
+
+                test_teardown_game();
+                return;
+            }
+        }
+    }
+    // If no steam vent found, fail
+    ASSERT(false);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2642,4 +2743,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_sacrificial_slab_custom_layout);
     RUN_TEST(test_fixture_sacrificial_slab_places_marble_and_blood);
     RUN_TEST(test_fixture_sacrificial_slab_marble_cross_pattern);
+    RUN_TEST(test_fixture_sulfur_crust_blueprint_depth_range);
+    RUN_TEST(test_fixture_sulfur_crust_custom_layout);
+    RUN_TEST(test_fixture_sulfur_crust_places_vent_and_ash);
+    RUN_TEST(test_fixture_sulfur_crust_ring_pattern);
 }
