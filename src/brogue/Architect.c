@@ -2949,6 +2949,152 @@ static boolean applyClawMarksLayout(short originX, short originY, char interior[
     return true;
 }
 
+// Place a sacrificial slab: marble cross at center, blood ring, luminescent
+// fungus perimeter for eerie glow, scattered bones. Grand ritual site.
+static boolean applySacrificialSlabLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find best center with ample open interior (score = interior cells in 7x7 area)
+    short bestX = 0, bestY = 0, bestScore = 0;
+    for (short dy = -6; dy <= 6; dy++) {
+        for (short dx = -6; dx <= 6; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 4 || x >= DCOLS - 4 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+            short score = 0;
+            for (short ry = -3; ry <= 3; ry++) {
+                for (short rx = -3; rx <= 3; rx++) {
+                    short cx = x + rx, cy = y + ry;
+                    if (cx >= 0 && cx < DCOLS && cy >= 0 && cy < DROWS && interior[cx][cy]) {
+                        score++;
+                    }
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+    // Need at least a 5x5 open area for the ritual site
+    if (bestScore < 20) return false;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+
+    // Place altar at center of the cross
+    pmap[bestX][bestY].layers[DUNGEON] = ALTAR_INERT;
+
+    // Place marble cross arms (4 cardinal neighbors)
+    short marbleArms[4][2] = {{-1,0}, {1,0}, {0,-1}, {0,1}};
+    for (short i = 0; i < 4; i++) {
+        short x = bestX + marbleArms[i][0];
+        short y = bestY + marbleArms[i][1];
+        if (x >= 1 && x < DCOLS - 1 && y >= 1 && y < DROWS - 1 && interior[x][y]) {
+            pmap[x][y].layers[DUNGEON] = MARBLE_FLOOR;
+        }
+    }
+
+    // Collect interior cells within radius 3 of center, excluding the altar and cross
+    typedef struct { short x, y; } cell;
+    cell candidates[120];
+    short candCount = 0;
+
+    for (short dy = -3; dy <= 3 && candCount < 120; dy++) {
+        for (short dx = -3; dx <= 3 && candCount < 120; dx++) {
+            short x = bestX + dx;
+            short y = bestY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] == MARBLE_FLOOR) continue;
+            if (pmap[x][y].layers[DUNGEON] == ALTAR_INERT) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+            candidates[candCount++] = (cell){x, y};
+        }
+    }
+
+    // Place blood ring: high probability near cross, fading outward
+    short bloodCount = 0;
+    for (short i = 0; i < candCount; i++) {
+        short dx = abs(candidates[i].x - bestX);
+        short dy = abs(candidates[i].y - bestY);
+        short dist = max(dx, dy);
+        short chance;
+        if (dist <= 1) chance = 90;
+        else if (dist == 2) chance = 65;
+        else chance = 30;
+        if (rand_percent(chance)) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = RED_BLOOD;
+            bloodCount++;
+        }
+    }
+
+    if (bloodCount < 4) return false;
+
+    // Place luminescent fungus at outer ring (distance 3) for eerie glow
+    for (short i = 0; i < candCount; i++) {
+        short dx = abs(candidates[i].x - bestX);
+        short dy = abs(candidates[i].y - bestY);
+        short dist = max(dx, dy);
+        if (dist >= 2 && pmap[candidates[i].x][candidates[i].y].layers[SURFACE] != RED_BLOOD) {
+            if (rand_percent(50)) {
+                pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = LUMINESCENT_FUNGUS;
+            }
+        }
+    }
+
+    // Shuffle candidates for bone placement
+    for (short i = candCount - 1; i > 0; i--) {
+        short j = rand_range(0, i);
+        cell tmp = candidates[i];
+        candidates[i] = candidates[j];
+        candidates[j] = tmp;
+    }
+
+    // Scatter 2-4 bones among the blood
+    short bonesTarget = rand_range(2, 4);
+    short bonesPlaced = 0;
+    for (short i = 0; i < candCount && bonesPlaced < bonesTarget; i++) {
+        if (pmap[candidates[i].x][candidates[i].y].layers[SURFACE] == RED_BLOOD) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = BONES;
+            bonesPlaced++;
+        }
+    }
+
+    // Place 2-3 embers as ritual candles at outer positions
+    short embersTarget = rand_range(2, 3);
+    short embersPlaced = 0;
+    for (short i = 0; i < candCount && embersPlaced < embersTarget; i++) {
+        short dx = abs(candidates[i].x - bestX);
+        short dy = abs(candidates[i].y - bestY);
+        short dist = max(dx, dy);
+        if (dist >= 2 && pmap[candidates[i].x][candidates[i].y].layers[SURFACE] == 0) {
+            pmap[candidates[i].x][candidates[i].y].layers[SURFACE] = EMBERS;
+            embersPlaced++;
+        }
+    }
+
+    // ~30% chance of a potion loot near the slab
+    if (rand_percent(30)) {
+        for (short d = 0; d < 4; d++) {
+            short ix = bestX + nbDirs[d][0];
+            short iy = bestY + nbDirs[d][1];
+            if (ix < 1 || ix >= DCOLS - 1 || iy < 1 || iy >= DROWS - 1) continue;
+            if (pmap[ix][iy].layers[DUNGEON] == MARBLE_FLOOR
+                && !monsterAtLoc((pos){ix, iy})
+                && !itemAtLoc((pos){ix, iy})) {
+                item *loot = generateItem(POTION, -1);
+                placeItemAt(loot, (pos){ix, iy});
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -3880,6 +4026,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_CLAW_MARKS) {
         if (!applyClawMarksLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_SACRIFICIAL_SLAB) {
+        if (!applySacrificialSlabLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

@@ -2417,6 +2417,112 @@ TEST(test_fixture_claw_marks_places_bones_and_trail) {
     test_teardown_game();
 }
 
+// --- Sacrificial Slab ---
+
+TEST(test_fixture_sacrificial_slab_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SACRIFICIAL_SLAB];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sacrificial_slab_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_SACRIFICIAL_SLAB];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sacrificial_slab_places_marble_and_blood) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_SACRIFICIAL_SLAB, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify altar, marble floor, and blood are present
+    int altarCount = 0;
+    int marbleCount = 0;
+    int bloodCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == ALTAR_INERT) altarCount++;
+            if (pmap[x][y].layers[DUNGEON] == MARBLE_FLOOR) marbleCount++;
+            if (pmap[x][y].layers[SURFACE] == RED_BLOOD) bloodCount++;
+        }
+    }
+    ASSERT_GE(altarCount, 1);
+    ASSERT_GE(marbleCount, 3);
+    ASSERT_GE(bloodCount, 4);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_sacrificial_slab_marble_cross_pattern) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_SACRIFICIAL_SLAB, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find the altar center and verify marble cross arms around it
+    for (int x = 1; x < DCOLS - 1; x++) {
+        for (int y = 1; y < DROWS - 1; y++) {
+            if (pmap[x][y].layers[DUNGEON] == ALTAR_INERT
+                && pmap[x-1][y].layers[DUNGEON] == MARBLE_FLOOR
+                && pmap[x+1][y].layers[DUNGEON] == MARBLE_FLOOR
+                && pmap[x][y-1].layers[DUNGEON] == MARBLE_FLOOR
+                && pmap[x][y+1].layers[DUNGEON] == MARBLE_FLOOR) {
+                // Found the altar with cross arms — verify blood or fungus nearby
+                int surroundCount = 0;
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dy = -2; dy <= 2; dy++) {
+                        short nx = x + dx, ny = y + dy;
+                        if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS) {
+                            enum tileType surf = pmap[nx][ny].layers[SURFACE];
+                            if (surf == RED_BLOOD || surf == LUMINESCENT_FUNGUS || surf == BONES || surf == EMBERS) {
+                                surroundCount++;
+                            }
+                        }
+                    }
+                }
+                ASSERT_GE(surroundCount, 4);
+                test_teardown_game();
+                return;
+            }
+        }
+    }
+    // If no cross center found, fail
+    ASSERT(false);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2532,4 +2638,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_claw_marks_blueprint_depth_range);
     RUN_TEST(test_fixture_claw_marks_custom_layout);
     RUN_TEST(test_fixture_claw_marks_places_bones_and_trail);
+    RUN_TEST(test_fixture_sacrificial_slab_blueprint_depth_range);
+    RUN_TEST(test_fixture_sacrificial_slab_custom_layout);
+    RUN_TEST(test_fixture_sacrificial_slab_places_marble_and_blood);
+    RUN_TEST(test_fixture_sacrificial_slab_marble_cross_pattern);
 }
