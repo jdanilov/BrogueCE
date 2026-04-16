@@ -54,6 +54,56 @@ static inline boolean cellIsPassableOrDoor(short x, short y) {
     );
 }
 
+// BFS check: returns true if all passable-or-door cells form a single connected component.
+// Used after custom fixture layouts to ensure blocking terrain didn't split the level.
+static boolean levelIsFullyConnected(void) {
+    char visited[DCOLS][DROWS];
+    short queueX[DCOLS * DROWS], queueY[DCOLS * DROWS];
+    short qHead = 0, qTail = 0;
+
+    zeroOutGrid(visited);
+
+    // Seed BFS from first passable cell.
+    for (short i = 1; i < DCOLS - 1 && qTail == 0; i++) {
+        for (short j = 1; j < DROWS - 1 && qTail == 0; j++) {
+            if (cellIsPassableOrDoor(i, j)) {
+                visited[i][j] = true;
+                queueX[qTail] = i;
+                queueY[qTail] = j;
+                qTail++;
+            }
+        }
+    }
+
+    if (qTail == 0) return true; // no passable cells
+
+    // BFS flood fill.
+    while (qHead < qTail) {
+        short x = queueX[qHead], y = queueY[qHead];
+        qHead++;
+        for (short dir = 0; dir < 4; dir++) {
+            short nx = x + nbDirs[dir][0];
+            short ny = y + nbDirs[dir][1];
+            if (coordinatesAreInMap(nx, ny) && !visited[nx][ny] && cellIsPassableOrDoor(nx, ny)) {
+                visited[nx][ny] = true;
+                queueX[qTail] = nx;
+                queueY[qTail] = ny;
+                qTail++;
+            }
+        }
+    }
+
+    // If any passable cell was not reached, the level is disconnected.
+    for (short i = 1; i < DCOLS - 1; i++) {
+        for (short j = 1; j < DROWS - 1; j++) {
+            if (cellIsPassableOrDoor(i, j) && !visited[i][j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 static boolean checkLoopiness(short x, short y) {
     short newX, newY, dir, sdir;
     short numStrings, maxStringLength, currentStringLength;
@@ -3649,6 +3699,20 @@ boolean buildAMachine(enum machineTypes bp,
             free(p);
             return false;
         }
+    }
+
+    // Universal connectivity check: ensure no machine placement disconnected the level.
+    // Blocking terrain (statues, crystal walls, lava) placed by layout functions or
+    // standard features can create impassable chokepoints. Abort the machine if
+    // passable areas are split. This is a safety net that covers both custom fixture
+    // layouts and standard feature placement.
+    if (!levelIsFullyConnected()) {
+        if (D_MESSAGE_MACHINE_GENERATION) printf("\nDepth %i: Aborting blueprint %i:%s because custom layout disconnected the level.",
+                     rogue.depthLevel, bp, blueprintCatalog[bp].name);
+        copyMap(p->levelBackup, pmap);
+        rogue.machineNumber--;
+        free(p);
+        return false;
     }
 
     // Record this machine placement for external tools and queries.
