@@ -1,6 +1,6 @@
 Custom Ideas
 
-1. Unique fixtures (landmarks): e.g. a forge with lava tile, an altar, a fountain, etc. Added into the rooms / caverns as unique, memorable decorations. Should not be too frequent, maybe one per 1-3 levels. Decorative. Memorable. [in progress]
+1. Unique fixtures (landmarks): e.g. a forge with lava tile, an altar, a fountain, etc. Added into the rooms / caverns as unique, memorable decorations. Should not be too frequent, maybe one per 1-3 levels. Decorative. Memorable. [done]
 
 2. Weighted item & monster placement - try to place items and stationary / sleeping into interesting rooms, near fixtures. [planned]
 
@@ -16,10 +16,14 @@ Custom Ideas
 
 8. Dynamic monster behavior — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
 
-9. Trap system: setting new traps
+9. Trap system: picking and setting up traps via a wand [planned]
 
 10. More ways to control the dungeon, e.g. set noise trap in a room to attract monsters
  
 11. Some new druidic-inspired staff e.g. capturing and summoning monsters
 
 12. Some form of crowd control magic
+
+13. Trap laying monster
+
+14. Gold monster

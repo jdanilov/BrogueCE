@@ -112,7 +112,6 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 29 | **Claw Marks** ✅ | 20-50 | RUBBLE, RED_BLOOD, ASH (drag trail), BONES (lair) | Anywhere | Drag trail stretching 20-50 tiles across rooms, ending at bone pile with depth-appropriate monster and item. Custom `applyClawMarksLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 30 | **Sacrificial Slab** ✅ | 20-25 | MARBLE_FLOOR (5 cross), RED_BLOOD (ring), LUMINESCENT_FUNGUS (perimeter), BONES (2-4), EMBERS (2-3) | Room center | Grand ritual stone with marble cross, blood ring, eerie fungal glow, scattered bones and ritual candles. Custom `applySacrificialSlabLayout()` in Architect.c. BP_PURGE_INTERIOR. Loot: POTION (~30%). |
 | 31 | **Sulfur Crust** ✅ | 5 | STEAM_VENT (1 center), ASH (4 cardinal ring), EMBERS (1 diagonal) | Cavern organic | Yellow deposits around a geothermal fumarole. Ring pattern: vent center, ash cardinals, embers diagonal. Custom `applySulfurCrustLayout()` in Architect.c. BP_PURGE_INTERIOR. |
-| 32 | **Warding Circle** | 3-5 | CARPET (ring), BONES (1 center), ASH (1) | Room center | Ancient inscription, long faded. Loot: CHARM or SCROLL (~30%). |
 
 ## Implementation Approach
 
