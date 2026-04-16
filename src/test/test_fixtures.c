@@ -2363,6 +2363,60 @@ TEST(test_fixture_ember_pit_embers_surround_stake) {
     test_teardown_game();
 }
 
+// --- Claw Marks ---
+
+TEST(test_fixture_claw_marks_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CLAW_MARKS];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_claw_marks_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_CLAW_MARKS];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_claw_marks_places_bones_and_trail) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_CLAW_MARKS, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify BONES and trail tiles (RUBBLE, RED_BLOOD, ASH) are present on the map.
+    int bonesCount = 0;
+    int trailCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            enum tileType surface = pmap[x][y].layers[SURFACE];
+            if (surface == BONES) bonesCount++;
+            if (surface == RUBBLE || surface == RED_BLOOD || surface == ASH) trailCount++;
+        }
+    }
+    ASSERT_GE(bonesCount, 2);
+    ASSERT_GE(trailCount, 5);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2475,4 +2529,7 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_ember_pit_custom_layout);
     RUN_TEST(test_fixture_ember_pit_places_statue_and_embers);
     RUN_TEST(test_fixture_ember_pit_embers_surround_stake);
+    RUN_TEST(test_fixture_claw_marks_blueprint_depth_range);
+    RUN_TEST(test_fixture_claw_marks_custom_layout);
+    RUN_TEST(test_fixture_claw_marks_places_bones_and_trail);
 }

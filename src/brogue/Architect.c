@@ -2771,6 +2771,184 @@ static boolean applyLichenGardenLayout(short originX, short originY, char interi
     return true;
 }
 
+// Place a drag trail: a long line of rubble, ash, and blood stretching 20-50 tiles
+// across rooms and corridors, ending at a bone pile with a depth-appropriate monster.
+// Uses Dijkstra distance from origin to find a distant cell, then traces the shortest
+// path back, placing trail tiles in clusters with gaps for a natural look.
+static boolean applyClawMarksLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    short boneX = originX, boneY = originY;
+
+    if (outCenter) {
+        outCenter->x = boneX;
+        outCenter->y = boneY;
+    }
+
+    // Calculate distances from the bone pile location.
+    short **distMap = allocGrid();
+    fillGrid(distMap, 30000);
+    calculateDistances(distMap, boneX, boneY, T_OBSTRUCTS_PASSABILITY, NULL, false, true);
+
+    // Find a floor cell 20-50 steps away as the trail start.
+    typedef struct { short x, y; } trailCell;
+    trailCell candidates[200];
+    short candCount = 0;
+
+    for (short x = 1; x < DCOLS - 1 && candCount < 200; x++) {
+        for (short y = 1; y < DROWS - 1 && candCount < 200; y++) {
+            short d = distMap[x][y];
+            if (d >= 20 && d <= 50 && d < 30000
+                && pmap[x][y].layers[DUNGEON] == FLOOR) {
+                candidates[candCount++] = (trailCell){x, y};
+            }
+        }
+    }
+
+    // Fall back to shorter trails (15-30) if no long paths exist.
+    if (candCount == 0) {
+        for (short x = 1; x < DCOLS - 1 && candCount < 200; x++) {
+            for (short y = 1; y < DROWS - 1 && candCount < 200; y++) {
+                short d = distMap[x][y];
+                if (d >= 15 && d <= 30 && d < 30000
+                    && pmap[x][y].layers[DUNGEON] == FLOOR) {
+                    candidates[candCount++] = (trailCell){x, y};
+                }
+            }
+        }
+    }
+
+    if (candCount == 0) {
+        freeGrid(distMap);
+        return false;
+    }
+
+    // Pick a random distant cell and trace the shortest path back to origin.
+    trailCell chosen = candidates[rand_range(0, candCount - 1)];
+
+    pos path[200];
+    short pathLen = 0;
+    short curX = chosen.x, curY = chosen.y;
+
+    while (pathLen < 200 && (curX != boneX || curY != boneY)) {
+        path[pathLen++] = (pos){curX, curY};
+
+        short bestNX = curX, bestNY = curY;
+        short bestDist = distMap[curX][curY];
+
+        for (short dir = 0; dir < 8; dir++) {
+            short nx = curX + nbDirs[dir][0];
+            short ny = curY + nbDirs[dir][1];
+            if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
+            if (distMap[nx][ny] >= bestDist) continue;
+            if (dir >= 4 && diagonalBlocked(curX, curY, nx, ny, false)) continue;
+            bestDist = distMap[nx][ny];
+            bestNX = nx;
+            bestNY = ny;
+        }
+
+        if (bestNX == curX && bestNY == curY) break; // stuck
+        curX = bestNX;
+        curY = bestNY;
+    }
+
+    freeGrid(distMap);
+
+    if (pathLen < 20) return false; // trail too short to be interesting
+
+    // Place trail tiles in clusters separated by gaps.
+    // Denser near origin (high path index), sparser at far end (low index).
+    // Tile types cycle: RUBBLE → RED_BLOOD → ASH.
+    short clusterRemaining = 0;
+    short gapRemaining = 0;
+    short trailType = 0; // 0=rubble, 1=blood, 2=ash
+    enum tileType surfaceTiles[3] = {RUBBLE, RED_BLOOD, ASH};
+
+    for (short i = 0; i < pathLen; i++) {
+        short px = path[i].x, py = path[i].y;
+
+        // Density increases from 60% at far end to 95% near the lair.
+        short density = 60 + (35 * i) / pathLen;
+
+        if (clusterRemaining <= 0 && gapRemaining <= 0) {
+            if (rand_percent(density)) {
+                // Start a new cluster of 3-6 trail marks.
+                clusterRemaining = 3 + rand_range(0, 3);
+                trailType = (trailType + 1) % 3;
+            } else {
+                // Start a gap of 1-2 blank cells.
+                gapRemaining = 1 + rand_range(0, 1);
+            }
+        }
+
+        if (gapRemaining > 0) {
+            gapRemaining--;
+            continue;
+        }
+
+        if (clusterRemaining > 0 && pmap[px][py].layers[DUNGEON] == FLOOR) {
+            pmap[px][py].layers[SURFACE] = surfaceTiles[trailType];
+            clusterRemaining--;
+        }
+    }
+
+    // Place bone pile: 2-4 BONES cells around origin.
+    short bonesPlaced = 0;
+    for (short dy = -1; dy <= 1; dy++) {
+        for (short dx = -1; dx <= 1; dx++) {
+            short x = boneX + dx, y = boneY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (pmap[x][y].layers[DUNGEON] == FLOOR && rand_percent(50)) {
+                pmap[x][y].layers[SURFACE] = BONES;
+                bonesPlaced++;
+            }
+        }
+    }
+    if (bonesPlaced < 2) {
+        // Ensure at least 2 bones at or adjacent to origin.
+        pmap[boneX][boneY].layers[SURFACE] = BONES;
+        bonesPlaced++;
+        for (short d = 0; d < 4 && bonesPlaced < 2; d++) {
+            short x = boneX + nbDirs[d][0], y = boneY + nbDirs[d][1];
+            if (x >= 1 && x < DCOLS - 1 && y >= 1 && y < DROWS - 1
+                && pmap[x][y].layers[DUNGEON] == FLOOR) {
+                pmap[x][y].layers[SURFACE] = BONES;
+                bonesPlaced++;
+            }
+        }
+    }
+
+    // Spawn a depth-appropriate monster sleeping at its lair.
+    // The predator guards the bone pile — the player follows the drag trail to find it.
+    // Failure is non-fatal — the trail alone is atmospheric.
+    creature *lairMonster = spawnHorde(0, (pos){boneX, boneY},
+                                       HORDE_IS_SUMMONED | HORDE_LEADER_CAPTIVE, 0);
+    if (lairMonster) {
+        lairMonster->creatureState = MONSTER_SLEEPING;
+    }
+
+    // ~50% chance to place a random item (weapon, armor, or potion) near the bones.
+    if (rand_percent(50)) {
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        short startDir = rand_range(0, 3);
+        for (short j = 0; j < 4; j++) {
+            short i = (startDir + j) % 4;
+            short ix = boneX + dirs[i][0];
+            short iy = boneY + dirs[i][1];
+            if (ix < 1 || ix >= DCOLS - 1 || iy < 1 || iy >= DROWS - 1) continue;
+            if (pmap[ix][iy].layers[DUNGEON] == FLOOR
+                && !monsterAtLoc((pos){ix, iy})
+                && !itemAtLoc((pos){ix, iy})) {
+                unsigned short categories[] = {WEAPON, ARMOR, POTION};
+                unsigned short cat = categories[rand_range(0, 2)];
+                item *loot = generateItem(cat, -1);
+                placeItemAt(loot, (pos){ix, iy});
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 typedef struct machineData {
     // Our boolean grids:
     char interior[DCOLS][DROWS];    // This is the master grid for the machine. All area inside the machine are set to true.
@@ -3694,6 +3872,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_EMBER_PIT) {
         if (!applyEmberPitLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_CLAW_MARKS) {
+        if (!applyClawMarksLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);
