@@ -2463,6 +2463,101 @@ static boolean applyObsidianFormationLayout(short originX, short originY, char i
     return true;
 }
 
+// Place an ember pit (pyre): burnt stake at center surrounded by concentric rings
+// of embers, ash, dead grass fringe, with bones scattered in the hot zone.
+static boolean applyEmberPitLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
+    // Find best center with ample open interior (score = interior cells in 7x7 area)
+    short bestX = 0, bestY = 0, bestScore = 0;
+    for (short dy = -6; dy <= 6; dy++) {
+        for (short dx = -6; dx <= 6; dx++) {
+            short x = originX + dx;
+            short y = originY + dy;
+            if (x < 3 || x >= DCOLS - 3 || y < 3 || y >= DROWS - 3) continue;
+            if (!interior[x][y]) continue;
+            short score = 0;
+            for (short ry = -3; ry <= 3; ry++) {
+                for (short rx = -3; rx <= 3; rx++) {
+                    short nx = x + rx, ny = y + ry;
+                    if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS && interior[nx][ny]) {
+                        score++;
+                    }
+                }
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+            }
+        }
+    }
+    // Need at least a 5x5 open area
+    if (bestScore < 20) return false;
+
+    if (outCenter) {
+        outCenter->x = bestX;
+        outCenter->y = bestY;
+    }
+
+    // Place the burnt stake at center
+    pmap[bestX][bestY].layers[DUNGEON] = STATUE_INERT;
+
+    // Paint concentric rings based on Chebyshev distance from center.
+    // Distance 1: embers (hot zone), 2: ash, 3: dead grass fringe.
+    // Scatter bones in the embers/ash zone.
+    short bonesPlaced = 0;
+    short bonesTarget = 2 + rand_range(0, 2); // 2-3 bones
+
+    for (short dy = -4; dy <= 4; dy++) {
+        for (short dx = -4; dx <= 4; dx++) {
+            if (dx == 0 && dy == 0) continue; // skip center (stake)
+            short x = bestX + dx;
+            short y = bestY + dy;
+            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+            if (!interior[x][y]) continue;
+            if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
+
+            short dist = max(abs(dx), abs(dy));
+            if (dist == 1) {
+                // Inner ring: embers, occasionally bones
+                if (bonesPlaced < bonesTarget && rand_percent(25)) {
+                    pmap[x][y].layers[SURFACE] = BONES;
+                    bonesPlaced++;
+                } else {
+                    pmap[x][y].layers[SURFACE] = EMBERS;
+                }
+            } else if (dist == 2) {
+                // Middle ring: ash, occasionally embers or bones
+                if (rand_percent(75)) {
+                    if (bonesPlaced < bonesTarget && rand_percent(20)) {
+                        pmap[x][y].layers[SURFACE] = BONES;
+                        bonesPlaced++;
+                    } else if (rand_percent(30)) {
+                        pmap[x][y].layers[SURFACE] = EMBERS;
+                    } else {
+                        pmap[x][y].layers[SURFACE] = ASH;
+                    }
+                }
+            } else if (dist == 3) {
+                // Outer ring: dead grass with ash falloff
+                if (rand_percent(60)) {
+                    if (rand_percent(25)) {
+                        pmap[x][y].layers[SURFACE] = ASH;
+                    } else {
+                        pmap[x][y].layers[SURFACE] = DEAD_GRASS;
+                    }
+                }
+            } else if (dist == 4) {
+                // Fringe: sparse dead grass
+                if (rand_percent(30)) {
+                    pmap[x][y].layers[SURFACE] = DEAD_GRASS;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 // Place a lichen garden: 2-3 shallow water pools connected by luminescent fungus,
 // surrounded by rings of fungus forest and dead grass fringe.
 // Uses Chebyshev distance from water cells to paint concentric growth rings.
@@ -3541,6 +3636,14 @@ boolean buildAMachine(enum machineTypes bp,
     }
     if (bp == MT_FIXTURE_OBSIDIAN_FORMATION) {
         if (!applyObsidianFormationLayout(originX, originY, p->interior, &effectiveOrigin)) {
+            copyMap(p->levelBackup, pmap);
+            rogue.machineNumber--;
+            free(p);
+            return false;
+        }
+    }
+    if (bp == MT_FIXTURE_EMBER_PIT) {
+        if (!applyEmberPitLayout(originX, originY, p->interior, &effectiveOrigin)) {
             copyMap(p->levelBackup, pmap);
             rogue.machineNumber--;
             free(p);

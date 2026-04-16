@@ -2259,6 +2259,110 @@ TEST(test_fixture_obsidian_formation_concentric_rings) {
     test_teardown_game();
 }
 
+// --- Ember Pit ---
+
+TEST(test_fixture_ember_pit_blueprint_depth_range) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_EMBER_PIT];
+    ASSERT_EQ(bp->depthRange[0], 10);
+    ASSERT_EQ(bp->depthRange[1], gameConst->deepestLevel);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_ember_pit_custom_layout) {
+    test_init_game(99);
+
+    const blueprint *bp = &blueprintCatalog[MT_FIXTURE_EMBER_PIT];
+    ASSERT_EQ(bp->featureCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_ember_pit_places_statue_and_embers) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_EMBER_PIT, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Verify STATUE_INERT (burnt stake) and EMBERS are present
+    boolean foundStatue = false;
+    int embersCount = 0;
+    for (int x = 0; x < DCOLS; x++) {
+        for (int y = 0; y < DROWS; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                foundStatue = true;
+            }
+            if (pmap[x][y].layers[SURFACE] == EMBERS) {
+                embersCount++;
+            }
+        }
+    }
+    ASSERT(foundStatue);
+    ASSERT_GT(embersCount, 0);
+
+    test_teardown_game();
+}
+
+TEST(test_fixture_ember_pit_embers_surround_stake) {
+    boolean placed = false;
+    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
+    for (int s = 0; s < 10 && !placed; s++) {
+        test_init_game(seeds[s]);
+        rogue.depthLevel = 12;
+
+        for (int i = 0; i < 30; i++) {
+            if (buildAMachine(MT_FIXTURE_EMBER_PIT, -1, -1, 0, NULL, NULL, NULL)) {
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) test_teardown_game();
+    }
+    ASSERT(placed);
+
+    // Find the stake (STATUE_INERT) and verify embers/bones are adjacent
+    short stakeX = -1, stakeY = -1;
+    for (int x = 0; x < DCOLS && stakeX < 0; x++) {
+        for (int y = 0; y < DROWS && stakeX < 0; y++) {
+            if (pmap[x][y].layers[DUNGEON] == STATUE_INERT) {
+                stakeX = x;
+                stakeY = y;
+            }
+        }
+    }
+    ASSERT_GE(stakeX, 0);
+
+    // At least 2 adjacent cells should have embers or bones (inner ring)
+    int adjacentHot = 0;
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (dx == 0 && dy == 0) continue;
+            short nx = stakeX + dx, ny = stakeY + dy;
+            if (nx >= 0 && nx < DCOLS && ny >= 0 && ny < DROWS) {
+                if (pmap[nx][ny].layers[SURFACE] == EMBERS || pmap[nx][ny].layers[SURFACE] == BONES) {
+                    adjacentHot++;
+                }
+            }
+        }
+    }
+    ASSERT_GE(adjacentHot, 2);
+
+    test_teardown_game();
+}
+
 SUITE(fixtures) {
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
@@ -2367,4 +2471,8 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_obsidian_formation_custom_layout);
     RUN_TEST(test_fixture_obsidian_formation_places_obsidian_and_embers);
     RUN_TEST(test_fixture_obsidian_formation_concentric_rings);
+    RUN_TEST(test_fixture_ember_pit_blueprint_depth_range);
+    RUN_TEST(test_fixture_ember_pit_custom_layout);
+    RUN_TEST(test_fixture_ember_pit_places_statue_and_embers);
+    RUN_TEST(test_fixture_ember_pit_embers_surround_stake);
 }
