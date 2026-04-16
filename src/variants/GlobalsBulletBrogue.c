@@ -740,7 +740,7 @@ itemTable charmTable_BulletBrogue[] = {
 //                          name           flav cal  freq  val  str  pow  damage         id     call   pol  polRev description
 itemTable rangedWeaponTable_BulletBrogue[] = {
     {"sling",       "", "", 10, 300,    10, 6,  {1, 4, 1},     true, false, 0, false, "A leather strap with a smooth stone pouch. Light enough to reload on the run, though its stones lose force over distance and glance off foes at point blank range."},
-    {"bow",         "", "", 10, 500,    12, 16, {3, 7, 1},     true, false, 0, false, "A recurved bow of dark yew. Its arrows fly true across great distances, but drawing in close quarters is all but impossible. Can be half-drawn while moving."},
+    {"bow",         "", "", 10, 500,    14, 16, {3, 7, 1},     true, false, 0, false, "A recurved bow of dark yew. Its heavy draw demands strength, and its arrows fly true across great distances, but drawing in close quarters is all but impossible. Can be half-drawn while moving."},
     {"crossbow",    "", "", 10, 800,    15, 12, {14, 26, 1},   true, false, 0, false, "A steel-limbed crossbow with a heavy crank mechanism. Its bolts strike with such force that they drive targets backward, but you must stand still to reload."},
 };
 
