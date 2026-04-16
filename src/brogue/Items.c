@@ -2823,6 +2823,76 @@ void itemDetails(char *buf, item *theItem) {
             strcat(buf, buf2);
             break;
         case RANGED: {
+            // Enchantment and strength info
+            if ((theItem->flags & ITEM_IDENTIFIED) || rogue.playbackOmniscience) {
+                if (theItem->enchant1) {
+                    if (theItem->enchant1 > 0) {
+                        sprintf(buf2, "\n\nThe %s bear%s an intrinsic enchantment of %s+%i%s",
+                                theName,
+                                (singular ? "s" : ""),
+                                goodColorEscape,
+                                theItem->enchant1,
+                                whiteColorEscape);
+                    } else {
+                        sprintf(buf2, "\n\nThe %s bear%s an intrinsic penalty of %s%i%s",
+                                theName,
+                                (singular ? "s" : ""),
+                                badColorEscape,
+                                theItem->enchant1,
+                                whiteColorEscape);
+                    }
+                } else {
+                    sprintf(buf2, "\n\nThe %s bear%s no intrinsic enchantment",
+                            theName,
+                            (singular ? "s" : ""));
+                }
+                strcat(buf, buf2);
+                if (strengthModifier(theItem)) {
+                    sprintf(buf2, ", %s %s %s %s%s%+.2f%s because of your %s strength. ",
+                            (theItem->enchant1 ? "and" : "but"),
+                            (singular ? "carries" : "carry"),
+                            (theItem->enchant1 && (theItem->enchant1 > 0) == (strengthModifier(theItem) > 0) ? "an additional" : "a"),
+                            (strengthModifier(theItem) > 0 ? "bonus of " : "penalty of "),
+                            (strengthModifier(theItem) > 0 ? goodColorEscape : badColorEscape),
+                            strengthModifier(theItem) / (double) FP_FACTOR,
+                            whiteColorEscape,
+                            (strengthModifier(theItem) > 0 ? "excess" : "inadequate"));
+                    strcat(buf, buf2);
+                } else {
+                    strcat(buf, ". ");
+                }
+            } else {
+                if (strengthModifier(theItem)) {
+                    sprintf(buf2, "\n\nThe %s %s a %s%s%+.2f%s because of your %s strength. ",
+                            theName,
+                            (singular ? "carries" : "carry"),
+                            (strengthModifier(theItem) > 0 ? "bonus of " : "penalty of "),
+                            (strengthModifier(theItem) > 0 ? goodColorEscape : badColorEscape),
+                            strengthModifier(theItem) / (double) FP_FACTOR,
+                            whiteColorEscape,
+                            (strengthModifier(theItem) > 0 ? "excess" : "inadequate"));
+                    strcat(buf, buf2);
+                }
+            }
+
+            // Damage and accuracy comparison
+            newDamage = (theItem->damage.lowerBound + theItem->damage.upperBound) * FP_FACTOR / 2;
+            if ((theItem->flags & ITEM_IDENTIFIED) || rogue.playbackOmniscience) {
+                new = player.info.accuracy * accuracyFraction(netEnchant(theItem)) / FP_FACTOR;
+                newDamage = newDamage * damageFraction(netEnchant(theItem)) / FP_FACTOR;
+            } else {
+                new = player.info.accuracy * accuracyFraction(strengthModifier(theItem)) / FP_FACTOR;
+                newDamage = newDamage * damageFraction(strengthModifier(theItem)) / FP_FACTOR;
+            }
+            sprintf(buf2, "Accuracy: %s%i%%%s, Average damage: %s%i%s.",
+                    (new >= 100 ? goodColorEscape : badColorEscape),
+                    new,
+                    whiteColorEscape,
+                    (newDamage > 0 ? goodColorEscape : badColorEscape),
+                    (int) (newDamage / FP_FACTOR),
+                    whiteColorEscape);
+            strcat(buf, buf2);
+
             short currentRange = rangedWeaponRange(theItem);
             short currentCooldown = rangedWeaponCooldownMax(theItem) / 10; // convert deciturns to turns
             sprintf(buf2, "\n\nRange: %i, Cooldown: %i turns.", currentRange, currentCooldown);
@@ -6189,6 +6259,61 @@ static boolean hitMonsterWithProjectileWeapon(creature *thrower, creature *monst
     }
 }
 
+// Shatter a potion at the given location, spawning its gas/effect dungeon feature.
+// Returns true if the potion had an effect (gas cloud, etc.), false if it just splashed harmlessly.
+boolean shatterPotion(short x, short y, item *theItem) {
+    char buf[COLS * 3];
+
+    switch (theItem->kind) {
+        case POTION_POISON:
+            strcpy(buf, "the flask shatters and a deadly purple cloud billows out!");
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_POISON_GAS_CLOUD_POTION], true, false);
+            message(buf, 0);
+            break;
+        case POTION_CONFUSION:
+            strcpy(buf, "the flask shatters and a multi-hued cloud billows out!");
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_CONFUSION_GAS_CLOUD_POTION], true, false);
+            message(buf, 0);
+            break;
+        case POTION_PARALYSIS:
+            strcpy(buf, "the flask shatters and a cloud of pink gas billows out!");
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_PARALYSIS_GAS_CLOUD_POTION], true, false);
+            message(buf, 0);
+            break;
+        case POTION_INCINERATION:
+            strcpy(buf, "the flask shatters and its contents burst violently into flame!");
+            message(buf, 0);
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_INCINERATION_POTION], true, false);
+            break;
+        case POTION_DARKNESS:
+            strcpy(buf, "the flask shatters and the lights in the area start fading.");
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_DARKNESS_POTION], true, false);
+            message(buf, 0);
+            break;
+        case POTION_DESCENT:
+            strcpy(buf, "as the flask shatters, the ground vanishes!");
+            message(buf, 0);
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_HOLE_POTION], true, false);
+            break;
+        case POTION_LICHEN:
+            strcpy(buf, "the flask shatters and deadly spores spill out!");
+            message(buf, 0);
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_LICHEN_PLANTED], true, false);
+            break;
+        case POTION_HALLUCINATION:
+            strcpy(buf, "the flask shatters and a cloud of psychedelic gas billows out!");
+            spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_HALLUCINATION_GAS_CLOUD_POTION], true, false);
+            message(buf, 0);
+            break;
+        default:
+            return false;
+    }
+
+    autoIdentify(theItem);
+    refreshDungeonCell((pos){ x, y });
+    return true;
+}
+
 static void throwItem(item *theItem, creature *thrower, pos targetLoc, short maxDistance) {
     short i, numCells;
     creature *monst = NULL;
@@ -6302,62 +6427,7 @@ static void throwItem(item *theItem, creature *thrower, pos targetLoc, short max
     }
 
     if ((theItem->category & POTION) && (hitSomethingSolid || !cellHasTerrainFlag((pos){ x, y }, T_AUTO_DESCENT))) {
-        if (theItem->kind == POTION_CONFUSION || theItem->kind == POTION_POISON
-            || theItem->kind == POTION_PARALYSIS || theItem->kind == POTION_INCINERATION
-            || theItem->kind == POTION_DARKNESS || theItem->kind == POTION_LICHEN
-            || theItem->kind == POTION_DESCENT || theItem->kind == POTION_HALLUCINATION) {
-            switch (theItem->kind) {
-                case POTION_POISON:
-                    strcpy(buf, "the flask shatters and a deadly purple cloud billows out!");
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_POISON_GAS_CLOUD_POTION], true, false);
-                    message(buf, 0);
-                    break;
-                case POTION_CONFUSION:
-                    strcpy(buf, "the flask shatters and a multi-hued cloud billows out!");
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_CONFUSION_GAS_CLOUD_POTION], true, false);
-                    message(buf, 0);
-                    break;
-                case POTION_PARALYSIS:
-                    strcpy(buf, "the flask shatters and a cloud of pink gas billows out!");
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_PARALYSIS_GAS_CLOUD_POTION], true, false);
-                    message(buf, 0);
-                    break;
-                case POTION_INCINERATION:
-                    strcpy(buf, "the flask shatters and its contents burst violently into flame!");
-                    message(buf, 0);
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_INCINERATION_POTION], true, false);
-                    break;
-                case POTION_DARKNESS:
-                    strcpy(buf, "the flask shatters and the lights in the area start fading.");
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_DARKNESS_POTION], true, false);
-                    message(buf, 0);
-                    break;
-                case POTION_DESCENT:
-                    strcpy(buf, "as the flask shatters, the ground vanishes!");
-                    message(buf, 0);
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_HOLE_POTION], true, false);
-                    break;
-                case POTION_LICHEN:
-                    strcpy(buf, "the flask shatters and deadly spores spill out!");
-                    message(buf, 0);
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_LICHEN_PLANTED], true, false);
-                    break;
-                case POTION_HALLUCINATION:
-                    strcpy(buf, "the flask shatters and a cloud of psychedelic gas billows out!");
-                    spawnDungeonFeature(x, y, &dungeonFeatureCatalog[DF_HALLUCINATION_GAS_CLOUD_POTION], true, false);
-                    message(buf, 0);
-                    break;
-            }
-
-            autoIdentify(theItem);
-
-            refreshDungeonCell((pos){ x, y });
-
-            //if (pmap[x][y].flags & (HAS_MONSTER | HAS_PLAYER)) {
-            //  monst = monsterAtLoc((pos){ x, y });
-            //  applyInstantTileEffectsToCreature(monst);
-            //}
-        } else {
+        if (!shatterPotion(x, y, theItem)) {
             if (cellHasTerrainFlag((pos){ x, y }, T_OBSTRUCTS_PASSABILITY)) {
                 strcpy(buf2, "against");
             } else if (tileCatalog[pmap[x][y].layers[highestPriorityLayer(x, y, false)]].mechFlags & TM_STAND_IN_TILE) {
@@ -7052,6 +7122,16 @@ boolean fireRangedWeapon(item *theItem) {
         }
     }
 
+    // Shatter any potion on the ground at the impact point
+    if (pmap[hitLoc.x][hitLoc.y].flags & HAS_ITEM) {
+        item *floorItem = itemAtLoc(hitLoc);
+        if (floorItem && (floorItem->category & POTION) && shatterPotion(hitLoc.x, hitLoc.y, floorItem)) {
+            removeItemFromChain(floorItem, floorItems);
+            pmap[hitLoc.x][hitLoc.y].flags &= ~(HAS_ITEM | ITEM_DETECTED);
+            deleteItem(floorItem);
+        }
+    }
+
     // Handle explosion runic at impact point
     if ((theItem->flags & ITEM_RUNIC) && theItem->enchant2 == W_EXPLOSIVE) {
         // Radius scales with enchantment: base 2, +1 per 3 enchant levels
@@ -7425,7 +7505,11 @@ boolean readScroll(item *theItem) {
                     theItem->charges = min(0, theItem->charges); // Enchanting instantly recharges charms.
                     break;
                 case RANGED:
-                    theItem->strengthRequired = max(0, theItem->strengthRequired - enchantMagnitude());
+                    // Bows keep their fixed strength requirement (heavy draw weight);
+                    // slings and crossbows get easier to wield with enchantment like melee weapons.
+                    if (theItem->kind != BOW) {
+                        theItem->strengthRequired = max(0, theItem->strengthRequired - enchantMagnitude());
+                    }
                     theItem->enchant1 += enchantMagnitude();
                     theItem->cooldownMax = rangedWeaponCooldownMax(theItem);
                     theItem->maxRange = rangedWeaponRange(theItem);

@@ -3479,6 +3479,7 @@ extern "C" {
     void relabel(item *theItem);
     void swapLastEquipment(void);
     void apply(item *theItem);
+    boolean shatterPotion(short x, short y, item *theItem);
     boolean fireRangedWeapon(item *theItem);
     short rangedWeaponCooldownMax(item *theItem);
     short rangedWeaponRange(item *theItem);
