@@ -162,7 +162,9 @@ static boolean pollBrogueEvent(rogueEvent *returnEvent, boolean textInput) {
             int statusCode = quitImmediately();
             exit(statusCode);
         } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
-            resizeWindow(event.window.data1, event.window.data2);
+            if (event.window.data1 > 0 && event.window.data2 > 0) {
+                resizeWindow(event.window.data1, event.window.data2);
+            }
         } else if (event.type == SDL_KEYDOWN) {
             SDL_Keycode key = event.key.keysym.sym;
 

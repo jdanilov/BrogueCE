@@ -739,6 +739,9 @@ Creates or resizes the game window with the currently loaded font.
 */
 void resizeWindow(int width, int height) {
 
+    // Avoid setting a zero-sized drawable (causes CAMetalLayer warnings on macOS)
+    if (width == 0 || height == 0) return;
+
     SDL_DisplayMode mode;
     if (SDL_GetCurrentDisplayMode(0, &mode) < 0) sdlfatal(__FILE__, __LINE__);
 
