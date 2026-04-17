@@ -32,4 +32,6 @@ Custom Ideas
 
 16. Breakable environment. More thematic ways / effects to tear down walls and terraform the level to your advantage / disadvantage (some monsters might be given powers to terraform).
 
-17. Ice staff. Sends ice shards flying, slows down monsters, turns water surfaces into ice in a certain radius. Cools down lava to obsidian. Etc. Needs to be thought-through and balanced. 
+17. Ice staff. Sends ice shards flying, slows down monsters, turns water surfaces into ice in a certain radius. Cools down lava to obsidian. Etc. Needs to be thought-through and balanced.
+
+18. A monster that lays traps and once sees the player flees and seeks for other intelligent monsters - wakes them up and drives them to the player location.
