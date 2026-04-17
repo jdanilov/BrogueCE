@@ -26,6 +26,10 @@ Custom Ideas
 
 13. Trap laying monster
 
-14. Mimic - monster that pretends to be a gold piece
+14. Mimic - monster that pretends to be a gold piece. Monster power scales up with the amount of gold player collected. Appears on certain depths. Can be detected via the same "trap detection" system.
 
 15. Sound system - fighting, casting, throwing, etc. - almost everything generates noise, waking up nearby creatures (unless deaf) and inviting to explore. Sound waves are rendered via fill algorithm.
+
+16. Breakable environment. More thematic ways / effects to tear down walls and terraform the level to your advantage / disadvantage (some monsters might be given powers to terraform).
+
+17. Ice staff. Sends ice shards flying, slows down monsters, turns water surfaces into ice in a certain radius. Cools down lava to obsidian. Etc. Needs to be thought-through and balanced. 
