@@ -126,6 +126,7 @@ extern itemTable staffTable[NUMBER_STAFF_KINDS];
 extern itemTable ringTable[NUMBER_RING_KINDS];
 extern itemTable *charmTable;
 extern itemTable *rangedWeaponTable;
+extern itemTable trapItemTable[NUMBER_TRAP_ITEM_KINDS];
 extern const charmEffectTableEntry *charmEffectTable;
 
 extern const meteredItemGenerationTable *meteredItemsGenerationTable;

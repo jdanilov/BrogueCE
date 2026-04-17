@@ -80,7 +80,7 @@ item *generateItem(unsigned short theCategory, short theKind) {
 
 static unsigned long pickItemCategory(unsigned long theCategory) {
     short i, sum, randIndex;
-    unsigned short correspondingCategories[NUMBER_ITEM_CATEGORIES] = {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY, RANGED};
+    unsigned short correspondingCategories[NUMBER_ITEM_CATEGORIES] = {GOLD, SCROLL, POTION, STAFF, WAND, WEAPON, ARMOR, FOOD, RING, CHARM, AMULET, GEM, KEY, RANGED, TRAP_ITEM};
 
     sum = 0;
 
@@ -147,6 +147,8 @@ enum displayGlyph getItemCategoryGlyph(const enum itemCategory theCategory) {
             return G_AMULET;
         case RANGED:
             return G_RANGED;
+        case TRAP_ITEM:
+            return G_TRAP;
         default:
             break;
     }
@@ -425,6 +427,14 @@ item *makeItemInto(item *theItem, unsigned long itemCategory, short itemKind) {
         case KEY:
             theEntry = NULL;
             theItem->flags |= ITEM_IDENTIFIED;
+            break;
+        case TRAP_ITEM:
+            if (itemKind < 0) {
+                itemKind = 0;
+            }
+            theEntry = &trapItemTable[itemKind];
+            theItem->flags |= ITEM_IDENTIFIED;
+            theItem->quantity = 1;
             break;
         default:
             theEntry = NULL;
@@ -1749,6 +1759,9 @@ void itemName(const item *theItem, char *root, boolean includeDetails, boolean i
                         pluralization);
             }
             break;
+        case TRAP_ITEM:
+            sprintf(root, "%s%s", trapItemTable[theItem->kind].name, pluralization);
+            break;
         default:
             sprintf(root, "unknown item%s", pluralization);
             break;
@@ -1848,6 +1861,8 @@ itemTable *tableForItemCategory(enum itemCategory theCat) {
             return charmTable;
         case RANGED:
             return rangedWeaponTable;
+        case TRAP_ITEM:
+            return trapItemTable;
         default:
             return NULL;
     }
@@ -4527,6 +4542,32 @@ enum boltType boltForItem(const item *theItem) {
     }
 }
 
+// Maps a revealed trap tile type to a trapItemKind. Returns -1 if not a recognized trap.
+static short trapItemKindForTile(enum tileType tile) {
+    switch (tile) {
+        case GAS_TRAP_POISON:
+        case GAS_TRAP_POISON_HIDDEN:
+            return TRAP_POISON_GAS;
+        case GAS_TRAP_CONFUSION:
+        case GAS_TRAP_CONFUSION_HIDDEN:
+            return TRAP_CONFUSION_GAS;
+        case GAS_TRAP_PARALYSIS:
+        case GAS_TRAP_PARALYSIS_HIDDEN:
+            return TRAP_PARALYSIS_GAS;
+        case NET_TRAP:
+        case NET_TRAP_HIDDEN:
+            return TRAP_NET;
+        case ALARM_TRAP:
+        case ALARM_TRAP_HIDDEN:
+            return TRAP_ALARM;
+        case FLAMETHROWER:
+        case FLAMETHROWER_HIDDEN:
+            return TRAP_FLAMETHROWER;
+        default:
+            return -1;
+    }
+}
+
 // Called on each space of the bolt's flight.
 // Returns true if the bolt terminates here.
 // Caster can be null.
@@ -4856,6 +4897,34 @@ static boolean updateBolt(bolt *theBolt, creature *caster, short x, short y,
                 }
             }
             break;
+        case BE_TRAPPING:
+        {
+            enum tileType dungeonTile = pmap[x][y].layers[DUNGEON];
+            boolean isRevealed = !(tileCatalog[dungeonTile].mechFlags & TM_IS_SECRET);
+            boolean isTrap = (tileCatalog[dungeonTile].flags & T_IS_DF_TRAP) ? true : false;
+            boolean inRange = caster && distanceBetween(caster->loc, (pos){x, y}) <= 1;
+            short trapKind = trapItemKindForTile(dungeonTile);
+
+            if (isTrap && isRevealed && inRange && trapKind >= 0) {
+                pmap[x][y].layers[DUNGEON] = FLOOR;
+                pmap[x][y].flags &= ~(PRESSURE_PLATE_DEPRESSED | KNOWN_TO_BE_TRAP_FREE);
+
+                item *trapItem = generateItem(TRAP_ITEM, trapKind);
+                placeItemAt(trapItem, (pos){ x, y });
+
+                refreshDungeonCell((pos){ x, y });
+
+                char buf2[COLS];
+                sprintf(buf2, "you extract %s.", trapItemTable[trapKind].name);
+                messageWithColor(buf2, &itemMessageColor, 0);
+
+                if (autoID) {
+                    *autoID = true;
+                }
+                terminateBolt = true;
+            }
+            break;
+        }
         default:
             break;
     }
@@ -4889,11 +4958,6 @@ static boolean updateBolt(bolt *theBolt, creature *caster, short x, short y,
     return terminateBolt;
 }
 
-// Called when the bolt hits something.
-// Caster can be null.
-// Pass in true for alreadyReflected if the bolt has already reflected off of something.
-// If the effect is visible enough for the player to identify the shooting item,
-// *autoID will be set to true. (AutoID can be null.)
 static void detonateBolt(bolt *theBolt, creature *caster, short x, short y, boolean *autoID) {
     dungeonFeature feat;
     short i, x2, y2;
@@ -4979,6 +5043,12 @@ static void detonateBolt(bolt *theBolt, creature *caster, short x, short y, bool
             break;
         case BE_TUNNELING:
             setUpWaypoints(); // Recompute waypoints based on the new situation.
+            break;
+        case BE_TRAPPING:
+            // If the bolt didn't extract a trap during travel (updateBolt), fizzle
+            if (autoID && !(*autoID)) {
+                messageWithColor("The wand fizzles.", &itemMessageColor, 0);
+            }
             break;
     }
 
@@ -6819,9 +6889,14 @@ static boolean useStaffOrWand(item *theItem) {
     }
 
     if (theItem->charges > 0) {
-        theItem->charges--;
-        if (theItem->category == WAND) {
-            theItem->enchant2++; // keeps track of how many times the wand has been discharged for the player's convenience
+        // Wand of trapping doesn't consume charge on fizzle (no trap found)
+        if (theBolt.boltEffect == BE_TRAPPING && !autoID) {
+            // Fizzled — don't consume charge
+        } else {
+            theItem->charges--;
+            if (theItem->category == WAND) {
+                theItem->enchant2++; // keeps track of how many times the wand has been discharged for the player's convenience
+            }
         }
     }
 
@@ -7211,11 +7286,89 @@ boolean fireRangedWeapon(item *theItem) {
     return true;
 }
 
+// Returns the hidden trap tile type for placing a given trap item kind.
+static enum tileType hiddenTrapTileForKind(short trapKind) {
+    switch (trapKind) {
+        case TRAP_POISON_GAS:       return GAS_TRAP_POISON_HIDDEN;
+        case TRAP_CONFUSION_GAS:    return GAS_TRAP_CONFUSION_HIDDEN;
+        case TRAP_PARALYSIS_GAS:    return PLAYER_PARALYSIS_TRAP_HIDDEN;
+        case TRAP_NET:              return NET_TRAP_HIDDEN;
+        case TRAP_ALARM:            return ALARM_TRAP_HIDDEN;
+        case TRAP_FLAMETHROWER:     return PLAYER_FIRE_TRAP_HIDDEN;
+        default:                    return FLOOR;
+    }
+}
+
+static boolean useTrapItem(item *theItem) {
+    char buf[COLS], buf2[COLS];
+    pos target;
+
+    itemName(theItem, buf2, false, false, NULL);
+    sprintf(buf, "Place your %s where? (<hjklyubn>, mouse, or <tab>; <return> to confirm)", buf2);
+    temporaryMessage(buf, REFRESH_SIDEBAR);
+
+    if (!chooseTarget(&target, 1, AUTOTARGET_MODE_NONE, NULL)) {
+        return false;
+    }
+
+    short targetX = target.x;
+    short targetY = target.y;
+
+    // Must be adjacent
+    if (distanceBetween(player.loc, target) > 1) {
+        message("That's too far away.", 0);
+        return false;
+    }
+
+    if (!isPosInMap(target)) {
+        message("There's nothing there to place a trap on.", 0);
+        return false;
+    }
+
+    // Check that the target is suitable floor
+    enum tileType dungeonTile = pmap[targetX][targetY].layers[DUNGEON];
+    if (dungeonTile != FLOOR && dungeonTile != FLOOR_FLOODABLE) {
+        if (tileCatalog[dungeonTile].flags & T_IS_DF_TRAP) {
+            message("There's already a trap there.", 0);
+        } else {
+            message("You can't place a trap there.", 0);
+        }
+        return false;
+    }
+
+    // Check liquid layer
+    enum tileType liquidTile = pmap[targetX][targetY].layers[LIQUID];
+    if (tileCatalog[liquidTile].flags & (T_IS_DEEP_WATER | T_LAVA_INSTA_DEATH | T_AUTO_DESCENT)) {
+        message("You can't place a trap there.", 0);
+        return false;
+    }
+
+    recordApplyItemCommand(theItem);
+    recordMouseClick(mapToWindowX(targetX), mapToWindowY(targetY), true, false);
+    confirmMessages();
+
+    // Place the hidden trap tile
+    enum tileType trapTile = hiddenTrapTileForKind(theItem->kind);
+    pmap[targetX][targetY].layers[DUNGEON] = trapTile;
+    pmap[targetX][targetY].flags |= HAS_PLAYER_PLACED_TRAP;
+    pmap[targetX][targetY].flags &= ~(PRESSURE_PLATE_DEPRESSED | KNOWN_TO_BE_TRAP_FREE);
+
+    refreshDungeonCell(target);
+
+    sprintf(buf, "you carefully set %s.", buf2);
+    messageWithColor(buf, &itemMessageColor, 0);
+
+    removeItemFromChain(theItem, packItems);
+    deleteItem(theItem);
+
+    return true;
+}
+
 void apply(item *theItem) {
     char buf[COLS * 3], buf2[COLS * 3];
 
     if (!theItem) {
-        theItem = promptForItemOfType((SCROLL|FOOD|POTION|STAFF|WAND|CHARM|RANGED), 0, 0,
+        theItem = promptForItemOfType((SCROLL|FOOD|POTION|STAFF|WAND|CHARM|RANGED|TRAP_ITEM), 0, 0,
                                       KEYBOARD_LABELS ? "Apply what? (a-z, shift for more info; or <esc> to cancel)" : "Apply what?",
                                       true);
     }
@@ -7255,6 +7408,11 @@ void apply(item *theItem) {
             return;
         case RANGED:
             if (fireRangedWeapon(theItem)) {
+                break;
+            }
+            return;
+        case TRAP_ITEM:
+            if (useTrapItem(theItem)) {
                 break;
             }
             return;

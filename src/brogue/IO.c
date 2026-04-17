@@ -1183,6 +1183,14 @@ void getCellAppearance(pos loc, enum displayGlyph *returnChar, color *returnFore
             }
         }
 
+        // Player-placed traps: show trap glyph even though the tile has TM_IS_SECRET
+        if ((pmapAt(loc)->flags & HAS_PLAYER_PLACED_TRAP)
+            && playerCanSeeOrSense(loc.x, loc.y)) {
+            cellChar = G_TRAP;
+            cellForeColor = purple;
+            needDistinctness = true;
+        }
+
         if (rogue.trueColorMode) {
             lightMultiplierColor = basicLightColor;
         } else {

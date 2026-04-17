@@ -55,6 +55,14 @@ itemTable *scrollTable;
 itemTable *wandTable;
 itemTable *charmTable;
 itemTable *rangedWeaponTable;
+itemTable trapItemTable[NUMBER_TRAP_ITEM_KINDS] = {
+    {"poison gas trap",     "", "", 0,  100,    0, TRAP_POISON_GAS,    {0,0,0}, true, false, 0, false, "A portable pressure plate rigged to release a cloud of caustic gas."},
+    {"confusion gas trap",  "", "", 0,  100,    0, TRAP_CONFUSION_GAS, {0,0,0}, true, false, 0, false, "A portable pressure plate rigged to release a cloud of confusion gas."},
+    {"paralysis gas trap",  "", "", 0,  100,    0, TRAP_PARALYSIS_GAS, {0,0,0}, true, false, 0, false, "A portable pressure plate rigged to release a cloud of paralytic gas."},
+    {"net trap",            "", "", 0,  100,    0, TRAP_NET,           {0,0,0}, true, false, 0, false, "A portable pressure plate that drops netting from a concealed mechanism."},
+    {"alarm trap",          "", "", 0,  100,    0, TRAP_ALARM,         {0,0,0}, true, false, 0, false, "A portable pressure plate connected to a loud alarm mechanism."},
+    {"flamethrower trap",   "", "", 0,  100,    0, TRAP_FLAMETHROWER,  {0,0,0}, true, false, 0, false, "A portable pressure plate rigged to release a burst of flame."},
+};
 const feat *featTable;
 const charmEffectTableEntry *charmEffectTable;
 const levelFeeling *levelFeelings;
@@ -592,6 +600,12 @@ const floorTileType tileCatalog[NUMBER_TILETYPES] = {
  /*CORPSE_ECTOPLASM*/           {G_FLOOR_ALT,&ectoplasmColor,  0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  ECTOPLASM_LIGHT,(0), (TM_STAND_IN_TILE),                                                                            "ectoplasmic remains",  "a shimmering ectoplasmic smear marks the ground."},
  /*CORPSE_RUBBLE*/              {G_BONES,   &gray,              0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "rubble remains",       "broken stone fragments mark where a creature stood."},
  /*CORPSE_ROT*/                 {G_FLOOR_ALT,&gray,            0,                  75, 0,  DF_PLAIN_FIRE,0,0,                          0,  NO_LIGHT,       (0), (TM_STAND_IN_TILE),                                                                            "putrid remains",       "a putrid smear marks where a creature dissolved."},
+
+ // Player-placed trap variants (standalone, no machine wiring)
+ /*PLAYER_PARALYSIS_TRAP_HIDDEN*/{G_FLOOR,   &floorForeColor,    &floorBackColor,    95, 0,  DF_PARALYSIS_GAS_TRAP_CLOUD,DF_SHOW_PLAYER_PARALYSIS_TRAP,0,      0,  NO_LIGHT,   (T_IS_DF_TRAP), (TM_IS_SECRET),                                                     "the ground",           ""},
+ /*PLAYER_PARALYSIS_TRAP*/     {G_TRAP,     &pink,              0,                  30, 0,  DF_PARALYSIS_GAS_TRAP_CLOUD,0,0,                                   0,  NO_LIGHT,   (T_IS_DF_TRAP), (TM_LIST_IN_SIDEBAR | TM_VISUALLY_DISTINCT),                        "a paralysis gas trap", "there is a hidden pressure plate in the floor above a reserve of paralytic gas."},
+ /*PLAYER_FIRE_TRAP_HIDDEN*/   {G_FLOOR,    &floorForeColor,    &floorBackColor,    95, 0,  DF_FIRE_TRAP_BURST,DF_SHOW_PLAYER_FIRE_TRAP,0,                     0,  NO_LIGHT,   (T_IS_DF_TRAP), (TM_IS_SECRET),                                                     "the ground",           ""},
+ /*PLAYER_FIRE_TRAP*/          {G_TRAP,     &red,               0,                  30, 0,  DF_FIRE_TRAP_BURST,0,0,                                            0,  NO_LIGHT,   (T_IS_DF_TRAP), (TM_LIST_IN_SIDEBAR | TM_VISUALLY_DISTINCT),                        "a fire trap",          "A hidden pressure plate is connected to a crude incendiary mechanism."},
 };
 
 unsigned long terrainFlags(pos p) {
@@ -958,6 +972,12 @@ dungeonFeature dungeonFeatureCatalog[NUMBER_DUNGEON_FEATURES] = {
     {CORPSE_ECTOPLASM,          SURFACE,    100,    0,      0},
     {CORPSE_RUBBLE,             SURFACE,    100,    0,      0},
     {CORPSE_ROT,                SURFACE,    100,    0,      0},
+
+    // Player-placed trap effects
+    {PARALYSIS_GAS,             GAS,        1000,   0,      0,  "a cloud of paralytic gas sprays upward from the floor!"},
+    {PLAIN_FIRE,                SURFACE,    100,    37,     0,  "a burst of flame erupts from the floor!", GENERIC_FLASH_LIGHT},
+    {PLAYER_PARALYSIS_TRAP,     DUNGEON,    0,      0,      0, "", GENERIC_FLASH_LIGHT},
+    {PLAYER_FIRE_TRAP,          DUNGEON,    0,      0,      0, "", GENERIC_FLASH_LIGHT},
 };
 
 const dungeonProfile dungeonProfileCatalog[NUMBER_DUNGEON_PROFILES] = {

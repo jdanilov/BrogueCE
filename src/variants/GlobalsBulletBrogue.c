@@ -87,6 +87,7 @@ const bolt boltCatalog_BulletBrogue[] = {
     {"poisoned dart",           "fires a dart",                 "fires strength-sapping darts",             G_WEAPON,&centipedeColor_BulletBrogue,NULL,              BE_ATTACK,      1,              0,          0,          0,                          (BF_TARGET_ENEMIES | BF_NEVER_REFLECTS | BF_NOT_LEARNABLE)},
     {"growing vines",           "releases carnivorous vines into the ground", "conjures carnivorous vines", G_GRASS,&tanColor,      NULL,               BE_NONE,        5,              DF_ANCIENT_SPIRIT_GRASS, DF_ANCIENT_SPIRIT_VINES, (MONST_INANIMATE | MONST_IMMUNE_TO_WEBS),   (BF_TARGET_ENEMIES | BF_NEVER_REFLECTS)},
     {"whip",                    "whips",                        "wields a whip",                            '*',    &tanColor,      NULL,               BE_ATTACK,      1,              0,          0,          MONST_IMMUNE_TO_WEAPONS,    (BF_TARGET_ENEMIES | BF_NEVER_REFLECTS | BF_NOT_LEARNABLE | BF_DISPLAY_CHAR_ALONG_LENGTH)},
+    {"trapping magic",          "casts trapping magic",         "can extract traps",                        0,      NULL,           &yellow,            BE_TRAPPING,    2,              0,          0,          0,                          (BF_NEVER_REFLECTS | BF_NOT_LEARNABLE)},
 };
 
     //name              feat description                                         initial value
@@ -106,7 +107,7 @@ const short lumenstoneDistribution_BulletBrogue[DEEPEST_LEVEL - AMULET_LEVEL] = 
 
 // Relative generation probabilities of item categories
 //                                                                    (GOLD,  SCROLL, POTION, STAFF,  WAND,   WEAPON, ARMOR,  FOOD,   RING,   CHARM,    AMULET,   GEM,    KEY,    RANGED)
-const short itemGenerationProbabilities_BulletBrogue[NUMBER_ITEM_CATEGORIES] = {50,    84,     104,     3,      3,     10,     8,      2,      3,      2,        0,        0,      0,      3};
+const short itemGenerationProbabilities_BulletBrogue[NUMBER_ITEM_CATEGORIES] = {50,    84,     104,     3,      3,     10,     8,      2,      3,      2,        0,        0,      0,      3,      0};
 
 const autoGenerator autoGeneratorCatalog_BulletBrogue[] = {
     //   terrain                    layer   DF                          Machine                     reqDungeon  reqLiquid   >=Depth <=Depth          freq    minIncp minSlope    maxNumber
@@ -719,6 +720,7 @@ itemTable wandTable_BulletBrogue[] = {
     {"plenty",          itemMetals[6], "",  2,  700,    0, BOLT_PLENTY,        {1,2,1}, false, false, -1, false, "The creature at the other end of this mischievous bit of cloning magic, friend or foe, will be beside itself -- literally!"},
     {"invisibility",    itemMetals[7], "",  3,  100,    0, BOLT_INVISIBILITY,  {2,4,1}, false, false, -1, false, "This wand will render a creature temporarily invisible to the naked eye. Only with telepathy or in the silhouette of a thick gas will an observer discern the creature's hazy outline."},
     {"empowerment",     itemMetals[8], "",  2,  100,    0, BOLT_EMPOWERMENT,   {1,1,1}, false, false, -1, false, "This sacred magic will permanently improve the mind and body of any monster it hits. A wise adventurer will use it on allies, making them stronger in combat and able to learn a new talent from a fallen foe. If the bolt is reflected back at you, it will have no effect."},
+    {"trapping",        itemMetals[9], "",  2,  600,    0, BOLT_TRAPPING,      {2,4,1}, false, false, 1,  false, "This wand can extract a discovered trap from the dungeon floor, transforming it into a portable device. The trap can then be placed on an adjacent floor tile as an invisible snare for unsuspecting creatures."},
 };
 
 itemTable charmTable_BulletBrogue[] = {

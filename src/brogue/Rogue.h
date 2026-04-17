@@ -688,6 +688,12 @@ enum tileType {
     CORPSE_RUBBLE,
     CORPSE_ROT,
 
+    // Player-placed trap variants (standalone, no machine wiring)
+    PLAYER_PARALYSIS_TRAP_HIDDEN,
+    PLAYER_PARALYSIS_TRAP,
+    PLAYER_FIRE_TRAP_HIDDEN,
+    PLAYER_FIRE_TRAP,
+
     NUMBER_TILETYPES,
 };
 
@@ -758,7 +764,7 @@ enum lightType {
     NUMBER_LIGHT_KINDS
 };
 
-#define NUMBER_ITEM_CATEGORIES  14
+#define NUMBER_ITEM_CATEGORIES  15
 
 // Item categories
 enum itemCategory {
@@ -776,6 +782,7 @@ enum itemCategory {
     GEM                 = Fl(11),
     KEY                 = Fl(12),
     RANGED              = Fl(13),
+    TRAP_ITEM           = Fl(14),
 
     // Categories where the kinds have intrinsic magic polarity; i.e. each kind
     // has a certain polarity (with positive enchant) which doesn't depend on
@@ -786,8 +793,8 @@ enum itemCategory {
 
     CAN_BE_DETECTED     = (WEAPON | ARMOR | POTION | SCROLL | RING | CHARM | WAND | STAFF | AMULET | RANGED),
     CAN_BE_ENCHANTED    = (WEAPON | ARMOR | RING | CHARM | WAND | STAFF | RANGED),
-    PRENAMED_CATEGORY   = (FOOD | GOLD | AMULET | GEM | KEY),
-    NEVER_IDENTIFIABLE  = (FOOD | CHARM | GOLD | AMULET | GEM | KEY | RANGED),
+    PRENAMED_CATEGORY   = (FOOD | GOLD | AMULET | GEM | KEY | TRAP_ITEM),
+    NEVER_IDENTIFIABLE  = (FOOD | CHARM | GOLD | AMULET | GEM | KEY | RANGED | TRAP_ITEM),
     CAN_BE_SWAPPED      = (WEAPON | ARMOR | STAFF | CHARM | RING | RANGED),
     ALL_ITEMS           = (FOOD|POTION|WEAPON|ARMOR|STAFF|WAND|SCROLL|RING|CHARM|GOLD|AMULET|GEM|KEY|RANGED),
 };
@@ -797,6 +804,16 @@ enum keyKind {
     KEY_CAGE,
     KEY_PORTAL,
     NUMBER_KEY_TYPES
+};
+
+enum trapItemKind {
+    TRAP_POISON_GAS,
+    TRAP_CONFUSION_GAS,
+    TRAP_PARALYSIS_GAS,
+    TRAP_NET,
+    TRAP_ALARM,
+    TRAP_FLAMETHROWER,
+    NUMBER_TRAP_ITEM_KINDS
 };
 
 enum foodKind {
@@ -913,7 +930,8 @@ enum wandKind {
     WAND_BECKONING,
     WAND_PLENTY,
     WAND_INVISIBILITY,
-    WAND_EMPOWERMENT
+    WAND_EMPOWERMENT,
+    WAND_TRAPPING
 };
 
 enum staffKind {
@@ -964,7 +982,8 @@ enum boltType {
     BOLT_DISTANCE_ATTACK,
     BOLT_POISON_DART,
     BOLT_ANCIENT_SPIRIT_VINES,
-    BOLT_WHIP
+    BOLT_WHIP,
+    BOLT_TRAPPING
 };
 
 enum ringKind {
@@ -1144,13 +1163,16 @@ enum tileFlags {
 
     IS_IN_MACHINE               = (IS_IN_ROOM_MACHINE | IS_IN_AREA_MACHINE),    // sacred ground; don't generate items here, or teleport randomly to it
 
-    PERMANENT_TILE_FLAGS = (DISCOVERED | MAGIC_MAPPED | ITEM_DETECTED | HAS_ITEM | HAS_DORMANT_MONSTER
-                            | HAS_MONSTER | HAS_STAIRS | SEARCHED_FROM_HERE | PRESSURE_PLATE_DEPRESSED
-                            | STABLE_MEMORY | KNOWN_TO_BE_TRAP_FREE | IN_LOOP
-                            | IS_CHOKEPOINT | IS_GATE_SITE | IS_IN_MACHINE | IMPREGNABLE),
-
     ANY_KIND_OF_VISIBLE         = (VISIBLE | CLAIRVOYANT_VISIBLE | TELEPATHIC_VISIBLE),
 };
+
+#define HAS_PLAYER_PLACED_TRAP  Fl(31)  // player placed a trap here; render trap glyph even though TM_IS_SECRET
+
+#define PERMANENT_TILE_FLAGS    (DISCOVERED | MAGIC_MAPPED | ITEM_DETECTED | HAS_ITEM | HAS_DORMANT_MONSTER \
+                                | HAS_MONSTER | HAS_STAIRS | SEARCHED_FROM_HERE | PRESSURE_PLATE_DEPRESSED \
+                                | STABLE_MEMORY | KNOWN_TO_BE_TRAP_FREE | IN_LOOP \
+                                | IS_CHOKEPOINT | IS_GATE_SITE | IS_IN_MACHINE | IMPREGNABLE \
+                                | HAS_PLAYER_PLACED_TRAP)
 
 #define TURNS_FOR_FULL_REGEN                300
 #define STOMACH_SIZE                        2150
@@ -1825,6 +1847,12 @@ enum dungeonFeatureTypes {
     DF_CORPSE_RUBBLE,
     DF_CORPSE_ROT,
 
+    // Player-placed trap effects
+    DF_PARALYSIS_GAS_TRAP_CLOUD,
+    DF_FIRE_TRAP_BURST,
+    DF_SHOW_PLAYER_PARALYSIS_TRAP,
+    DF_SHOW_PLAYER_FIRE_TRAP,
+
     NUMBER_DUNGEON_FEATURES,
 };
 
@@ -1891,6 +1919,7 @@ enum boltEffects {
     BE_HEALING,
     BE_HASTE,
     BE_SHIELDING,
+    BE_TRAPPING,
 };
 
 enum boltFlags {

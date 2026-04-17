@@ -232,6 +232,7 @@ void applyInstantTileEffectsToCreature(creature *monst) {
         && !(pmap[*x][*y].flags & PRESSURE_PLATE_DEPRESSED)) {
 
         pmap[*x][*y].flags |= PRESSURE_PLATE_DEPRESSED;
+        pmap[*x][*y].flags &= ~HAS_PLAYER_PLACED_TRAP; // Clear player-placed trap marker on trigger
         if (playerCanSee(*x, *y) && cellHasTMFlag((pos){ *x, *y }, TM_IS_SECRET)) {
             discover(*x, *y);
             refreshDungeonCell((pos){ *x, *y });
