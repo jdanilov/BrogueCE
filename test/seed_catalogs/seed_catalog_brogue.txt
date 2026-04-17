@@ -1,5 +1,5 @@
 Brogue seed catalog, seeds 1 to 25, through depth 40.
-Generated with CE 1.15.1-dev.d8176c0.master. Dungeons unchanged since CE 1.11.
+Generated with CE 1.15.1-dev.c3b0dc2.master. Dungeons unchanged since CE 1.11.
 
 To play one of these seeds, select Play>New Seeded Game from the title screen.
 Seed 1:
