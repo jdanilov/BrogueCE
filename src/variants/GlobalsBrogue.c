@@ -1028,7 +1028,7 @@ const hordeType hordeCatalog_Brogue[] = {
     {MK_TENTACLE_HORROR,2,      {MK_TENTACLE_HORROR, MK_REVENANT},      {{1, 3, 1}, {2, 4, 1}},         32,     DEEPEST_LEVEL-1,    20},
     {MK_DRAGON,         1,      {MK_DRAGON},                            {{3, 5, 1}},                    34,     DEEPEST_LEVEL-1,    20},
 
-    {MK_ENT,            0,      {0},                                    {{0}},                          1,      4,      30,         FOLIAGE},
+    {MK_ENT,            0,      {0},                                    {{0}},                          1,      4,      10,         FOLIAGE},
 
     // summons
     {MK_GOBLIN_CONJURER,1,      {MK_SPECTRAL_BLADE},                    {{3, 5, 1}},                    0,      0,      100,    0,          0,                  HORDE_IS_SUMMONED | HORDE_DIES_ON_LEADER_DEATH},

@@ -1780,6 +1780,8 @@ void updateMonsterState(creature *monst) {
         }
     }
 
+    enum creatureStates stateBeforeUpdate = monst->creatureState;
+
     if ((monst->creatureState == MONSTER_WANDERING)
         && awareOfPlayer
         && (pmapAt(player.loc)->flags & IN_FIELD_OF_VIEW)) {
@@ -1836,6 +1838,27 @@ void updateMonsterState(creature *monst) {
             monst->creatureState = MONSTER_ALLY;
         } else {
             alertMonster(monst);
+        }
+    }
+
+    // Ent panic burst: erupt foliage when first entering fleeing state.
+    // Probability scales inversely with distance for a circular, center-dense pattern.
+    if (stateBeforeUpdate != MONSTER_FLEEING
+        && monst->creatureState == MONSTER_FLEEING
+        && monst->info.monsterID == MK_ENT) {
+        for (short dy = -4; dy <= 4; dy++) {
+            for (short dx = -4; dx <= 4; dx++) {
+                short distSq = dx * dx + dy * dy;
+                if (distSq > 16) continue; // circular cutoff at radius 4
+                short fx = monst->loc.x + dx;
+                short fy = monst->loc.y + dy;
+                short pct = 100 - distSq * 5; // 100% at center, 20% at radius 4
+                if (coordinatesAreInMap(fx, fy)
+                    && !cellHasTerrainFlag((pos){fx, fy}, T_OBSTRUCTS_PASSABILITY)
+                    && rand_percent(pct)) {
+                    spawnDungeonFeature(fx, fy, &dungeonFeatureCatalog[DF_ENT_FOLIAGE], true, false);
+                }
+            }
         }
     }
 
