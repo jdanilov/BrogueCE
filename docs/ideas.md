@@ -26,4 +26,4 @@ Custom Ideas
 
 13. Trap laying monster
 
-14. Gold monster
+14. Mimic - monster that pretends to be a gold piece
