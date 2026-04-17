@@ -54,6 +54,12 @@ Each improvement below is independent and can be implemented/tested/merged separ
 - [ ] Reduce hopper pre-generation from 100 to match expected consumption, or increase it if needed
 - [ ] Ensure post-amulet levels still don't assign items (existing depth check)
 
+### 5. Ground Item Rebalancing
+- [x] Reduce early-level ground item bonus to compensate for expanded monster loot
+- [x] Depth 1-2 bonus: +2 → +1 (was "kickstart" bonus, now partially fulfilled by monster drops)
+- [x] Depth 3-4 bonus: +1 → +0 (removed; monster carries fill this gap)
+- [x] Net effect: ~1 fewer ground item on levels 1-4, offset by kobold/goblin carry items
+
 ## Ask User
 (empty — populated during execution if Developer needs input)
 

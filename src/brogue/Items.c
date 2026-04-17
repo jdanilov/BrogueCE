@@ -726,9 +726,7 @@ void populateItems(pos upstairs) {
             numberOfItems++;
         }
         if (rogue.depthLevel <= 2) {
-            numberOfItems += 2; // 4 extra items to kickstart your career as a rogue
-        } else if (rogue.depthLevel <= 4) {
-            numberOfItems++; // and 2 more here
+            numberOfItems += 1; // early boost, reduced to compensate for expanded monster loot
         }
 
         numberOfItems += gameConst->extraItemsPerLevel;
