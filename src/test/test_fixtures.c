@@ -2647,38 +2647,61 @@ static const char *fixtureNames[] = {
 TEST(test_fixture_placement_rate_report) {
     const int NUM_SEEDS = 50;
     const int ATTEMPTS_PER_SEED = 10;
+    const int NUM_FIXTURES = MT_FIXTURE_SULFUR_CRUST - MT_FIXTURE_FOUNTAIN + 1;
+
+    // Pre-compute test depth for each fixture
+    int testDepth[NUM_FIXTURES];
+    int successes[NUM_FIXTURES];
+    for (int f = 0; f < NUM_FIXTURES; f++) {
+        const blueprint *bp = &blueprintCatalog[MT_FIXTURE_FOUNTAIN + f];
+        testDepth[f] = (bp->depthRange[0] + bp->depthRange[1]) / 2;
+        if (testDepth[f] < bp->depthRange[0]) testDepth[f] = bp->depthRange[0];
+        successes[f] = 0;
+    }
+
+    // Collect distinct depths
+    int depths[NUM_FIXTURES];
+    int numDepths = 0;
+    for (int f = 0; f < NUM_FIXTURES; f++) {
+        boolean found = false;
+        for (int d = 0; d < numDepths; d++) {
+            if (depths[d] == testDepth[f]) { found = true; break; }
+        }
+        if (!found) depths[numDepths++] = testDepth[f];
+    }
+
+    // For each seed, generate one dungeon per distinct depth and test all
+    // fixtures at that depth together. This avoids redundant dungeon generation.
+    for (int s = 0; s < NUM_SEEDS; s++) {
+        int seed = 42 + s * 37;
+        for (int d = 0; d < numDepths; d++) {
+            test_init_game(seed);
+            rogue.depthLevel = depths[d];
+            test_reseed(seed + 5555);
+
+            for (int f = 0; f < NUM_FIXTURES; f++) {
+                if (testDepth[f] != depths[d]) continue;
+
+                boolean placed = false;
+                for (int a = 0; a < ATTEMPTS_PER_SEED && !placed; a++) {
+                    if (buildAMachine(MT_FIXTURE_FOUNTAIN + f, -1, -1, 0, NULL, NULL, NULL)) {
+                        placed = true;
+                    }
+                }
+                if (placed) successes[f]++;
+            }
+            test_teardown_game();
+        }
+    }
 
     printf("\n\n  %-24s  depth  placed/seeds  rate\n", "fixture");
     printf("  %-24s  -----  ------------  ----\n", "------------------------");
-
-    for (int f = MT_FIXTURE_FOUNTAIN; f <= MT_FIXTURE_SULFUR_CRUST; f++) {
-        const blueprint *bp = &blueprintCatalog[f];
-        // Use the midpoint of the depth range for testing
-        int testDepth = (bp->depthRange[0] + bp->depthRange[1]) / 2;
-        if (testDepth < bp->depthRange[0]) testDepth = bp->depthRange[0];
-
-        int successes = 0;
-        for (int s = 0; s < NUM_SEEDS; s++) {
-            int seed = 42 + s * 37;  // spread seeds
-            test_init_game(seed);
-            rogue.depthLevel = testDepth;
-            test_reseed(seed + 5555);
-
-            boolean placed = false;
-            for (int a = 0; a < ATTEMPTS_PER_SEED && !placed; a++) {
-                if (buildAMachine(f, -1, -1, 0, NULL, NULL, NULL)) {
-                    placed = true;
-                }
-            }
-            if (placed) successes++;
-            test_teardown_game();
-        }
-
-        int rate = (successes * 100) / NUM_SEEDS;
+    for (int f = 0; f < NUM_FIXTURES; f++) {
+        int rate = (successes[f] * 100) / NUM_SEEDS;
         const char *flag = (rate < 20) ? " << LOW" : (rate < 50) ? " < warn" : "";
         printf("  %-24s  %3d    %3d/%-3d       %3d%%%s\n",
-               fixtureNames[f - MT_FIXTURE_FOUNTAIN], testDepth,
-               successes, NUM_SEEDS, rate, flag);
+               fixtureNames[f], testDepth[f],
+               successes[f], NUM_SEEDS, rate, flag);
     }
     printf("\n");
 }

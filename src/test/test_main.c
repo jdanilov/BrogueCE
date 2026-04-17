@@ -28,6 +28,7 @@ extern void suite_hallucination(void);
 extern void suite_room_designs(void);
 extern void suite_fixtures(void);
 extern void suite_trap_hunting(void);
+extern void suite_ent(void);
 
 int main(int argc, char *argv[]) {
     printf("BrogueCE Test Suite\n");
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]) {
     RUN_SUITE(room_designs);
     RUN_SUITE(fixtures);
     RUN_SUITE(trap_hunting);
+    RUN_SUITE(ent);
 
     printf("\n====================\n");
     printf("Results: %d passed, %d failed\n", _test_state.passed, _test_state.failed);
