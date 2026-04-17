@@ -147,6 +147,98 @@ TEST(test_ent_placement_and_df_trail) {
     test_teardown_game();
 }
 
+TEST(test_ent_panic_foliage_burst) {
+    test_init_arena(99);
+    test_reseed(99);
+    test_set_player_hp(500, 500);
+
+    // Place ent far from player so closestFearedEnemy >= 3
+    short mx = player.loc.x + 8;
+    short my = player.loc.y;
+    creature *ent = test_place_monster(MK_ENT, mx, my);
+    ASSERT(ent != NULL);
+
+    // Set state to WANDERING so the else-if chain in updateMonsterState
+    // falls through to the FLEES_NEAR_DEATH check
+    ent->creatureState = MONSTER_WANDERING;
+
+    // Reduce HP below 25% max (80/4=20) to force fleeing from non-fleeing state
+    ent->currentHP = 15;
+
+    // Call updateMonsterState directly to trigger the state transition
+    updateMonsterState(ent);
+
+    // Count foliage tiles in the radius-4 area around the ent's position
+    int foliageCount = 0;
+    for (short dy = -4; dy <= 4; dy++) {
+        for (short dx = -4; dx <= 4; dx++) {
+            short fx = mx + dx;
+            short fy = my + dy;
+            if (coordinatesAreInMap(fx, fy)
+                && pmap[fx][fy].layers[SURFACE] == ENT_FOLIAGE) {
+                foliageCount++;
+            }
+        }
+    }
+
+    // With 50% chance per tile over ~81 tiles, expect roughly 30-50 foliage tiles.
+    // Use a generous lower bound to avoid flaky tests.
+    ASSERT(foliageCount >= 10);
+    ASSERT_EQ(ent->creatureState, MONSTER_FLEEING);
+
+    test_teardown_game();
+}
+
+TEST(test_ent_panic_burst_fires_only_once) {
+    test_init_arena(99);
+    test_reseed(99);
+    test_set_player_hp(500, 500);
+
+    short mx = player.loc.x + 8;
+    short my = player.loc.y;
+    creature *ent = test_place_monster(MK_ENT, mx, my);
+    ASSERT(ent != NULL);
+
+    // Trigger first burst: set wandering + low HP, call updateMonsterState
+    ent->creatureState = MONSTER_WANDERING;
+    ent->currentHP = 15;
+    updateMonsterState(ent);
+    ASSERT_EQ(ent->creatureState, MONSTER_FLEEING);
+
+    // Clear all foliage to detect any new spawns from a second call
+    for (short dy = -4; dy <= 4; dy++) {
+        for (short dx = -4; dx <= 4; dx++) {
+            short fx = mx + dx;
+            short fy = my + dy;
+            if (coordinatesAreInMap(fx, fy)
+                && pmap[fx][fy].layers[SURFACE] == ENT_FOLIAGE) {
+                test_set_terrain(fx, fy, SURFACE, NOTHING);
+            }
+        }
+    }
+
+    // Call updateMonsterState again — ent is already MONSTER_FLEEING, no second burst
+    updateMonsterState(ent);
+
+    // Count foliage — should be zero since no burst fired and no DF trail from updateMonsterState
+    int foliageAfterSecond = 0;
+    for (short dy = -4; dy <= 4; dy++) {
+        for (short dx = -4; dx <= 4; dx++) {
+            short fx = mx + dx;
+            short fy = my + dy;
+            if (coordinatesAreInMap(fx, fy)
+                && pmap[fx][fy].layers[SURFACE] == ENT_FOLIAGE) {
+                foliageAfterSecond++;
+            }
+        }
+    }
+
+    // No burst should have occurred (updateMonsterState doesn't spawn DF trail)
+    ASSERT_EQ(foliageAfterSecond, 0);
+
+    test_teardown_game();
+}
+
 SUITE(ent) {
     RUN_TEST(test_ent_catalog_entry);
     RUN_TEST(test_ent_foliage_df_spawns_correct_terrain);
@@ -156,4 +248,6 @@ SUITE(ent) {
     RUN_TEST(test_ent_fungus_decays_to_nothing);
     RUN_TEST(test_ent_foliage_no_promote_on_step);
     RUN_TEST(test_ent_placement_and_df_trail);
+    RUN_TEST(test_ent_panic_foliage_burst);
+    RUN_TEST(test_ent_panic_burst_fires_only_once);
 }
