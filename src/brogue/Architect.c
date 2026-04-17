@@ -1309,14 +1309,11 @@ static boolean applyAltarNookLayout(short originX, short originY, char interior[
         {-1,  1, MARBLE_FLOOR, DUNGEON, false},
         { 0,  1, CARPET,       DUNGEON, false},
         { 1,  1, MARBLE_FLOOR, DUNGEON, false},
-        // Rows 2-4: carpet runner
+        // Rows 2-5: carpet runner
         { 0,  2, CARPET,       DUNGEON, false},
         { 0,  3, CARPET,       DUNGEON, false},
         { 0,  4, CARPET,       DUNGEON, false},
-        // Row 5: embers flanking entrance
-        {-1,  5, EMBERS,       SURFACE, false},
         { 0,  5, CARPET,       DUNGEON, false},
-        { 1,  5, EMBERS,       SURFACE, false},
     };
     return applyRotatableLayout(originX, originY, interior,
                                 altarPat, sizeof(altarPat) / sizeof(altarPat[0]),
@@ -2109,96 +2106,169 @@ static boolean applyWeaponRackLayout(short originX, short originY, char interior
 // STATUE_INERT for the bookcase frame, JUNK on the open side for spilled books.
 // ~40% chance of a SCROLL item on the junk tile.
 static boolean applyToppledBookcaseLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
-    // Find interior floor cells with exactly 3 cardinal walls (a nook/alcove).
-    typedef struct { short x, y; } candidate;
-    candidate candidates[40];
-    short candidateCount = 0;
+    // Find interior floor cells suitable for a bookcase nook.
+    // Priority 1: natural 3-wall nooks (ideal).
+    // Priority 2: 2-wall corners where we can place an extra statue to form a nook.
+    // Search the entire interior to maximize chances.
+    typedef struct { short x, y; short wallCount; } candidate;
+    candidate nook3[40];   // natural 3-wall nooks
+    short nook3Count = 0;
+    candidate corner2[40]; // 2-wall corners
+    short corner2Count = 0;
 
-    for (short dy = -5; dy <= 5 && candidateCount < 40; dy++) {
-        for (short dx = -5; dx <= 5 && candidateCount < 40; dx++) {
-            short x = originX + dx;
-            short y = originY + dy;
-            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
+    for (short x = 1; x < DCOLS - 1; x++) {
+        for (short y = 1; y < DROWS - 1; y++) {
             if (!interior[x][y]) continue;
             if (pmap[x][y].layers[DUNGEON] != FLOOR) continue;
 
             short walls = 0;
-            short openX = 0, openY = 0;
-            short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+            short openCount = 0;
+            short openDirs[4][2];
+            short cardDirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
             for (short d = 0; d < 4; d++) {
-                short nx = x + dirs[d][0];
-                short ny = y + dirs[d][1];
+                short nx = x + cardDirs[d][0];
+                short ny = y + cardDirs[d][1];
                 if (cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
                     walls++;
                 } else {
-                    openX = nx;
-                    openY = ny;
+                    openDirs[openCount][0] = nx;
+                    openDirs[openCount][1] = ny;
+                    openCount++;
                 }
             }
 
-            if (walls == 3) {
-                // Verify the open neighbor is interior floor for junk placement.
-                if (openX >= 1 && openX < DCOLS - 1 && openY >= 1 && openY < DROWS - 1
-                    && interior[openX][openY]
-                    && pmap[openX][openY].layers[DUNGEON] == FLOOR) {
-                    candidates[candidateCount++] = (candidate){x, y};
+            if (walls == 3 && nook3Count < 40) {
+                // Verify the single open neighbor is interior floor for junk.
+                short ox = openDirs[0][0], oy = openDirs[0][1];
+                if (ox >= 1 && ox < DCOLS - 1 && oy >= 1 && oy < DROWS - 1
+                    && interior[ox][oy]
+                    && pmap[ox][oy].layers[DUNGEON] == FLOOR) {
+                    nook3[nook3Count++] = (candidate){x, y, 3};
+                }
+            } else if (walls == 2 && corner2Count < 40) {
+                // For a 2-wall corner, we need one open neighbor to become a statue
+                // and the other to remain open for junk. Both must be interior floor.
+                boolean viable = true;
+                for (short o = 0; o < openCount && viable; o++) {
+                    short ox = openDirs[o][0], oy = openDirs[o][1];
+                    if (ox < 1 || ox >= DCOLS - 1 || oy < 1 || oy >= DROWS - 1
+                        || !interior[ox][oy]
+                        || pmap[ox][oy].layers[DUNGEON] != FLOOR) {
+                        viable = false;
+                    }
+                }
+                if (viable && openCount == 2) {
+                    corner2[corner2Count++] = (candidate){x, y, 2};
                 }
             }
         }
     }
 
-    if (candidateCount < 1) return false;
+    // Try natural 3-wall nooks first.
+    if (nook3Count > 0) {
+        short bestIdx = 0;
+        short bestDist = 10000;
+        for (short i = 0; i < nook3Count; i++) {
+            short dist = (nook3[i].x - originX) * (nook3[i].x - originX)
+                       + (nook3[i].y - originY) * (nook3[i].y - originY);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+        }
 
-    // Pick the candidate closest to origin.
-    short bestIdx = 0;
-    short bestDist = 10000;
-    for (short i = 0; i < candidateCount; i++) {
-        short dist = (candidates[i].x - originX) * (candidates[i].x - originX)
-                   + (candidates[i].y - originY) * (candidates[i].y - originY);
-        if (dist < bestDist) {
-            bestDist = dist;
-            bestIdx = i;
+        short nookX = nook3[bestIdx].x;
+        short nookY = nook3[bestIdx].y;
+
+        // Find the open cardinal neighbor.
+        short junkX = 0, junkY = 0;
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (short d = 0; d < 4; d++) {
+            short nx = nookX + dirs[d][0];
+            short ny = nookY + dirs[d][1];
+            if (!cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
+                junkX = nx;
+                junkY = ny;
+                break;
+            }
+        }
+
+        char blockingMap[DCOLS][DROWS];
+        zeroOutGrid(blockingMap);
+        blockingMap[nookX][nookY] = true;
+        if (!levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
+            pmap[nookX][nookY].layers[DUNGEON] = STATUE_INERT;
+            pmap[junkX][junkY].layers[SURFACE] = JUNK;
+            if (outCenter) *outCenter = (pos){nookX, nookY};
+
+            if (rand_percent(80)) {
+                item *loot = generateItem(SCROLL, -1);
+                placeItemAt(loot, (pos){junkX, junkY});
+            }
+            return true;
         }
     }
 
-    short nookX = candidates[bestIdx].x;
-    short nookY = candidates[bestIdx].y;
-
-    // Find the open cardinal neighbor again.
-    short junkX = 0, junkY = 0;
-    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
-    for (short d = 0; d < 4; d++) {
-        short nx = nookX + dirs[d][0];
-        short ny = nookY + dirs[d][1];
-        if (!cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
-            junkX = nx;
-            junkY = ny;
-            break;
+    // Fall back to 2-wall corners: place an extra statue to form a 3-wall nook.
+    // Sort by distance to origin.
+    for (short i = 0; i < corner2Count - 1; i++) {
+        for (short j = i + 1; j < corner2Count; j++) {
+            short distI = (corner2[i].x - originX) * (corner2[i].x - originX)
+                        + (corner2[i].y - originY) * (corner2[i].y - originY);
+            short distJ = (corner2[j].x - originX) * (corner2[j].x - originX)
+                        + (corner2[j].y - originY) * (corner2[j].y - originY);
+            if (distJ < distI) {
+                candidate tmp = corner2[i];
+                corner2[i] = corner2[j];
+                corner2[j] = tmp;
+            }
         }
     }
 
-    // Connectivity check — the bookcase blocks pathing.
-    char blockingMap[DCOLS][DROWS];
-    zeroOutGrid(blockingMap);
-    blockingMap[nookX][nookY] = true;
-    if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) {
-        return false;
+    for (short c = 0; c < corner2Count; c++) {
+        short cx = corner2[c].x, cy = corner2[c].y;
+
+        // Find the two open cardinal neighbors.
+        short openX[2], openY[2];
+        short openIdx = 0;
+        short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (short d = 0; d < 4 && openIdx < 2; d++) {
+            short nx = cx + dirs[d][0];
+            short ny = cy + dirs[d][1];
+            if (!cellHasTerrainFlag((pos){nx, ny}, T_OBSTRUCTS_PASSABILITY)) {
+                openX[openIdx] = nx;
+                openY[openIdx] = ny;
+                openIdx++;
+            }
+        }
+        if (openIdx < 2) continue;
+
+        // Try each open neighbor as the statue (pillar) position; the other becomes junk.
+        for (short s = 0; s < 2; s++) {
+            short statX = openX[s], statY = openY[s];
+            short junkX = openX[1-s], junkY = openY[1-s];
+
+            // Connectivity check: both the bookcase and the extra statue block pathing.
+            char blockingMap[DCOLS][DROWS];
+            zeroOutGrid(blockingMap);
+            blockingMap[cx][cy] = true;
+            blockingMap[statX][statY] = true;
+            if (levelIsDisconnectedWithBlockingMap(blockingMap, false)) continue;
+
+            pmap[cx][cy].layers[DUNGEON] = STATUE_INERT;
+            pmap[statX][statY].layers[DUNGEON] = STATUE_INERT;
+            pmap[junkX][junkY].layers[SURFACE] = JUNK;
+            if (outCenter) *outCenter = (pos){cx, cy};
+
+            if (rand_percent(80)) {
+                item *loot = generateItem(SCROLL, -1);
+                placeItemAt(loot, (pos){junkX, junkY});
+            }
+            return true;
+        }
     }
 
-    pmap[nookX][nookY].layers[DUNGEON] = STATUE_INERT;
-    pmap[junkX][junkY].layers[SURFACE] = JUNK;
-
-    if (outCenter) {
-        *outCenter = (pos){nookX, nookY};
-    }
-
-    // ~80% chance to spawn a SCROLL on the junk tile.
-    if (rand_percent(80)) {
-        item *loot = generateItem(SCROLL, -1);
-        placeItemAt(loot, (pos){junkX, junkY});
-    }
-
-    return true;
+    return false;
 }
 
 // Place an abandoned camp: bedroll (HAY), fire ring (RUBBLE+EMBERS), marker post (STATUE_INERT),
@@ -2206,24 +2276,23 @@ static boolean applyToppledBookcaseLayout(short originX, short originY, char int
 // Tries all 4 rotations via shared helper.
 static boolean applyAbandonedCampLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
     static const layoutTile campPat[] = {
-        // Row 0: bedroll
+        // Row 0: bedroll + meal scraps
+        {-1, 0, BONES,        SURFACE, false},
         { 0, 0, HAY,          SURFACE, false},
         { 1, 0, HAY,          SURFACE, false},
-        // Row 1: meal scraps
-        { 0, 1, BONES,        SURFACE, false},
-        // Row 2: fire ring (rubble flanking embers)
-        {-1, 2, RUBBLE,       SURFACE, false},
-        { 0, 2, EMBERS,       SURFACE, false},
-        { 1, 2, RUBBLE,       SURFACE, false},
-        // Row 3: fire ring base + junk
-        { 0, 3, RUBBLE,       SURFACE, false},
-        { 1, 3, JUNK,         SURFACE, false},
-        // Row 4: marker post
-        { 0, 4, STATUE_INERT, DUNGEON, false},
+        // Row 1: fire ring (rubble flanking embers)
+        {-1, 1, RUBBLE,       SURFACE, false},
+        { 0, 1, EMBERS,       SURFACE, false},
+        { 1, 1, RUBBLE,       SURFACE, false},
+        // Row 2: fire ring base + junk
+        { 0, 2, RUBBLE,       SURFACE, false},
+        { 1, 2, JUNK,         SURFACE, false},
+        // Row 3: marker post
+        { 0, 3, STATUE_INERT, DUNGEON, false},
     };
     if (!applyRotatableLayout(originX, originY, interior,
                               campPat, sizeof(campPat) / sizeof(campPat[0]),
-                              0, 2, outCenter)) {
+                              0, 1, outCenter)) {
         return false;
     }
 

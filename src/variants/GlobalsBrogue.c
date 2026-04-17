@@ -751,7 +751,7 @@ const blueprint blueprintCatalog_Brogue[] = {
         {           0,          EMBERS,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)},
         {           0,          RUBBLE,        SURFACE,       {1, 2},    0,       0,   -1,   0,     1,     0,   0,   (MF_NEAR_ORIGIN|MF_NOT_IN_HALLWAY)}}},
     {"Fixture: Abandoned Camp -- fire ring camp with bedroll and marker post",
-    {5, 18},  {6, 12},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    {5, 18},  {15, 25},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyAbandonedCampLayout() in Architect.c
         {0}}},
     {"Fixture: Weapon Rack -- broken equipment on wall",
@@ -775,7 +775,7 @@ const blueprint blueprintCatalog_Brogue[] = {
     // Bookcase standing in a 3-wall nook with scattered books on the floor.
     // ~40% chance of a SCROLL item. Custom layout finds natural wall alcoves.
     {"Fixture: Toppled Bookcase -- rotting shelves in a wall nook with scattered books",
-    {5, 18},  {4, 8},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    {5, 18},  {4, 30},  0,  0,  0,  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyToppledBookcaseLayout() in Architect.c
         {0}}},
     // Throne of bones: STATUE_INERT throne on marble dais with carpet runner,
