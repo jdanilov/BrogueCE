@@ -14,7 +14,7 @@ Custom Ideas
 
 7. Nemesis system — An ogre or troll that appears on D2, flees if wounded, and returns stronger later. Gives the player a recurring antagonist and a reason to care about early floors. [interesting: could be improved, e.g. an invisible stalker that shrieks from time to time aggravating monsters, or a kill squad dispatched when user picks certain object from pedestal - new machine]
 
-8. Dynamic monster behavior — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
+8. Dynamic monster behaviors on starting levels — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
 
 9. Trap system: picking and setting up traps via a wand [done]
 
@@ -36,4 +36,4 @@ Custom Ideas
 
 18. A monster that lays traps and once sees the player flees and seeks for other intelligent monsters - wakes them up and drives them to the player location.
 
-19. A monster that spawns dense foliage when moves, which auto-decays to fungus, and then to normal ground.
+19. Ent - A monster that spawns dense foliage when moves, which auto-decays to fungus, and then to normal ground. [done]

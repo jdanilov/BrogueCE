@@ -55,25 +55,25 @@ ENT_FOLIAGE (vision-blocking, flammable)
 ```
 
 ## Acceptance Criteria
-- [ ] Ent appears on D1-D4, moves slowly, has high HP
-- [ ] Leaves dense foliage trail (blocks vision, flammable)
-- [ ] Foliage auto-decays to fungus (~50 turns), fungus decays to ground (~50 turns)
-- [ ] Ent summons rats/monkeys/toads periodically, prefers summoning over melee
-- [ ] Fire burns the foliage trail effectively (natural counterplay)
+- [x] Ent appears on D1-D4, moves slowly, has high HP
+- [x] Leaves dense foliage trail (blocks vision, flammable)
+- [x] Foliage auto-decays to fungus (~50 turns), fungus decays to ground (~50 turns)
+- [x] Ent summons rats/monkeys/toads/jackals periodically, prefers summoning over melee
+- [x] Fire burns the foliage trail effectively (natural counterplay)
 - [x] When Ent enters fleeing state, foliage bursts in radius 4 (50% per tile)
 - [x] Panic burst only fires once (on state transition, not every fleeing turn)
 - [x] `make test` passes
 - [x] Seed catalogs updated
 
 ## Tasks
-- [ ] Add `ENT_FOLIAGE` and `ENT_FUNGUS` terrain types to `tileType` enum in Rogue.h
-- [ ] Add terrain catalog entries for both (with time-based promoteChance, T_IS_FLAMMABLE, T_OBSTRUCTS_VISION)
-- [ ] Add `DF_ENT_FOLIAGE`, `DF_ENT_FOLIAGE_DECAY`, `DF_ENT_FUNGUS_DECAY` to DF enum and catalog
-- [ ] Add `MK_ENT` to monster kind enum and monster catalog (slow, tanky, DFChance=100, DFType=DF_ENT_FOLIAGE)
-- [ ] Add `G_ENT` glyph constant
-- [ ] Add 3 summoning horde entries (MK_ENT → MK_RAT, MK_MONKEY, MK_TOAD) with HORDE_IS_SUMMONED
-- [ ] Add natural Ent horde entry for spawning on D1-D4
-- [ ] Add Ent color definition
+- [x] Add `ENT_FOLIAGE` and `ENT_FUNGUS` terrain types to `tileType` enum in Rogue.h
+- [x] Add terrain catalog entries for both (with time-based promoteChance, T_IS_FLAMMABLE, T_OBSTRUCTS_VISION)
+- [x] Add `DF_ENT_FOLIAGE`, `DF_ENT_FOLIAGE_DECAY`, `DF_ENT_FUNGUS_DECAY` to DF enum and catalog
+- [x] Add `MK_ENT` to monster kind enum and monster catalog (slow, tanky, DFChance=100, DFType=DF_ENT_FOLIAGE)
+- [x] Add `G_ENT` glyph constant
+- [x] Add 3 summoning horde entries (MK_ENT → MK_RAT, MK_MONKEY, MK_TOAD) with HORDE_IS_SUMMONED
+- [x] Add natural Ent horde entry for spawning on D1-D4
+- [x] Add Ent color definition
 - [x] Add panic foliage burst in `updateMonsterState()` — when Ent transitions to `MONSTER_FLEEING`, loop radius-4 square calling `spawnDungeonFeature(DF_ENT_FOLIAGE)` at `rand_percent(50)` per passable tile
 - [x] Update seed catalogs
 - [x] Verify with `make test`
