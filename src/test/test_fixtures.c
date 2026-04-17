@@ -2627,7 +2627,64 @@ TEST(test_fixture_sulfur_crust_ring_pattern) {
     test_teardown_game();
 }
 
+// --- Diagnostic: Fixture Placement Rate Report ---
+// One-off test that reports placement success % for every fixture type.
+// Tries each fixture across many seeds at an appropriate depth.
+// Not a pass/fail test — prints a table for manual inspection.
+
+static const char *fixtureNames[] = {
+    "fountain", "rubble_heap", "lone_statue", "garden_patch",
+    "collapsed_pillar", "drainage_channel", "mossy_alcove", "cobweb_corner",
+    "crumbled_wall", "dust_motes", "mushroom_circle", "sunlit_patch",
+    "bird_nest", "vine_trellis", "puddle",
+    "forge", "altar_nook", "crystal_outcrop", "steam_vent",
+    "abandoned_camp", "weapon_rack", "scorched_earth", "lichen_garden",
+    "toppled_bookcase",
+    "bone_throne", "blood_pool", "obsidian_formation", "ember_pit",
+    "claw_marks", "sacrificial_slab", "sulfur_crust"
+};
+
+TEST(test_fixture_placement_rate_report) {
+    const int NUM_SEEDS = 50;
+    const int ATTEMPTS_PER_SEED = 10;
+
+    printf("\n\n  %-24s  depth  placed/seeds  rate\n", "fixture");
+    printf("  %-24s  -----  ------------  ----\n", "------------------------");
+
+    for (int f = MT_FIXTURE_FOUNTAIN; f <= MT_FIXTURE_SULFUR_CRUST; f++) {
+        const blueprint *bp = &blueprintCatalog[f];
+        // Use the midpoint of the depth range for testing
+        int testDepth = (bp->depthRange[0] + bp->depthRange[1]) / 2;
+        if (testDepth < bp->depthRange[0]) testDepth = bp->depthRange[0];
+
+        int successes = 0;
+        for (int s = 0; s < NUM_SEEDS; s++) {
+            int seed = 42 + s * 37;  // spread seeds
+            test_init_game(seed);
+            rogue.depthLevel = testDepth;
+            test_reseed(seed + 5555);
+
+            boolean placed = false;
+            for (int a = 0; a < ATTEMPTS_PER_SEED && !placed; a++) {
+                if (buildAMachine(f, -1, -1, 0, NULL, NULL, NULL)) {
+                    placed = true;
+                }
+            }
+            if (placed) successes++;
+            test_teardown_game();
+        }
+
+        int rate = (successes * 100) / NUM_SEEDS;
+        const char *flag = (rate < 20) ? " << LOW" : (rate < 50) ? " < warn" : "";
+        printf("  %-24s  %3d    %3d/%-3d       %3d%%%s\n",
+               fixtureNames[f - MT_FIXTURE_FOUNTAIN], testDepth,
+               successes, NUM_SEEDS, rate, flag);
+    }
+    printf("\n");
+}
+
 SUITE(fixtures) {
+    RUN_TEST(test_fixture_placement_rate_report);
     RUN_TEST(test_fixture_fountain_blueprint_depth_range);
     RUN_TEST(test_fixture_fountain_blueprint_has_features);
     RUN_TEST(test_fixture_fountain_places_statue);
