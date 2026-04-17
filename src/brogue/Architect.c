@@ -6638,6 +6638,7 @@ void initializeLevel(pos upStairsLoc) {
         }
         populateItems(upLoc);
         populateMonsters();
+        populateGuardianLoot();
     }
 
     // Restore items that fell from the previous depth.

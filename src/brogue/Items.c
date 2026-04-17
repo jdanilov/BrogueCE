@@ -527,6 +527,104 @@ static void fillItemSpawnHeatMap(unsigned short heatMap[DCOLS][DROWS], unsigned 
     }
 }
 
+// Iterative flood-fill from a cell to measure room size, door count, and terrain feature count.
+// Only spreads through passable non-hallway cells (arcCount <= 1).
+// Uses the visited grid to avoid re-counting the same room for multiple cells.
+static void measureRoom(pos start, boolean visited[DCOLS][DROWS],
+                         short *outSize, short *outDoors, short *outFeatures) {
+
+    // Explicit stack to avoid deep recursion on large rooms (up to DCOLS*DROWS cells).
+    pos stack[DCOLS * DROWS];
+    short stackSize = 0;
+
+    stack[stackSize++] = start;
+
+    while (stackSize > 0) {
+        pos loc = stack[--stackSize];
+
+        if (!isPosInMap(loc) || visited[loc.x][loc.y]) continue;
+        if (cellHasTerrainFlag(loc, T_OBSTRUCTS_PASSABILITY) && !cellHasTMFlag(loc, TM_IS_SECRET)) continue;
+
+        // Doors are room boundaries — count them but don't spread through
+        enum tileType dungeon = pmapAt(loc)->layers[DUNGEON];
+        if (dungeon == DOOR || dungeon == OPEN_DOOR || dungeon == SECRET_DOOR || dungeon == LOCKED_DOOR) {
+            (*outDoors)++;
+            continue;
+        }
+
+        // Only spread through room-like cells (not hallways)
+        if (passableArcCount(loc.x, loc.y) > 1) continue;
+
+        visited[loc.x][loc.y] = true;
+        (*outSize)++;
+
+        // Count interesting terrain features on any layer
+        for (int layer = 0; layer < NUMBER_TERRAIN_LAYERS; layer++) {
+            enum tileType t = pmapAt(loc)->layers[layer];
+            if (t == CARPET || t == MARBLE_FLOOR || t == STATUE_INERT || t == STATUE_DORMANT
+                || t == TORCH_WALL || t == CRYSTAL_WALL || t == ALTAR_INERT || t == ALTAR_KEYHOLE
+                || t == PEDESTAL || t == COFFIN_CLOSED || t == COFFIN_OPEN) {
+                (*outFeatures)++;
+            }
+        }
+
+        for (enum directions dir = 0; dir < 4; dir++) {
+            pos neighbor = posNeighborInDirection(loc, dir);
+            if (isPosInMap(neighbor) && !visited[neighbor.x][neighbor.y] && stackSize < DCOLS * DROWS) {
+                stack[stackSize++] = neighbor;
+            }
+        }
+    }
+}
+
+// After the door-based heat map is built, boost heat in large/interesting rooms.
+// Rooms are scored by: size + features*3 + doors*2.  Bonus heat = score * 5,
+// capped at 500 so it supplements rather than overwhelms the secret-door bias (3000).
+static void boostHeatByRoomInterestingness(unsigned short heatMap[DCOLS][DROWS]) {
+    boolean visited[DCOLS][DROWS];
+    short roomScore[DCOLS][DROWS];
+    memset(visited, false, sizeof(visited));
+    memset(roomScore, 0, sizeof(roomScore));
+
+    for (int i = 0; i < DCOLS; i++) {
+        for (int j = 0; j < DROWS; j++) {
+            if (heatMap[i][j] == 0 || visited[i][j]) continue;
+            if (passableArcCount(i, j) > 1) continue; // skip hallways
+
+            // Flood-fill this room
+            boolean roomVisited[DCOLS][DROWS];
+            memset(roomVisited, false, sizeof(roomVisited));
+            short size = 0, doors = 0, features = 0;
+            measureRoom((pos){i, j}, roomVisited, &size, &doors, &features);
+
+            // Small rooms (< 4 tiles) get no bonus
+            short score = 0;
+            if (size >= 4) {
+                score = min(500, (size + features * 3 + doors * 2) * 5);
+            }
+
+            // Apply score to all cells in this room and mark them visited
+            for (int ri = 0; ri < DCOLS; ri++) {
+                for (int rj = 0; rj < DROWS; rj++) {
+                    if (roomVisited[ri][rj]) {
+                        visited[ri][rj] = true;
+                        roomScore[ri][rj] = score;
+                    }
+                }
+            }
+        }
+    }
+
+    // Apply the bonus heat
+    for (int i = 0; i < DCOLS; i++) {
+        for (int j = 0; j < DROWS; j++) {
+            if (heatMap[i][j] > 0 && roomScore[i][j] > 0) {
+                heatMap[i][j] += roomScore[i][j];
+            }
+        }
+    }
+}
+
 static void coolHeatMapAt(unsigned short heatMap[DCOLS][DROWS], pos loc, unsigned long *totalHeat) {
     short k, l;
     unsigned short currentHeat;
@@ -664,6 +762,7 @@ void populateItems(pos upstairs) {
         }
     }
     fillItemSpawnHeatMap(itemSpawnHeatMap, 5, upstairs);
+    boostHeatByRoomInterestingness(itemSpawnHeatMap);
     totalHeat = 0;
 
 #ifdef AUDIT_RNG
@@ -845,6 +944,85 @@ void populateItems(pos upstairs) {
     free(scrollTableCopy);
 
     if (D_MESSAGE_ITEM_GENERATION) printf("\n---- Depth %i: %lu gold generated so far.", rogue.depthLevel, rogue.goldGenerated);
+}
+
+// After monsters are placed, designate some sleeping room-dwelling monsters as loot guardians.
+// For each guardian, either place an item on the ground nearby or give it as a carried item.
+// To preserve balance, one non-essential floor item is removed per guardian item created.
+void populateGuardianLoot(void) {
+    if (!ITEMS_ENABLED || !MONSTERS_ENABLED) return;
+    if (rogue.depthLevel > gameConst->amuletLevel) return;
+
+    // Collect eligible floor items we can remove to compensate (no food, keys, or amulet).
+    // These pointers remain valid as we iterate: we only delete removableItems[guardiansCreated]
+    // at the end of each loop iteration, and never revisit an already-consumed index.
+    short removableCount = 0;
+    item *removableItems[100];
+    for (item *theItem = floorItems->nextItem; theItem != NULL; theItem = theItem->nextItem) {
+        if (!(theItem->category & (FOOD | KEY | AMULET | GEM))) {
+            if (removableCount < 100) {
+                removableItems[removableCount++] = theItem;
+            }
+        }
+    }
+
+    short guardiansCreated = 0;
+
+    for (creatureIterator it = iterateCreatures(monsters); hasNextCreature(it);) {
+        creature *monst = nextCreature(&it);
+
+        // Must be sleeping, not in a machine, not in a hallway
+        if (monst->creatureState != MONSTER_SLEEPING) continue;
+        if (monst->machineHome != 0) continue;
+        if (monst->info.flags & (MONST_INANIMATE | MONST_IMMOBILE)) continue;
+        if (passableArcCount(monst->loc.x, monst->loc.y) > 1) continue;
+
+        // No more removable items to compensate — stop creating guardians
+        if (guardiansCreated >= removableCount) break;
+
+        // 35% chance to become a guardian
+        if (!rand_percent(35)) continue;
+
+        // Generate a guardian item (exclude food, gold, keys)
+        item *guardianItem = generateItem(ALL_ITEMS & ~(FOOD | GOLD | KEY), -1);
+        guardianItem->originDepth = rogue.depthLevel;
+
+        if (rand_percent(50)) {
+            // Place item on ground within 1-2 tiles of the monster, in the same room
+            boolean placed = false;
+            for (int tries = 0; tries < 20 && !placed; tries++) {
+                short dx = rand_range(-2, 2);
+                short dy = rand_range(-2, 2);
+                if (dx == 0 && dy == 0) continue;
+                pos target = (pos){ monst->loc.x + dx, monst->loc.y + dy };
+                if (isPosInMap(target)
+                    && !cellHasTerrainFlag(target, T_OBSTRUCTS_ITEMS | T_PATHING_BLOCKER)
+                    && !(pmapAt(target)->flags & (HAS_ITEM | HAS_STAIRS))
+                    && passableArcCount(target.x, target.y) <= 1
+                    && openPathBetween(monst->loc, target)) { // same room, no doors between
+                    placeItemAt(guardianItem, target);
+                    placed = true;
+                }
+            }
+            if (!placed) {
+                // Couldn't find a good spot — give it as carried item instead
+                monst->carriedItem = guardianItem;
+            }
+        } else {
+            // Add item to monster's inventory
+            monst->carriedItem = guardianItem;
+        }
+
+        // Remove a floor item to compensate
+        item *victim = removableItems[guardiansCreated];
+        removeItemFromChain(victim, floorItems);
+        pmapAt(victim->loc)->flags &= ~HAS_ITEM;
+        deleteItem(victim);
+
+        guardiansCreated++;
+    }
+
+    if (D_MESSAGE_ITEM_GENERATION) printf("\n(:)  Depth %i: %i guardian loot encounters created", rogue.depthLevel, guardiansCreated);
 }
 
 // Name of this function is a bit misleading -- basically returns true iff the item will stack without consuming an extra slot
