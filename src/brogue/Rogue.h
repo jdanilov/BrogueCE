@@ -301,6 +301,7 @@ enum displayGlyph {
     G_WARDEN,
     G_DEWAR,
     G_ANCIENT_SPIRIT,
+    G_ENT,
     G_LEVER,
     G_LEVER_PULLED,
     G_BLOODWORT_STALK,
@@ -589,6 +590,8 @@ enum tileType {
     TRAMPLED_FOLIAGE,
     FUNGUS_FOREST,
     TRAMPLED_FUNGUS_FOREST,
+    ENT_FOLIAGE,
+    ENT_FUNGUS,
     FORCEFIELD,
     FORCEFIELD_MELT,
     SACRED_GLYPH,
@@ -1109,6 +1112,7 @@ enum monsterTypes {
     MK_PHOENIX,
     MK_PHOENIX_EGG,
     MK_ANCIENT_SPIRIT,
+    MK_ENT,
 
     NUMBER_MONSTER_KINDS
 };
@@ -1600,6 +1604,11 @@ enum dungeonFeatureTypes {
     DF_FOLIAGE_REGROW,
     DF_TRAMPLED_FUNGUS_FOREST,
     DF_FUNGUS_FOREST_REGROW,
+
+    // ent
+    DF_ENT_FOLIAGE,
+    DF_ENT_FOLIAGE_DECAY,
+    DF_ENT_FUNGUS_DECAY,
 
     // brimstone
     DF_ACTIVE_BRIMSTONE,

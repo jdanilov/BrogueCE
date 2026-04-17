@@ -145,6 +145,7 @@ unsigned int glyphToUnicode(enum displayGlyph glyph) {
         case G_WARDEN: return 'Y';
         case G_DEWAR: return '&';
         case G_ANCIENT_SPIRIT: return 'M';
+        case G_ENT: return 'E';
         case G_LEVER: return '/';
         case G_LEVER_PULLED: return '\\';
         case G_BLOODWORT_STALK: return U_ARIES;

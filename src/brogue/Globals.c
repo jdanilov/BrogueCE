@@ -198,6 +198,7 @@ const color sentinelColor =         {3,     3,      30,     0,      0,          
 const color goblinMysticColor =     {10,    67,     100,    0,      0,          0,          0,      false};
 const color ifritColor =            {50,    10,     100,    75,     0,          20,         0,      true};
 const color phoenixColor =          {100,   0,      0,      0,      100,        0,          0,      true};
+const color entColor =              {30,    60,     15,     10,     15,         5,          0,      true};
 
 // light colors
 
@@ -484,6 +485,8 @@ const floorTileType tileCatalog[NUMBER_TILETYPES] = {
  /*TRAMPLED_FOLIAGE*/           {G_GRASS,   &foliageColor,          0,                  60, 15, DF_PLAIN_FIRE,0,DF_FOLIAGE_REGROW,        100,  NO_LIGHT,       (T_IS_FLAMMABLE), (TM_VANISHES_UPON_PROMOTION),                                                     "trampled foliage",     "dense foliage fills the area, thriving on what sunlight trickles in."},
  /*FUNGUS_FOREST*/              {G_FOLIAGE, &fungusForestLightColor,0,                  45, 15, DF_PLAIN_FIRE,0,DF_TRAMPLED_FUNGUS_FOREST,  0,  FUNGUS_FOREST_LIGHT,(T_OBSTRUCTS_VISION | T_IS_FLAMMABLE), (TM_STAND_IN_TILE | TM_VANISHES_UPON_PROMOTION | TM_PROMOTES_ON_STEP),"a luminescent fungal forest", "luminescent fungal growth fills the area, groping upward from the rich soil."},
  /*TRAMPLED_FUNGUS_FOREST*/     {G_GRASS,   &fungusForestLightColor,0,                  60, 15, DF_PLAIN_FIRE,0,DF_FUNGUS_FOREST_REGROW,  100,  FUNGUS_LIGHT,   (T_IS_FLAMMABLE), (TM_VANISHES_UPON_PROMOTION),                                                     "trampled fungal foliage", "luminescent fungal growth fills the area, groping upward from the rich soil."},
+ /*ENT_FOLIAGE*/                {G_FOLIAGE, &foliageColor,          0,                  45, 15, DF_PLAIN_FIRE,0,DF_ENT_FOLIAGE_DECAY,       200,  NO_LIGHT,       (T_OBSTRUCTS_VISION | T_IS_FLAMMABLE), (TM_STAND_IN_TILE | TM_VANISHES_UPON_PROMOTION),                      "dense foliage",   "dense foliage has sprung up in the wake of a massive creature."},
+ /*ENT_FUNGUS*/                {G_FOLIAGE, &fungusForestLightColor,0,                  45, 15, DF_PLAIN_FIRE,0,DF_ENT_FUNGUS_DECAY,        200,  FUNGUS_FOREST_LIGHT,(T_OBSTRUCTS_VISION | T_IS_FLAMMABLE), (TM_STAND_IN_TILE | TM_VANISHES_UPON_PROMOTION),                     "decaying fungal growth", "luminescent fungal growth fills the area, slowly decaying."},
  /*FORCEFIELD*/                 {G_CRYSTAL, &forceFieldColor,       &forceFieldColor,   0,  0,  0,0,DF_FORCEFIELD_MELT,                  -200,  FORCEFIELD_LIGHT, (T_OBSTRUCTS_PASSABILITY | T_OBSTRUCTS_GAS | T_OBSTRUCTS_DIAGONAL_MOVEMENT), (TM_STAND_IN_TILE | TM_VANISHES_UPON_PROMOTION | TM_PROMOTES_ON_CREATURE),       "a green crystal",      "The translucent green crystal is melting away in front of your eyes."},
  /*FORCEFIELD_MELT*/            {G_CRYSTAL, &black,                 &forceFieldColor,   0,  0,  0,0,0,                                 -10000,  FORCEFIELD_LIGHT, (T_OBSTRUCTS_PASSABILITY | T_OBSTRUCTS_GAS | T_OBSTRUCTS_DIAGONAL_MOVEMENT), (TM_STAND_IN_TILE | TM_VANISHES_UPON_PROMOTION | TM_PROMOTES_ON_CREATURE),     "a dissolving crystal",     "The translucent green crystal is melting away in front of your eyes."},
  /*SACRED_GLYPH*/               {G_MAGIC_GLYPH, &sacredGlyphColor,  0,                  7,  0,  0,0,0,                                      0,  SACRED_GLYPH_LIGHT, (T_SACRED), 0,                                                                                  "a sacred glyph",       "a sacred glyph adorns the floor, glowing with a powerful warding enchantment."},
@@ -720,6 +723,11 @@ dungeonFeature dungeonFeatureCatalog[NUMBER_DUNGEON_FEATURES] = {
     {FOLIAGE,                   SURFACE,    0,      0,      (DFF_BLOCKED_BY_OTHER_LAYERS)},
     {TRAMPLED_FUNGUS_FOREST,    SURFACE,    0,      0,      0},
     {FUNGUS_FOREST,             SURFACE,    0,      0,      (DFF_BLOCKED_BY_OTHER_LAYERS)},
+
+    // ent
+    {ENT_FOLIAGE,               SURFACE,    50,     50,     0},
+    {ENT_FUNGUS,                SURFACE,    0,      0,      0},
+    {NOTHING,                   SURFACE,    0,      0,      0},
 
     // brimstone
     {ACTIVE_BRIMSTONE,          LIQUID,     0,      0,      0},
@@ -1223,6 +1231,8 @@ creatureType monsterCatalog[NUMBER_MONSTER_KINDS] = {
         (MONST_IMMUNE_TO_FIRE| MONST_IMMUNE_TO_WEBS | MONST_NEVER_SLEEPS | MONST_IMMOBILE | MONST_INANIMATE | MONST_WILL_NOT_USE_STAIRS | MONST_NO_POLYMORPH | MONST_ALWAYS_HUNTING | MONST_IMMUNE_TO_WEAPONS), (MA_CAST_SUMMON | MA_ENTER_SUMMONS)},
     {0, "mangrove dryad",G_ANCIENT_SPIRIT,   &tanColor,      70,     60,     175,    {2, 8, 2},      6,  100,    100,    DF_ASH_BLOOD,   0,    true,       0,      0,              {BOLT_ANCIENT_SPIRIT_VINES},
         (MONST_IMMUNE_TO_WEBS | MONST_ALWAYS_USE_ABILITY | MONST_MAINTAINS_DISTANCE | MONST_NO_POLYMORPH | MONST_MALE | MONST_FEMALE), (0)},
+    {0, "ent",          G_ENT,    &entColor,      80,     40,     80,     {3, 7, 1},      20, 200,    200,    DF_GREEN_BLOOD, 0,    true,       100,    DF_ENT_FOLIAGE, {0},
+        (MONST_MAINTAINS_DISTANCE | MONST_CAST_SPELLS_SLOWLY | MONST_CARRY_ITEM_100 | MONST_FLEES_NEAR_DEATH), (MA_CAST_SUMMON | MA_AVOID_CORRIDORS), (POTION | SCROLL | STAFF)},
 };
 
 const monsterWords monsterText[NUMBER_MONSTER_KINDS] = {
@@ -1452,6 +1462,9 @@ const monsterWords monsterText[NUMBER_MONSTER_KINDS] = {
     {"This mangrove dryad is as old as the earth, and $HISHER gnarled figure houses an ancient power. When angered, $HESHE can call upon the forces of nature to bind $HISHER foes and tear them to shreds.",
         "absorbing", "Absorbing",
         {"whips", "lashes", "thrashes", "lacerates", {0}}},
+    {"A massive tree-like creature, the ent moves slowly through the dungeon, dense foliage sprouting in $HISHER wake. Small creatures are drawn to the shelter of $HISHER canopy. $HISHER bark is tough, but $HESHE fears fire above all else.",
+        "creaking toward", "Creaking",
+        {"bludgeons", "smashes", "crushes", {0}}},
 };
 
 const mutation mutationCatalog[NUMBER_MUTATORS] = {
