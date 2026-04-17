@@ -25,3 +25,4 @@ BrogueCE-*
 *.gcov
 *.desktop
 gmon.out
+docs/research
