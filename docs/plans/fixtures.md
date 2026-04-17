@@ -135,12 +135,33 @@ Each fixture becomes a small `blueprint` entry:
 
 ### Machine Placement Tracking
 
-Every successful `buildAMachine()` call records a `placedMachineInfo` entry in `rogue.placedMachines[]` containing `{ blueprintIndex, machineNumber, origin }`. This enables:
+Every successful `buildAMachine()` call records a `placedMachineInfo` entry in `rogue.placedMachines[]` containing `{ blueprintIndex, machineNumber, origin, prominentTile }`. This enables:
 - `tools/scan_fixture_seeds.c` to find fixtures by blueprint index (instant lookup, no tile scanning)
 - Tests to verify fixture placement via `rogue.placedMachineCount`
 - Custom layouts to store an effective origin different from the machine origin
+- Fixture flavor text display on the prominent tile when the player inspects it
 
 Defined in `Rogue.h`, reset in `digDungeon()`, max `MAX_PLACED_MACHINES` (50) entries per level.
+
+### Fixture Flavor Text
+
+Each fixture has a one-line flavor string displayed when the player inspects (hovers over) the fixture's **prominent tile** — the most visually distinctive tile in the fixture (statue, altar, vent, etc.).
+
+**How it works:**
+- `fixtureFlavorText[]` in `Globals.c` maps `(blueprintIndex - MT_FIXTURE_FOUNTAIN)` → flavor string
+- `placedMachineInfo.prominentTile` records which cell carries the flavor (defaults to `effectiveOrigin`)
+- `fixtureFlavorAt(x, y)` in `Movement.c` scans `rogue.placedMachines[]` for a matching prominent tile
+- Overrides both `tileFlavor()` (player standing on tile) and the "you see" path in `describeLocation()` (hovering over empty tile)
+
+**Prominent tile selection — must point at the centerpiece tile, not decoration:**
+- **Standard blueprints**: The origin feature (with `MF_BUILD_AT_ORIGIN`) is automatically the prominent tile. Works correctly for STATUE_INERT, STEAM_VENT, FOLIAGE, etc.
+- **Custom layouts**: `outCenter` (which becomes `effectiveOrigin` and then `prominentTile`) must point at the centerpiece. For `applyRotatableLayout()`, set `centerDx/centerDy` to the pattern row containing the main tile (e.g. ALTAR_INERT at row 0, not CARPET at row 3).
+- **Ambient fixtures** (Dust Motes, Scorched Earth): No singular centerpiece — origin lands on a random scattered tile, which is fine since the flavor text describes the general area.
+
+**Adding flavor text for a new fixture:**
+1. Add an entry to `fixtureFlavorText[]` in `Globals.c` using the designated initializer syntax: `[MT_FIXTURE_NAME - MT_FIXTURE_FOUNTAIN] = "Your flavor text."`
+2. Ensure the custom layout function sets `outCenter` to the centerpiece tile position
+3. Write in Brogue's atmospheric style: one sentence, present tense, evocative sensory detail
 
 ### Auto-Generator Integration
 
