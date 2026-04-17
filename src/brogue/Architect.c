@@ -1320,7 +1320,7 @@ static boolean applyAltarNookLayout(short originX, short originY, char interior[
     };
     return applyRotatableLayout(originX, originY, interior,
                                 altarPat, sizeof(altarPat) / sizeof(altarPat[0]),
-                                0, 3, outCenter);
+                                0, 0, outCenter);
 }
 
 // Place spiderwebs on interior cells adjacent to walls, with bones nearby.
@@ -2270,7 +2270,7 @@ static boolean applyBoneThroneLayout(short originX, short originY, char interior
     };
     if (!applyRotatableLayout(originX, originY, interior,
                               thronePat, sizeof(thronePat) / sizeof(thronePat[0]),
-                              0, 1, outCenter)) {
+                              0, 0, outCenter)) {
         return false;
     }
 
@@ -4138,6 +4138,7 @@ boolean buildAMachine(enum machineTypes bp,
         info->blueprintIndex = bp;
         info->machineNumber = machineNumber;
         info->origin = effectiveOrigin;
+        info->prominentTile = effectiveOrigin; // default; custom layouts may override
     }
 
     free(p);

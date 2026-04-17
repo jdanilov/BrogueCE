@@ -1,5 +1,5 @@
 Brogue seed catalog, seeds 1 to 25, through depth 10.
-Generated with RB 1.7.1-dev.46d8ccf.master. Dungeons unchanged since RB 1.5.
+Generated with RB 1.7.1-dev.cf59c76.master. Dungeons unchanged since RB 1.5.
 
 To play one of these seeds, select Play>New Seeded Game from the title screen.
 Seed 1:

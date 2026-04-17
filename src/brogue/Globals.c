@@ -1887,3 +1887,43 @@ const statusEffect statusEffectCatalog[NUMBER_OF_STATUS_EFFECTS] = {
     {"Shielded",        true,  0}, // STATUS_SHIELDED
     {"Invisible",       true,  0}, // STATUS_INVISIBLE
 };
+
+// Flavor text displayed when inspecting a fixture's prominent tile.
+// Indexed by (blueprintIndex - MT_FIXTURE_FOUNTAIN).
+const char *fixtureFlavorText[] = {
+    // Universal (any depth)
+    [MT_FIXTURE_FOUNTAIN - MT_FIXTURE_FOUNTAIN]         = "Water trickles down the worn face of a stone figure, collecting in the shallow pool at its feet.",
+    [MT_FIXTURE_RUBBLE_HEAP - MT_FIXTURE_FOUNTAIN]      = "A toppled column lies amid scattered debris, the victim of some ancient catastrophe.",
+    [MT_FIXTURE_LONE_STATUE - MT_FIXTURE_FOUNTAIN]      = "This imposing figure gazes across the chamber with blank marble eyes, guarding an empty hall.",
+    [MT_FIXTURE_GARDEN_PATCH - MT_FIXTURE_FOUNTAIN]     = "Orderly rows of vegetation and water channels suggest this was once a tended garden.",
+    [MT_FIXTURE_COLLAPSED_PILLAR - MT_FIXTURE_FOUNTAIN] = "A broken column juts from a pile of rubble, its upper half long since crumbled away.",
+    [MT_FIXTURE_DRAINAGE_CHANNEL - MT_FIXTURE_FOUNTAIN] = "A thin stream of water seeps through a crack in the floor, tracing a path through the stone.",
+    [MT_FIXTURE_MOSSY_ALCOVE - MT_FIXTURE_FOUNTAIN]     = "Damp moss clings to the walls of this sheltered nook, fed by a slow seep of groundwater.",
+    [MT_FIXTURE_COBWEB_CORNER - MT_FIXTURE_FOUNTAIN]    = "Ancient webs drape the corner like gauze curtains, sagging under the weight of dust and time.",
+    [MT_FIXTURE_CRUMBLED_WALL - MT_FIXTURE_FOUNTAIN]    = "The wall here has partially given way, spilling rubble across the floor.",
+    [MT_FIXTURE_DUST_MOTES - MT_FIXTURE_FOUNTAIN]       = "Motes of dust hang motionless in the still air, undisturbed for ages.",
+    // Early levels (D1-D8)
+    [MT_FIXTURE_MUSHROOM_CIRCLE - MT_FIXTURE_FOUNTAIN]  = "A ring of luminous fungi pulses with a faint inner light, casting an eerie glow.",
+    [MT_FIXTURE_SUNLIT_PATCH - MT_FIXTURE_FOUNTAIN]     = "A shaft of pale light filters down from some unseen crack in the ceiling far above.",
+    [MT_FIXTURE_BIRD_NEST - MT_FIXTURE_FOUNTAIN]        = "A tangle of silk and debris forms a crude nest, its cracked shells long since abandoned.",
+    [MT_FIXTURE_VINE_TRELLIS - MT_FIXTURE_FOUNTAIN]     = "Tenacious vines have woven themselves along the wall, their roots sunk deep into the stone.",
+    [MT_FIXTURE_PUDDLE - MT_FIXTURE_FOUNTAIN]           = "Stagnant water has collected in a shallow depression, ringed by mud and creeping growth.",
+    // Mid levels (D5-D18)
+    [MT_FIXTURE_FORGE - MT_FIXTURE_FOUNTAIN]            = "The heat of the lava still radiates from this ancient forge; the anvil stands cold and silent.",
+    [MT_FIXTURE_ALTAR_NOOK - MT_FIXTURE_FOUNTAIN]       = "Faded carpet leads to a stone altar on a marble dais, the air heavy with forgotten devotion.",
+    [MT_FIXTURE_CRYSTAL_OUTCROP - MT_FIXTURE_FOUNTAIN]  = "Crystalline formations jut from the rock, their facets catching and scattering the faintest light.",
+    [MT_FIXTURE_STEAM_VENT - MT_FIXTURE_FOUNTAIN]       = "Hot vapor hisses from a crack in the earth, the stone around it warm to the touch.",
+    [MT_FIXTURE_ABANDONED_CAMP - MT_FIXTURE_FOUNTAIN]   = "The cold remains of a campfire and a threadbare bedroll speak of a traveler who moved on -- or didn't.",
+    [MT_FIXTURE_WEAPON_RACK - MT_FIXTURE_FOUNTAIN]      = "A crude rack of corroded arms leans against the wall, most of its contents long since rusted away.",
+    [MT_FIXTURE_SCORCHED_EARTH - MT_FIXTURE_FOUNTAIN]   = "The blackened ground still smells faintly of smoke, though whatever burned here is long gone.",
+    [MT_FIXTURE_LICHEN_GARDEN - MT_FIXTURE_FOUNTAIN]    = "Pools of still water glow with bioluminescent life, connected by bridges of luminous fungus.",
+    [MT_FIXTURE_TOPPLED_BOOKCASE - MT_FIXTURE_FOUNTAIN] = "A rotting bookcase slumps in its alcove, surrounded by the scattered remains of its contents.",
+    // Deep levels (D10+)
+    [MT_FIXTURE_BONE_THRONE - MT_FIXTURE_FOUNTAIN]      = "A grim throne of fused bone presides over the chamber, its last occupant long since departed.",
+    [MT_FIXTURE_BLOOD_POOL - MT_FIXTURE_FOUNTAIN]       = "An altar rises from a lake of dried blood, dark and ancient, the stain reaching every wall.",
+    [MT_FIXTURE_OBSIDIAN_FORMATION - MT_FIXTURE_FOUNTAIN]="Black volcanic glass gleams at the center of concentric rings of cooling embers and ash.",
+    [MT_FIXTURE_EMBER_PIT - MT_FIXTURE_FOUNTAIN]        = "A charred stake rises from a bed of smoldering embers; the ash around it is ankle-deep.",
+    [MT_FIXTURE_CLAW_MARKS - MT_FIXTURE_FOUNTAIN]       = "Deep gouges in the stone floor form a trail of desperate scratches leading into darkness.",
+    [MT_FIXTURE_SACRIFICIAL_SLAB - MT_FIXTURE_FOUNTAIN] = "Dark stains on the marble cross tell of rituals best forgotten. A chill hangs in the air.",
+    [MT_FIXTURE_SULFUR_CRUST - MT_FIXTURE_FOUNTAIN]     = "Yellow mineral deposits ring a hissing fumarole, the acrid smell of sulfur thick in the air.",
+};

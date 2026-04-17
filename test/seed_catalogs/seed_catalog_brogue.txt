@@ -1,5 +1,5 @@
 Brogue seed catalog, seeds 1 to 25, through depth 40.
-Generated with CE 1.15.1-dev.46d8ccf.master. Dungeons unchanged since CE 1.11.
+Generated with CE 1.15.1-dev.cf59c76.master. Dungeons unchanged since CE 1.11.
 
 To play one of these seeds, select Play>New Seeded Game from the title screen.
 Seed 1:
@@ -160,10 +160,12 @@ Seed 1:
         A scroll of protect armor (dar blademaster)
         A scroll of shattering (dar blademaster)
     Depth 16:
+        +0 chain mail [5]<13>
         A scroll of enchanting
-        A scroll of enchanting
-        A -2 bow (ready)
-        1657 gold pieces (6 piles)
+        A potion of levitation
+        A scroll of identify
+        A +1 flail <17>
+        1194 gold pieces (4 piles)
     Depth 17:
         A +0 flail <17>
         A potion of speed
@@ -175,7 +177,7 @@ Seed 1:
     Depth 18:
         A potion of strength
         A staff of discord [3/3]
-        A scroll of recharging
+        A scroll of remove curse
         A +0 sword <14>
         +0 scale mail [4]<12>
         1290 gold pieces (4 piles)
@@ -183,8 +185,8 @@ Seed 1:
         A potion of caustic gas
         A scroll of enchanting
         +0 banded mail [7]<15>
-        1717 gold pieces (5 piles)
-        A shackled centaur
+        2375 gold pieces (7 piles)
+        A potion of invisibility (dar priestess)
     Depth 20:
         A potion of descent
         A scroll of enchanting
@@ -193,13 +195,13 @@ Seed 1:
         A potion of life
         Some food
         1626 gold pieces (5 piles)
-        A potion of invisibility (dar priestess)
         A shackled golem
     Depth 21:
         A staff of healing [2/2]
         A -2 dagger of mercy <12>
-        A scroll of identify
+        A scroll of enchanting
         2527 gold pieces (7 piles)
+        A scroll of magic mapping (dar battlemage)
         A shackled golem
     Depth 22:
         A potion of creeping death
@@ -212,20 +214,19 @@ Seed 1:
         A scroll of protect armor
         A scroll of enchanting
         2211 gold pieces (6 piles)
-        A scroll of magic mapping (dar blademaster)
+        A potion of incineration (dar blademaster)
     Depth 24:
         A scroll of identify
         A potion of life
         Some food
         2166 gold pieces (6 piles)
-        A potion of incineration (dragon)
+        A scroll of aggravate monsters (dragon)
     Depth 25:
         A scroll of teleportation
         A -3 ring of transference
         A scroll of enchanting
         A potion of creeping death
         2421 gold pieces (6 piles)
-        A scroll of aggravate monsters (dar blademaster)
     Depth 26:
         -1 banded mail of immolation [6]<15>
         +0 plate armor [11]<19>
@@ -395,6 +396,7 @@ Seed 2:
         Some food
         A +1 ring of transference
         1169 gold pieces (5 piles)
+        A scroll of remove curse (goblin conjurer)
         A shackled ogre
     Depth 13:
         A potion of strength
@@ -438,14 +440,14 @@ Seed 2:
         A potion of incineration
         A scroll of aggravate monsters
         2093 gold pieces (7 piles)
-        A scroll of remove curse (dar priestess)
     Depth 18:
-        A potion of strength
-        A potion of descent
-        A scroll of protect armor
-        A scroll of protect armor
+        A +1 protection charm (ready)
+        A scroll of remove curse
+        A potion of hallucination
+        A potion of speed
         Some food
-        572 gold pieces (2 piles)
+        624 gold pieces (2 piles)
+        A shackled dar blademaster
     Depth 19:
         A +0 spear <13>
         A wand of negation [6]
@@ -463,36 +465,41 @@ Seed 2:
         1286 gold pieces (4 piles)
     Depth 20:
         +3 scale mail of reprisal [7]<12>
-        A potion of fire immunity
+        A potion of detect magic
         A +0 spear <13>
-        A potion of paralysis
-        A potion of incineration
-        A potion of invisibility
-        A scroll of enchanting
         A potion of caustic gas
+        A potion of confusion
+        A potion of fire immunity
+        A scroll of enchanting
+        A potion of invisibility
         A scroll of teleportation
         Some food
         1676 gold pieces (5 piles)
+        A potion of fire immunity (dar battlemage)
+        A potion of descent (dar priestess)
         A shackled tentacle horror [agile]
     Depth 21:
         5 +0 incendiary darts <12>
-        A potion of darkness
+        A potion of incineration
         A -1 broadsword <19>
         1794 gold pieces (5 piles)
         A shackled dar blademaster
     Depth 22:
+        A potion of detect magic
         A scroll of enchanting
         Some food
-        A scroll of negation
-        A potion of telepathy
-        A potion of darkness
+        A potion of strength
+        A potion of incineration
         A scroll of protect armor
+        A potion of fire immunity
         A potion of caustic gas
-        A potion of hallucination
         A wand of teleportation [5]
         A potion of detect magic
         A potion of life (vault 1)
-        2671 gold pieces (8 piles)
+        2703 gold pieces (8 piles)
+        A scroll of protect armor (dar priestess)
+        A potion of hallucination (dar blademaster)
+        A shackled golem
     Depth 23:
         A +3 ring of stealth
         A scroll of enchanting
@@ -516,7 +523,7 @@ Seed 2:
         A scroll of enchanting
         A potion of creeping death
         2123 gold pieces (5 piles)
-        A potion of descent (dar battlemage)
+        A potion of levitation (dar battlemage)
         A shackled dar blademaster
     Depth 26:
         A potion of confusion
@@ -849,7 +856,7 @@ Seed 3:
     Depth 31:
         A lumenstone from depth 31
         A lumenstone from depth 31
-        Some food
+        A mango
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
@@ -865,7 +872,6 @@ Seed 3:
         Some food
     Depth 36:
         A lumenstone from depth 36
-        564 gold pieces
     Depth 37:
         A lumenstone from depth 37
         A mango
@@ -1105,14 +1111,12 @@ Seed 4:
         2273 gold pieces (6 piles)
         A scroll of magic mapping (dar blademaster)
     Depth 26:
-        A potion of strength
-        +2 chain mail of undead immunity [7]<13>
-        A scroll of aggravate monsters
-        A potion of descent
+        A scroll of identify
+        A scroll of enchanting
+        A +3 axe of quietus <15>
         Some food
-        2131 gold pieces (5 piles)
-        A potion of hallucination (dar battlemage)
-        A shackled tentacle horror
+        2002 gold pieces (5 piles)
+        A potion of hallucination (dragon)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -1144,7 +1148,7 @@ Seed 4:
     Depth 34:
         A lumenstone from depth 34
         A lumenstone from depth 34
-        A mango
+        Some food
     Depth 35:
         A lumenstone from depth 35
     Depth 36:
@@ -1154,12 +1158,12 @@ Seed 4:
         A lumenstone from depth 37
     Depth 38:
         A lumenstone from depth 38
-        A mango
     Depth 39:
         A lumenstone from depth 39
         Some food
     Depth 40:
         A lumenstone from depth 40
+        Some food
         646 gold pieces
 Seed 5:
     Depth 1:
@@ -1336,19 +1340,17 @@ Seed 5:
         1998 gold pieces (6 piles)
         A commutation altar (vault 1)
     Depth 23:
-        A potion of incineration
-        A potion of fire immunity
-        -1 banded mail [6]<15>
-        A potion of life
-        A scroll of sanctuary
-        +1 plate armor [12]<19>
-        A +4 ring of awareness
-        1719 gold pieces (5 piles)
+        A scroll of enchanting
+        A +0 dagger <12>
+        A staff of tunneling [2/2]
+        A -3 sword of plenty <14>
+        2528 gold pieces (7 piles)
         A scroll of sanctuary (dar blademaster)
+        A shackled dar blademaster
     Depth 24:
         A staff of lightning [3/3]
         A scroll of summon monsters
-        A potion of levitation
+        A potion of life
         A potion of telepathy
         1785 gold pieces (5 piles)
     Depth 25:
@@ -1576,40 +1578,44 @@ Seed 6:
         1481 gold pieces (5 piles)
         A wand of teleportation [3] (dar blademaster)
     Depth 19:
-        A potion of strength
-        Some food
-        +0 plate armor [11]<19>
-        A mango
-        1511 gold pieces (5 piles)
-        A shackled golem
-    Depth 20:
         A scroll of identify
-        A potion of detect magic
-        A scroll of enchanting
-        A potion of detect magic
-        1804 gold pieces (5 piles)
-        A shackled salamander
-        A shackled naga
+        A potion of paralysis
+        +0 chain mail [5]<13>
+        1446 gold pieces (5 piles)
+    Depth 20:
+        A +2 guardian charm (ready)
+        A +2 protection charm (ready)
+        A scroll of recharging
+        Some food
+        1591 gold pieces (5 piles)
+        A potion of levitation (dar blademaster)
+        A shackled dar priestess
+        A shackled tentacle horror
     Depth 21:
         A scroll of summon monsters
-        A scroll of remove curse
-        A potion of fire immunity
+        A scroll of teleportation
+        A potion of detect magic
         A potion of paralysis
         2397 gold pieces (7 piles)
-        A potion of levitation (dar blademaster)
+        A scroll of identify (dar priestess)
+        A +0 broadsword <19> (dar blademaster)
     Depth 22:
-        A scroll of enchanting
-        A +0 crossbow (ready)
-        A wand of slowness [2]
-        932 gold pieces (3 piles)
+        A potion of telepathy
+        A potion of strength
+        Some food
+        1708 gold pieces (5 piles)
+        +3 chain mail of mutuality [8]<13> (dar blademaster)
+        A scroll of teleportation (dar battlemage)
+        A shackled dar priestess
+        A shackled dar battlemage
     Depth 23:
-        A scroll of shattering
+        A scroll of magic mapping
         A potion of invisibility
         A scroll of enchanting
         A potion of detect magic
         A potion of life
         2062 gold pieces (6 piles)
-        A +0 broadsword <19> (dar blademaster)
+        A +3 ring of reaping (dar blademaster)
         A commutation altar (vault 1)
     Depth 24:
         A potion of confusion
@@ -1622,53 +1628,54 @@ Seed 6:
         1868 gold pieces (5 piles)
     Depth 25:
         A scroll of enchanting
-        A scroll of magic mapping
+        A scroll of protect weapon
         A staff of conjuration [3/3]
         A +0 sling (ready)
         1739 gold pieces (5 piles)
-        +3 chain mail of mutuality [8]<13> (dar blademaster)
-        A scroll of teleportation (dar priestess)
-        A scroll of identify (dar blademaster)
+        A potion of darkness (dar priestess)
+        A potion of detect magic (dar blademaster)
         A shackled golem
         A shackled dar battlemage
         A shackled imp
     Depth 26:
-        A scroll of recharging
+        A scroll of identify
         A potion of telepathy
         A mango
-        2610 gold pieces (7 piles)
+        1803 gold pieces (5 piles)
+        A scroll of protect armor (dragon)
+        A shackled imp [infested]
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
         A lumenstone from depth 27
-        A mango
         A potion of darkness
     Depth 28:
         A lumenstone from depth 28
         A lumenstone from depth 28
         A lumenstone from depth 28
+        Some food
     Depth 29:
         A lumenstone from depth 29
         A lumenstone from depth 29
         A lumenstone from depth 29
-        A mango
     Depth 30:
         A lumenstone from depth 30
         A lumenstone from depth 30
+        Some food
     Depth 31:
         A lumenstone from depth 31
         A lumenstone from depth 31
-        Some food
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
+        A mango
     Depth 33:
         A lumenstone from depth 33
         A lumenstone from depth 33
-        Some food
     Depth 34:
         A lumenstone from depth 34
         A lumenstone from depth 34
+        A mango
     Depth 35:
         A lumenstone from depth 35
         Some food
@@ -1679,9 +1686,9 @@ Seed 6:
         A mango
     Depth 38:
         A lumenstone from depth 38
-        Some food
     Depth 39:
         A lumenstone from depth 39
+        Some food
     Depth 40:
         A lumenstone from depth 40
         Some food
@@ -1828,15 +1835,17 @@ Seed 7:
         A potion of confusion
         1356 gold pieces (5 piles)
     Depth 17:
-        A potion of invisibility
-        A potion of strength
-        A wand of domination [1]
-        A mango
-        1709 gold pieces (6 piles)
-        A scroll of identify (dar blademaster)
+        A potion of paralysis
+        A potion of confusion
+        A potion of creeping death
+        A scroll of aggravate monsters
+        -3 scale mail [1]<12>
+        A scroll of negation
+        Some food
+        1132 gold pieces (4 piles)
     Depth 18:
-        A potion of invisibility
-        A potion of darkness
+        A potion of fire immunity
+        A potion of incineration
         A scroll of enchanting
         A door key (vault 5) (opens vault 3)
         A +3 ring of wisdom (vault 5)
@@ -1847,71 +1856,71 @@ Seed 7:
         A commutation altar (vault 1)
         A commutation altar (vault 3)
     Depth 19:
-        A potion of invisibility
-        A potion of life
-        A potion of descent
-        A potion of telepathy
-        1224 gold pieces (4 piles)
-        A shackled salamander
-        A shackled dar blademaster [juggernaut]
-    Depth 20:
-        A potion of telepathy
-        A potion of speed
+        A potion of detect magic
+        A +2 haste charm (ready)
+        A potion of detect magic
         A potion of strength
-        A scroll of enchanting
-        A potion of levitation
-        Some food
-        1989 gold pieces (6 piles)
-        A wand of negation [4] (dar priestess)
+        1891 gold pieces (6 piles)
         A scroll of aggravate monsters (dar priestess)
+        A scroll of identify (dar blademaster)
+        A shackled dar battlemage
+    Depth 20:
+        A +1 protection charm (ready)
+        A potion of telepathy
+        A wand of negation [5]
+        A potion of life
+        A potion of strength
+        Some food
+        1789 gold pieces (6 piles)
     Depth 21:
         A potion of descent
         +0 scale mail [4]<12>
         +0 leather armor [3]<10>
         +0 leather armor [3]<10>
         1654 gold pieces (5 piles)
+        A wand of negation [4] (dar priestess)
         A shackled pixie
         A shackled pixie
     Depth 22:
-        5 +0 javelins <15>
-        A potion of darkness
-        A scroll of teleportation
-        A mango
-        1719 gold pieces (5 piles)
-    Depth 23:
-        A potion of life
         A potion of strength
-        A potion of detect magic
+        A +3 ring of awareness
         A scroll of enchanting
-        2576 gold pieces (7 piles)
-    Depth 24:
-        A potion of paralysis
+        A potion of confusion
+        1752 gold pieces (5 piles)
+        A potion of descent (dar battlemage)
+        A potion of speed (dar blademaster)
+    Depth 23:
         A potion of creeping death
+        A potion of speed
+        A potion of telepathy
+        Some food
+        2723 gold pieces (7 piles)
+    Depth 24:
+        +0 chain mail [5]<13>
+        A potion of life
         Some food
         1801 gold pieces (5 piles)
-        A potion of speed (dragon [toxic])
+        A scroll of negation (dragon [toxic])
         A shackled dar blademaster
         A shackled imp
     Depth 25:
         A potion of fire immunity
         A scroll of enchanting
-        A scroll of teleportation
+        A scroll of identify
         A potion of telepathy
         2135 gold pieces (5 piles)
-        A potion of descent (dragon)
         A shackled dar battlemage
     Depth 26:
-        A scroll of aggravate monsters
+        A scroll of discord
         A potion of speed
         A potion of invisibility
-        A scroll of summon monsters
+        A scroll of aggravate monsters
         A scroll of enchanting
         A potion of strength
         A potion of life
         Some food
         A potion of life (vault 2)
         2779 gold pieces (7 piles)
-        A scroll of negation (dragon)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -1928,7 +1937,6 @@ Seed 7:
     Depth 30:
         A lumenstone from depth 30
         A lumenstone from depth 30
-        A mango
         A potion of levitation
     Depth 31:
         A lumenstone from depth 31
@@ -1937,31 +1945,32 @@ Seed 7:
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
+        Some food
     Depth 33:
         A lumenstone from depth 33
         A lumenstone from depth 33
-        Some food
     Depth 34:
         A lumenstone from depth 34
         A lumenstone from depth 34
+        Some food
     Depth 35:
         A lumenstone from depth 35
-        A mango
-        A +0 war hammer <20>
+        562 gold pieces
     Depth 36:
         A lumenstone from depth 36
+        Some food
     Depth 37:
         A lumenstone from depth 37
-        Some food
     Depth 38:
         A lumenstone from depth 38
+        Some food
         A potion of fire immunity
     Depth 39:
         A lumenstone from depth 39
-        Some food
         A +2 ring of transference
     Depth 40:
         A lumenstone from depth 40
+        Some food
 Seed 8:
     Depth 1:
         A scroll of recharging
@@ -2253,13 +2262,13 @@ Seed 8:
         A lumenstone from depth 37
     Depth 38:
         A lumenstone from depth 38
-        Some food
-        A +3 ring of regeneration
+        A mango
     Depth 39:
         A lumenstone from depth 39
         Some food
     Depth 40:
         A lumenstone from depth 40
+        A mango
 Seed 9:
     Depth 1:
         A potion of hallucination
@@ -2408,7 +2417,7 @@ Seed 9:
         A scroll of identify (vault 1)
         A scroll of protect weapon (vault 1)
         1185 gold pieces (4 piles)
-        A scroll of identify (goblin mystic)
+        A scroll of identify (goblin conjurer)
         A scroll of recharging (goblin conjurer)
     Depth 18:
         A potion of detect magic
@@ -2482,11 +2491,12 @@ Seed 9:
         A lumenstone from depth 27
         A lumenstone from depth 27
         A lumenstone from depth 27
-        A mango
+        373 gold pieces
     Depth 28:
         A lumenstone from depth 28
         A lumenstone from depth 28
         A lumenstone from depth 28
+        Some food
         A potion of caustic gas
     Depth 29:
         A lumenstone from depth 29
@@ -2499,10 +2509,10 @@ Seed 9:
     Depth 31:
         A lumenstone from depth 31
         A lumenstone from depth 31
-        Some food
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
+        Some food
     Depth 33:
         A lumenstone from depth 33
         A lumenstone from depth 33
@@ -2517,9 +2527,9 @@ Seed 9:
         A lumenstone from depth 36
     Depth 37:
         A lumenstone from depth 37
-        A mango
     Depth 38:
         A lumenstone from depth 38
+        Some food
         A +0 sword <14>
     Depth 39:
         A lumenstone from depth 39
@@ -2737,6 +2747,7 @@ Seed 10:
         An allied mangrove dryad
         A commutation altar (vault 3)
     Depth 24:
+        A potion of incineration
         A potion of confusion
         A mango
         A potion of detect magic
@@ -2746,12 +2757,16 @@ Seed 10:
         A scroll of enchanting (vault 1)
         2208 gold pieces (6 piles)
         A potion of confusion (dragon)
-        A shackled tentacle horror
+        A shackled dar priestess
     Depth 25:
+        A potion of descent
         A potion of darkness
         -1 splint mail [8]<17>
         A +2 recharging charm (ready)
-        2317 gold pieces (6 piles)
+        2157 gold pieces (6 piles)
+        A potion of incineration (dragon)
+        A +0 crossbow (ready) (dar priestess)
+        A shackled tentacle horror
         A shackled dragon
         A shackled tentacle horror
     Depth 26:
@@ -2761,7 +2776,7 @@ Seed 10:
         A potion of strength
         A potion of life
         2025 gold pieces (5 piles)
-        A +0 crossbow (ready) (dragon)
+        A scroll of remove curse (dragon)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -2928,25 +2943,22 @@ Seed 11:
         A +2 sling of sniper (ready)
         745 gold pieces (3 piles)
     Depth 15:
-        A scroll of identify
-        A potion of confusion
-        A potion of speed
-        +0 scale mail [4]<12>
-        A +3 ring of transference
-        A potion of descent
-        A potion of life
         Some food
-        1382 gold pieces (6 piles)
+        A scroll of aggravate monsters
+        A staff of poison [2/2]
+        Some food
+        A +2 flail <17>
+        1294 gold pieces (5 piles)
     Depth 16:
         A potion of detect magic
-        A potion of invisibility
-        A potion of incineration
-        A wand of invisibility [5]
+        +0 chain mail [5]<13>
+        A scroll of enchanting
+        +3 scale mail of respiration [7]<12>
+        A scroll of protect armor
         A potion of confusion
-        A -3 spear <13>
-        A potion of invisibility
+        A potion of life
         1319 gold pieces (5 piles)
-        A shackled troll
+        A scroll of summon monsters (dar blademaster)
         A resurrection altar (vault 1)
     Depth 17:
         +3 chain mail [8]<13>
@@ -2955,75 +2967,75 @@ Seed 11:
         1124 gold pieces (4 piles)
         A shackled troll
     Depth 18:
-        A potion of strength
-        A potion of strength
-        Some food
-        1546 gold pieces (5 piles)
-        A shackled dar blademaster
+        A +0 war axe <19>
+        A potion of life
+        A scroll of enchanting
+        1524 gold pieces (5 piles)
+        A shackled imp
+        A shackled dar priestess
     Depth 19:
         Some food
-        A scroll of remove curse
+        A scroll of protect weapon
         A +1 protection charm (ready)
         1066 gold pieces (4 piles)
         A shackled pixie
     Depth 20:
-        A potion of detect magic
-        A potion of telepathy
-        A potion of confusion
-        A scroll of identify
-        A staff of obstruction [2/2]
-        A potion of life
+        A scroll of enchanting
+        A potion of invisibility
+        A +2 ring of stealth
+        A potion of strength
+        A potion of strength
+        A +0 flail <17>
         A door key (vault 3) (opens vault 1)
         A staff of blinking [3/3] (vault 3)
         A +2 levitation charm (ready) (vault 3)
         A +0 mace <16> (vault 3)
         A +3 axe of multiplicity <15> (vault 3)
         A door key (opens vault 3)
-        1918 gold pieces (6 piles)
-        A shackled dar priestess
+        1917 gold pieces (6 piles)
+        A shackled tentacle horror [juggernaut]
         A commutation altar (vault 1)
     Depth 21:
         A potion of invisibility
         +3 splint mail [12]<17>
-        A scroll of enchanting
         A scroll of identify
+        A scroll of recharging
         A potion of creeping death
         A potion of confusion
         1891 gold pieces (6 piles)
-        A scroll of summon monsters (dar priestess)
     Depth 22:
-        A scroll of discord
-        A scroll of enchanting
-        A +0 sling (ready)
+        A potion of telepathy
         A potion of strength
-        A potion of strength
-        -2 leather armor [1]<10>
-        2336 gold pieces (7 piles)
-    Depth 23:
-        A -3 sword <14>
-        A potion of hallucination
-        A potion of life
         A mango
-        1776 gold pieces (5 piles)
+        +0 banded mail [7]<15>
+        1920 gold pieces (5 piles)
+    Depth 23:
+        A potion of confusion
+        A +0 spear <13>
+        A potion of life
+        2214 gold pieces (6 piles)
     Depth 24:
         A scroll of enchanting
         A -2 crossbow (ready)
         A mango
         1917 gold pieces (5 piles)
+        A staff of lightning [3/3] (dar battlemage)
         A shackled golem
         A shackled dar battlemage
     Depth 25:
-        A potion of caustic gas
+        A potion of invisibility
         A potion of confusion
         A +0 war axe <19>
         A +2 ring of reaping
         1821 gold pieces (5 piles)
+        A potion of telepathy (dragon)
     Depth 26:
-        A scroll of remove curse
-        A potion of telepathy
+        A +1 recharging charm (ready)
+        A potion of strength
         Some food
         A potion of caustic gas
-        3449 gold pieces (8 piles)
+        3176 gold pieces (8 piles)
+        A shackled dar battlemage
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -3063,9 +3075,9 @@ Seed 11:
         A potion of incineration
     Depth 37:
         A lumenstone from depth 37
-        A mango
     Depth 38:
         A lumenstone from depth 38
+        Some food
     Depth 39:
         A lumenstone from depth 39
         A mango
@@ -3200,104 +3212,104 @@ Seed 12:
         A scroll of enchanting (vault 1)
         739 gold pieces (3 piles)
     Depth 15:
-        17 +0 javelins <15>
-        A scroll of aggravate monsters
-        Some food
-        A potion of life
-        A potion of strength
-        Some food
-        1642 gold pieces (6 piles)
-        A potion of speed (goblin conjurer)
+        A potion of incineration
+        A potion of levitation
+        A scroll of enchanting
+        A potion of detect magic
+        A +0 crossbow (ready)
+        A mango
+        1498 gold pieces (6 piles)
+        A shackled naga
     Depth 16:
         +0 scale mail [4]<12>
         A mango
         A scroll of enchanting
-        A potion of caustic gas
+        A potion of speed
         A potion of levitation
         A scroll of identify
         1013 gold pieces (4 piles)
-        A potion of incineration (dar blademaster)
+        A potion of speed (goblin conjurer)
         A shackled pixie
     Depth 17:
-        A potion of strength
-        A wand of polymorphism [3]
-        A mango
-        1137 gold pieces (4 piles)
+        A scroll of enchanting
+        A -3 ring of regeneration
+        A potion of life
+        1123 gold pieces (4 piles)
     Depth 18:
-        A potion of speed
+        A potion of telepathy
         A +0 whip <14>
         A scroll of enchanting
         A potion of levitation
         1850 gold pieces (6 piles)
-        A scroll of aggravate monsters (dar priestess)
+        A potion of incineration (dar priestess)
         A shackled dar blademaster
     Depth 19:
-        A potion of confusion
-        A scroll of identify
+        A scroll of remove curse
+        A scroll of sanctuary
+        A +0 mace <16>
         A potion of strength
-        A +0 war pike <18>
-        A scroll of enchanting
-        1112 gold pieces (4 piles)
+        Some food
+        1206 gold pieces (4 piles)
+        A scroll of aggravate monsters (dar blademaster)
     Depth 20:
-        A scroll of protect armor
+        A scroll of sanctuary
         A scroll of enchanting
         A potion of strength
         A +0 spear <13>
-        A scroll of negation
+        A scroll of shattering
         1621 gold pieces (5 piles)
     Depth 21:
         A scroll of summon monsters
         A +0 broadsword <19>
         A potion of life
         1630 gold pieces (5 piles)
-        A potion of darkness (dar priestess)
     Depth 22:
-        A potion of incineration
-        A scroll of negation
-        A potion of incineration
-        A scroll of identify
-        2800 gold pieces (8 piles)
+        A potion of darkness
+        A potion of strength
+        11 +0 javelins <15>
+        Some food
+        3709 gold pieces (10 piles)
         A staff of protection [2/2] (dar blademaster)
+        A potion of darkness (dar blademaster)
         A resurrection altar (vault 1)
     Depth 23:
-        A potion of incineration
+        A potion of confusion
         Some food
-        A potion of caustic gas
+        A potion of invisibility
         A potion of strength
-        A potion of speed
+        A potion of levitation
         A scroll of enchanting
         +0 banded mail [7]<15>
         +0 banded mail [7]<15>
-        A potion of hallucination
+        A potion of paralysis
         1685 gold pieces (5 piles)
-        A -2 dagger <12> (dragon)
         A shackled dar blademaster
     Depth 24:
         A scroll of enchanting
         A +0 crossbow (ready)
-        A scroll of remove curse
+        A scroll of protect armor
         3171 gold pieces (8 piles)
-        A scroll of magic mapping (dragon)
+        A -2 dagger <12> (dragon)
     Depth 25:
-        A +3 axe of quietus <15>
-        A scroll of enchanting
-        A +0 crossbow (ready)
+        +0 splint mail [9]<17>
+        A -2 flail <17>
+        A -1 war pike <18>
+        A potion of strength
+        A +2 sword <14>
+        A potion of strength
         A potion of life
-        -3 splint mail [6]<17>
-        2305 gold pieces (6 piles)
-        A scroll of remove curse (dragon)
-        A potion of paralysis (dar blademaster)
+        2240 gold pieces (6 piles)
     Depth 26:
-        A potion of strength
+        A potion of telepathy
         Some food
         A potion of strength
         Some food
-        2273 gold pieces (6 piles)
+        2229 gold pieces (6 piles)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
         A lumenstone from depth 27
-        387 gold pieces
+        A +1 ring of light
     Depth 28:
         A lumenstone from depth 28
         A lumenstone from depth 28
@@ -3431,12 +3443,12 @@ Seed 13:
         A door key (opens vault 3)
         394 gold pieces (2 piles)
     Depth 11:
+        A scroll of negation
         A -3 ring of reaping
         A scroll of enchanting
-        A potion of speed
-        1191 gold pieces (5 piles)
+        1682 gold pieces (7 piles)
         A potion of incineration (goblin mystic)
-        A potion of levitation (dar blademaster)
+        A potion of levitation (goblin conjurer)
     Depth 12:
         A scroll of enchanting
         A potion of fire immunity
@@ -3601,7 +3613,7 @@ Seed 13:
     Depth 31:
         A lumenstone from depth 31
         A lumenstone from depth 31
-        466 gold pieces
+        A +2 ring of reaping
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
@@ -3618,13 +3630,12 @@ Seed 13:
         Some food
     Depth 36:
         A lumenstone from depth 36
-        A -2 ring of clairvoyance
     Depth 37:
         A lumenstone from depth 37
-        Some food
-        A +2 ring of wisdom
+        A +3 ring of clairvoyance
     Depth 38:
         A lumenstone from depth 38
+        Some food
         A -1 ring of wisdom
     Depth 39:
         A lumenstone from depth 39
@@ -3840,48 +3851,44 @@ Seed 14:
         A potion of levitation (dar blademaster)
         A shackled tentacle horror
     Depth 22:
-        A scroll of protect armor
         A +2 sling of slaying (ready)
         A potion of descent
-        A potion of strength
-        1996 gold pieces (6 piles)
+        A mango
+        1699 gold pieces (5 piles)
         +0 scale mail [4]<12> (dar battlemage)
     Depth 23:
-        A potion of confusion
-        A scroll of enchanting
-        A potion of speed
-        A potion of paralysis
+        A scroll of recharging
+        A -1 whip <14>
+        A potion of fire immunity
+        A scroll of teleportation
+        A scroll of identify
         A potion of life
-        Some food
         A door key (opens vault 1)
-        2163 gold pieces (6 piles)
-        A potion of levitation (dar blademaster)
-        A potion of descent (dar battlemage)
-        A potion of invisibility (dar blademaster)
-        A shackled tentacle horror
+        2166 gold pieces (6 piles)
         A shackled imp
         A shackled imp
         A commutation altar (vault 1)
     Depth 24:
-        A scroll of recharging
+        A scroll of teleportation
         A +1 teleportation charm (ready)
         A potion of strength
-        A scroll of shattering
-        -3 leather armor of vulnerability [0]<10>
+        A scroll of negation
+        Some food
         2004 gold pieces (5 piles)
     Depth 25:
-        A scroll of remove curse
         A scroll of enchanting
-        Some food
-        1735 gold pieces (5 piles)
-    Depth 26:
-        +0 chain mail [5]<13>
-        A potion of descent
-        A scroll of identify
+        A potion of creeping death
         A potion of telepathy
-        2242 gold pieces (6 piles)
+        1871 gold pieces (5 piles)
+        A potion of invisibility (dar blademaster [toxic])
+    Depth 26:
+        A potion of detect magic
+        A +2 rapier <15>
+        A potion of fire immunity
+        A potion of strength
+        2411 gold pieces (6 piles)
         A potion of levitation (dragon)
-        A shackled dar blademaster
+        A potion of descent (dragon)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -3907,16 +3914,16 @@ Seed 14:
     Depth 32:
         A lumenstone from depth 32
         A lumenstone from depth 32
+        A mango
     Depth 33:
         A lumenstone from depth 33
         A lumenstone from depth 33
-        A mango
     Depth 34:
         A lumenstone from depth 34
         A lumenstone from depth 34
+        Some food
     Depth 35:
         A lumenstone from depth 35
-        Some food
     Depth 36:
         A lumenstone from depth 36
         A mango
@@ -4127,30 +4134,35 @@ Seed 15:
         1893 gold pieces (5 piles)
         3 +0 incendiary darts <12> (dragon)
     Depth 24:
-        A potion of detect magic
-        A scroll of enchanting
-        A mango
-        3173 gold pieces (8 piles)
-        A shackled imp
-    Depth 25:
-        A potion of hallucination
-        -1 plate armor of vulnerability [10]<19>
-        A scroll of identify
-        2777 gold pieces (7 piles)
-    Depth 26:
-        A potion of strength
-        A scroll of enchanting
+        A scroll of shattering
         A potion of confusion
+        A potion of fire immunity
+        A scroll of enchanting
+        +3 splint mail [12]<17>
+        A potion of strength
+        1791 gold pieces (5 piles)
+        A scroll of aggravate monsters (dar blademaster)
+    Depth 25:
+        A potion of fire immunity
+        A scroll of enchanting
         Some food
+        2609 gold pieces (7 piles)
+        +1 scale mail of reprisal [5]<12> (dragon)
+        A shackled golem
+    Depth 26:
+        A potion of telepathy
+        A scroll of enchanting
+        A potion of incineration
+        A potion of strength
         A +0 spear <13>
-        2387 gold pieces (6 piles)
-        A scroll of aggravate monsters (dragon)
-        A shackled dar blademaster
+        2294 gold pieces (6 piles)
+        A scroll of sanctuary (dragon)
         A shackled dar priestess
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
         A lumenstone from depth 27
+        Some food
     Depth 28:
         A lumenstone from depth 28
         A lumenstone from depth 28
@@ -4186,9 +4198,9 @@ Seed 15:
         Some food
     Depth 37:
         A lumenstone from depth 37
-        A mango
     Depth 38:
         A lumenstone from depth 38
+        Some food
     Depth 39:
         A lumenstone from depth 39
         Some food
@@ -4319,10 +4331,12 @@ Seed 16:
         918 gold pieces (4 piles)
         A +0 broadsword <19> (dar blademaster)
     Depth 13:
-        +0 scale mail [4]<12>
-        A +1 recharging charm (ready)
+        A potion of paralysis
+        A scroll of summon monsters
+        A potion of confusion
         Some food
-        884 gold pieces (4 piles)
+        A potion of fire immunity
+        1258 gold pieces (5 piles)
     Depth 14:
         A scroll of negation
         A potion of incineration
@@ -4700,16 +4714,21 @@ Seed 17:
         1914 gold pieces (5 piles)
         A +0 mace <16> (dragon)
     Depth 26:
-        A scroll of shattering
-        A potion of strength
-        Some food
-        A +1 ring of awareness
-        2081 gold pieces (5 piles)
-        A shackled imp [explosive]
+        A potion of telepathy
+        A potion of telepathy
+        -3 splint mail of burden [6]<17>
+        +0 chain mail [5]<13>
+        A scroll of recharging
+        A potion of confusion
+        A potion of hallucination
+        +0 scale mail [4]<12>
+        A -1 ring of stealth
+        2426 gold pieces (6 piles)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
         A lumenstone from depth 27
+        Some food
     Depth 28:
         A lumenstone from depth 28
         A lumenstone from depth 28
@@ -4877,15 +4896,17 @@ Seed 18:
         987 gold pieces (4 piles)
         A -1 spear <13> (goblin mystic)
     Depth 15:
-        A scroll of recharging
         A scroll of enchanting
         A potion of strength
         A potion of detect magic
         -2 leather armor [1]<10>
         A scroll of aggravate monsters
-        853 gold pieces (3 piles)
+        865 gold pieces (3 piles)
+        A scroll of remove curse (goblin conjurer)
+        A scroll of aggravate monsters (goblin conjurer)
         A potion of incineration (goblin mystic)
-        A scroll of magic mapping (goblin mystic)
+        A scroll of magic mapping (goblin conjurer)
+        A shackled ogre
     Depth 16:
         A potion of telepathy
         A +0 spear <13>
@@ -4899,7 +4920,7 @@ Seed 18:
         A potion of speed
         Some food
         1386 gold pieces (5 piles)
-        A scroll of aggravate monsters (dar priestess)
+        A +1 teleportation charm (ready) (dar priestess)
     Depth 18:
         A scroll of enchanting
         A scroll of discord
@@ -4914,8 +4935,8 @@ Seed 18:
         A scroll of remove curse
         A scroll of protect weapon
         1813 gold pieces (6 piles)
-        A +1 teleportation charm (ready) (dar battlemage)
-        A scroll of remove curse (dar blademaster)
+        A scroll of protect armor (dar battlemage)
+        A scroll of summon monsters (dar blademaster)
     Depth 19:
         A potion of strength
         Some food
@@ -4940,9 +4961,8 @@ Seed 18:
         A potion of hallucination
         A potion of life
         2186 gold pieces (6 piles)
-        A scroll of recharging (dar priestess)
-        A scroll of protect armor (dar priestess)
-        A scroll of summon monsters (dar blademaster)
+        A scroll of aggravate monsters (dar priestess)
+        A scroll of recharging (dar blademaster)
     Depth 22:
         A potion of detect magic
         A potion of invisibility
@@ -4965,7 +4985,6 @@ Seed 18:
         A potion of life
         Some food
         2091 gold pieces (6 piles)
-        A scroll of aggravate monsters (dragon)
     Depth 25:
         A scroll of magic mapping
         A wand of teleportation [5]
@@ -4974,9 +4993,11 @@ Seed 18:
         A +3 mace <16>
         A staff of blinking [3/3]
         1889 gold pieces (5 piles)
+        A +0 broadsword <19> (dar priestess)
+        A scroll of summon monsters (dragon [juggernaut])
         A potion of paralysis (dar priestess)
-        A potion of creeping death (dragon [juggernaut])
-        A scroll of remove curse (dar priestess)
+        A potion of creeping death (dar blademaster)
+        A scroll of remove curse (dar battlemage)
         A shackled dar priestess
         A shackled golem
     Depth 26:
@@ -4984,7 +5005,6 @@ Seed 18:
         A potion of descent
         A potion of darkness
         1744 gold pieces (5 piles)
-        A scroll of summon monsters (dar battlemage)
         A shackled dar battlemage
     Depth 27:
         A lumenstone from depth 27
@@ -5034,8 +5054,7 @@ Seed 18:
         A lumenstone from depth 39
     Depth 40:
         A lumenstone from depth 40
-        A mango
-        A +1 ring of clairvoyance
+        Some food
 Seed 19:
     Depth 1:
         A potion of levitation
@@ -5277,6 +5296,7 @@ Seed 19:
         A lumenstone from depth 28
         A lumenstone from depth 28
         A lumenstone from depth 28
+        A +3 ring of stealth
     Depth 29:
         A lumenstone from depth 29
         A lumenstone from depth 29
@@ -5317,8 +5337,8 @@ Seed 19:
         A lumenstone from depth 39
     Depth 40:
         A lumenstone from depth 40
-        Some food
-        650 gold pieces
+        A mango
+        A +3 ring of light
 Seed 20:
     Depth 1:
         A scroll of aggravate monsters
@@ -5480,12 +5500,12 @@ Seed 20:
         1755 gold pieces (6 piles)
         A shackled dar priestess
     Depth 19:
-        A staff of lightning [2/2]
-        A +1 dagger of paralysis <12>
-        A potion of speed
-        A potion of confusion
-        612 gold pieces (2 piles)
-        A shackled centaur
+        A scroll of identify
+        A wand of polymorphism [4]
+        A scroll of magic mapping
+        A scroll of enchanting
+        A potion of caustic gas
+        934 gold pieces (3 piles)
     Depth 20:
         A potion of descent
         A potion of confusion
@@ -5519,7 +5539,7 @@ Seed 20:
     Depth 24:
         +0 plate armor [11]<19>
         A potion of invisibility
-        A scroll of sanctuary
+        A scroll of magic mapping
         A scroll of enchanting
         A potion of levitation
         A mango
@@ -5711,13 +5731,11 @@ Seed 21:
         A +1 spear of confusion <13> (vault 1)
         1202 gold pieces (5 piles)
     Depth 15:
-        A potion of telepathy
+        A potion of paralysis
         A potion of strength
-        Some food
+        A mango
         A +0 whip <14>
-        1758 gold pieces (7 piles)
-        A scroll of aggravate monsters (goblin mystic)
-        A shackled ogre
+        1263 gold pieces (5 piles)
         A shackled wraith
         A shackled naga
         A commutation altar (vault 3)
@@ -5735,16 +5753,16 @@ Seed 21:
         +1 scale mail of reflection [5]<12> (vault 1)
         1033 gold pieces (4 piles)
     Depth 17:
-        A potion of invisibility
-        -2 plate armor of vulnerability [9]<19>
-        A scroll of teleportation
-        A +0 war axe <19>
-        995 gold pieces (4 piles)
-    Depth 18:
-        A -2 broadsword <19>
+        A staff of blinking [2/2]
         A potion of caustic gas
-        A mango
-        1291 gold pieces (4 piles)
+        Some food
+        A +0 war axe <19>
+        1261 gold pieces (4 piles)
+    Depth 18:
+        A potion of detect magic
+        A potion of invisibility
+        A scroll of discord
+        1223 gold pieces (4 piles)
     Depth 19:
         +0 chain mail [5]<13>
         A scroll of remove curse
@@ -5755,7 +5773,8 @@ Seed 21:
         +0 chain mail [5]<13>
         A potion of darkness
         A potion of strength
-        2238 gold pieces (7 piles)
+        2838 gold pieces (9 piles)
+        A scroll of aggravate monsters (dar priestess)
         A shackled dar blademaster
     Depth 21:
         A scroll of remove curse
@@ -5770,8 +5789,7 @@ Seed 21:
         A potion of strength
         A potion of telepathy
         2391 gold pieces (7 piles)
-        A scroll of summon monsters (dar priestess)
-        A scroll of magic mapping (dar blademaster)
+        A scroll of magic mapping (dar priestess)
     Depth 23:
         A scroll of enchanting
         5 +0 incendiary darts <12>
@@ -5784,8 +5802,9 @@ Seed 21:
         A scroll of enchanting
         Some food
         2057 gold pieces (5 piles)
-        A scroll of summon monsters (dar battlemage)
-        A staff of poison [2/2] (dar blademaster)
+        A scroll of summon monsters (dragon)
+        A staff of poison [2/2] (dar battlemage)
+        A scroll of summon monsters (dar blademaster)
     Depth 25:
         A -1 sword of plenty <14>
         A +1 invisibility charm (ready)
@@ -5797,14 +5816,13 @@ Seed 21:
         A +3 war pike <18>
         A scroll of enchanting (vault 1)
         2386 gold pieces (6 piles)
-        A scroll of recharging (dragon)
         A door key (flamedancer) (opens vault 1)
     Depth 26:
         A potion of detect magic
         A potion of life
         Some food
         3782 gold pieces (9 piles)
-        13 +0 javelins <15> (dragon)
+        A scroll of recharging (dragon)
     Depth 27:
         A lumenstone from depth 27
         A lumenstone from depth 27
@@ -5842,7 +5860,6 @@ Seed 21:
     Depth 36:
         A lumenstone from depth 36
         Some food
-        517 gold pieces
     Depth 37:
         A lumenstone from depth 37
     Depth 38:

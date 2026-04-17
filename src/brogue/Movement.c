@@ -98,8 +98,23 @@ enum dungeonLayers layerWithFlag(short x, short y, unsigned long flag) {
     return NO_LAYER;
 }
 
+// Returns fixture flavor text if (x,y) is a fixture's prominent tile, else NULL.
+static const char *fixtureFlavorAt(short x, short y) {
+    for (int i = 0; i < rogue.placedMachineCount; i++) {
+        placedMachineInfo *info = &rogue.placedMachines[i];
+        if (info->prominentTile.x == x && info->prominentTile.y == y
+            && info->blueprintIndex >= MT_FIXTURE_FOUNTAIN
+            && info->blueprintIndex <= MT_FIXTURE_SULFUR_CRUST) {
+            return fixtureFlavorText[info->blueprintIndex - MT_FIXTURE_FOUNTAIN];
+        }
+    }
+    return NULL;
+}
+
 // Retrieves a pointer to the flavor text of the highest-priority terrain at the given location
 const char *tileFlavor(short x, short y) {
+    const char *ff = fixtureFlavorAt(x, y);
+    if (ff) return ff;
     return tileCatalog[pmap[x][y].layers[highestPriorityLayer(x, y, false)]].flavorText;
 }
 
@@ -388,7 +403,12 @@ void describeLocation(char *buf, short x, short y) {
             describedItemName(theItem, subject, DCOLS - strlen(buf));
 
         } else { // no item
-            sprintf(buf, "you %s %s.", (playerCanDirectlySee(x, y) ? "see" : "sense"), object);
+            const char *ff = fixtureFlavorAt(x, y);
+            if (ff) {
+                strcpy(buf, ff);
+            } else {
+                sprintf(buf, "you %s %s.", (playerCanDirectlySee(x, y) ? "see" : "sense"), object);
+            }
             restoreRNG;
             return;
         }

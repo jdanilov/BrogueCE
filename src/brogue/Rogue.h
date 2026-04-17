@@ -2517,6 +2517,7 @@ typedef struct placedMachineInfo {
     short blueprintIndex;               // index into blueprintCatalog
     short machineNumber;                // unique machine number on this level
     pos origin;                         // origin/center of the machine
+    pos prominentTile;                  // tile where fixture flavor text is displayed on inspection
 } placedMachineInfo;
 
 // these are basically global variables pertaining to the game state and player's unique variables:
