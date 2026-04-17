@@ -16,7 +16,7 @@ Custom Ideas
 
 8. Dynamic monster behavior — Jackals that steal items and flee, kobolds that set traps, goblins that call for reinforcements. Make even weak monsters tactically distinct rather than just "walk toward player, attack." [interesting]
 
-9. Trap system: picking and setting up traps via a wand [planned]
+9. Trap system: picking and setting up traps via a wand [done]
 
 10. More ways to control the dungeon, e.g. set noise trap in a room to attract monsters
  
@@ -27,3 +27,5 @@ Custom Ideas
 13. Trap laying monster
 
 14. Mimic - monster that pretends to be a gold piece
+
+15. Sound system - fighting, casting, throwing, etc. - almost everything generates noise, waking up nearby creatures (unless deaf) and inviting to explore. Sound waves are rendered via fill algorithm.
