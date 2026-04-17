@@ -973,6 +973,7 @@ void populateGuardianLoot(void) {
         if (monst->creatureState != MONSTER_SLEEPING) continue;
         if (monst->machineHome != 0) continue;
         if (monst->info.flags & (MONST_INANIMATE | MONST_IMMOBILE)) continue;
+        if (!(monst->info.flags & (MONST_CARRY_ITEM_25 | MONST_CARRY_ITEM_50 | MONST_CARRY_ITEM_100))) continue;
         if (passableArcCount(monst->loc.x, monst->loc.y) > 1) continue;
 
         // No more removable items to compensate — stop creating guardians
