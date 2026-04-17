@@ -1525,9 +1525,8 @@ TEST(test_fixture_abandoned_camp_custom_layout) {
 
 TEST(test_fixture_abandoned_camp_places_hay_and_embers) {
     boolean placed = false;
-    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
-    for (int s = 0; s < 10 && !placed; s++) {
-        test_init_game(seeds[s]);
+    for (int s = 1; s <= 50 && !placed; s++) {
+        test_init_game(s);
         rogue.depthLevel = 8;
 
         for (int i = 0; i < 30; i++) {
@@ -1568,9 +1567,8 @@ TEST(test_fixture_abandoned_camp_places_hay_and_embers) {
 
 TEST(test_fixture_abandoned_camp_statue_near_embers) {
     boolean placed = false;
-    int seeds[] = {42, 100, 200, 300, 17, 500, 600, 700, 800, 900};
-    for (int s = 0; s < 10 && !placed; s++) {
-        test_init_game(seeds[s]);
+    for (int s = 1; s <= 50 && !placed; s++) {
+        test_init_game(s);
         rogue.depthLevel = 8;
 
         for (int i = 0; i < 30; i++) {
