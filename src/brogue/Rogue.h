@@ -2164,6 +2164,10 @@ enum monsterBehaviorFlags {
     MONST_GETS_TURN_ON_ACTIVATION   = Fl(28),   // monster never gets a turn, except when its machine is activated
     MONST_ALWAYS_USE_ABILITY        = Fl(29),   // monster will never fail to use special ability if eligible (no random factor)
     MONST_NO_POLYMORPH              = Fl(30),   // monster cannot result from a polymorph spell (liches, phoenixes and Warden of Yendor)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    MONST_CARRY_ITEM_50             = Fl(31),   // monster carries an item 50% of the time
+#pragma GCC diagnostic pop
 
     NEGATABLE_TRAITS                = (MONST_INVISIBLE | MONST_DEFEND_DEGRADE_WEAPON | MONST_IMMUNE_TO_WEAPONS | MONST_FLIES
                                        | MONST_FLITS | MONST_IMMUNE_TO_FIRE | MONST_REFLECT_50 | MONST_FIERY | MONST_MAINTAINS_DISTANCE),
@@ -2266,6 +2270,7 @@ typedef struct creatureType {
     enum boltType bolts[20];
     unsigned long flags;
     unsigned long abilityFlags;
+    unsigned long preferredItemCategories; // bitmask of itemCategory for thematic loot (0 = no preference)
 } creatureType;
 
 typedef struct monsterWords {
@@ -3387,6 +3392,7 @@ extern "C" {
     void magicRangedWeaponHit(creature *monst, item *theItem, pos targetLoc);
     void addScentToCell(short x, short y, short distance);
     void populateItems(pos upstairs);
+    void populateGuardianLoot(void);
     item *placeItemAt(item *theItem, pos dest);
     void removeItemAt(pos loc);
     void pickUpItemAt(pos loc);

@@ -132,6 +132,8 @@ void initializeMonster(creature *monst, boolean itemPossible) {
     int itemChance;
     if (monst->info.flags & MONST_CARRY_ITEM_100) {
         itemChance = 100;
+    } else if (monst->info.flags & MONST_CARRY_ITEM_50) {
+        itemChance = 50;
     } else if (monst->info.flags & MONST_CARRY_ITEM_25) {
         itemChance = 25;
     } else {
@@ -144,10 +146,35 @@ void initializeMonster(creature *monst, boolean itemPossible) {
         && monsterItemsHopper->nextItem
         && rand_percent(itemChance)) {
 
-        monst->carriedItem = monsterItemsHopper->nextItem;
-        monsterItemsHopper->nextItem = monsterItemsHopper->nextItem->nextItem;
-        monst->carriedItem->nextItem = NULL;
-        monst->carriedItem->originDepth = rogue.depthLevel;
+        if (monst->info.preferredItemCategories) {
+            // Scan the hopper for the first item matching this monster's thematic preference.
+            // First-match is intentional: the hopper is randomly generated, so order is
+            // effectively random and scanning further would add complexity without benefit.
+            item *prev = monsterItemsHopper;
+            item *match = NULL;
+            for (item *candidate = monsterItemsHopper->nextItem; candidate != NULL; candidate = candidate->nextItem) {
+                if (candidate->category & monst->info.preferredItemCategories) {
+                    match = candidate;
+                    break;
+                }
+                prev = candidate;
+            }
+            if (match) {
+                prev->nextItem = match->nextItem;
+                match->nextItem = NULL;
+                match->originDepth = rogue.depthLevel;
+                monst->carriedItem = match;
+            } else {
+                // No thematic match in hopper — monster gets no item
+                monst->carriedItem = NULL;
+            }
+        } else {
+            // No preference — take next item from hopper (original behavior)
+            monst->carriedItem = monsterItemsHopper->nextItem;
+            monsterItemsHopper->nextItem = monsterItemsHopper->nextItem->nextItem;
+            monst->carriedItem->nextItem = NULL;
+            monst->carriedItem->originDepth = rogue.depthLevel;
+        }
     } else {
         monst->carriedItem = NULL;
     }
