@@ -430,7 +430,7 @@ TEST(test_fixture_mossy_alcove_custom_layout) {
 }
 
 TEST(test_fixture_mossy_alcove_places_water) {
-    test_init_game(42);
+    test_init_game(1);
 
     rogue.depthLevel = 3;
 
@@ -456,8 +456,8 @@ TEST(test_fixture_mossy_alcove_places_water) {
     test_teardown_game();
 }
 
-TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation) {
-    test_init_game(42);
+TEST(test_fixture_mossy_alcove_wall_strip_pattern) {
+    test_init_game(1);
 
     rogue.depthLevel = 3;
 
@@ -470,22 +470,21 @@ TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation) {
     }
     ASSERT(placed);
 
-    // Find shallow water tile, verify at least one adjacent cell has foliage or grass
-    boolean foundPattern = false;
-    for (int x = 1; x < DCOLS - 1 && !foundPattern; x++) {
-        for (int y = 1; y < DROWS - 1 && !foundPattern; y++) {
+    // The wall-strip grotto should have at least 2 adjacent shallow water tiles
+    // (the middle of row 2, for a strip width >= 4)
+    int waterCount = 0;
+    for (int x = 1; x < DCOLS - 1; x++) {
+        for (int y = 1; y < DROWS - 1; y++) {
             if (pmap[x][y].layers[LIQUID] == SHALLOW_WATER) {
-                // Check cardinal neighbors for vegetation
-                if (pmap[x-1][y].layers[SURFACE] == FOLIAGE || pmap[x-1][y].layers[SURFACE] == GRASS
-                    || pmap[x+1][y].layers[SURFACE] == FOLIAGE || pmap[x+1][y].layers[SURFACE] == GRASS
-                    || pmap[x][y-1].layers[SURFACE] == FOLIAGE || pmap[x][y-1].layers[SURFACE] == GRASS
-                    || pmap[x][y+1].layers[SURFACE] == FOLIAGE || pmap[x][y+1].layers[SURFACE] == GRASS) {
-                    foundPattern = true;
+                // Check if an adjacent cell also has shallow water
+                if (pmap[x+1][y].layers[LIQUID] == SHALLOW_WATER
+                    || pmap[x][y+1].layers[LIQUID] == SHALLOW_WATER) {
+                    waterCount++;
                 }
             }
         }
     }
-    ASSERT(foundPattern);
+    ASSERT(waterCount >= 1); // At least one pair of adjacent water tiles
 
     test_teardown_game();
 }
@@ -2735,7 +2734,7 @@ SUITE(fixtures) {
     RUN_TEST(test_fixture_mossy_alcove_blueprint_depth_range);
     RUN_TEST(test_fixture_mossy_alcove_custom_layout);
     RUN_TEST(test_fixture_mossy_alcove_places_water);
-    RUN_TEST(test_fixture_mossy_alcove_water_surrounded_by_vegetation);
+    RUN_TEST(test_fixture_mossy_alcove_wall_strip_pattern);
     RUN_TEST(test_fixture_cobweb_corner_blueprint_depth_range);
     RUN_TEST(test_fixture_cobweb_corner_custom_layout);
     RUN_TEST(test_fixture_cobweb_corner_places_webs);

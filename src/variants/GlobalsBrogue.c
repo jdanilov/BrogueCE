@@ -688,8 +688,8 @@ const blueprint blueprintCatalog_Brogue[] = {
     {1, DEEPEST_LEVEL}, {6, 12},    0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyDrainageLayout() in Architect.c
         {0}}},
-    {"Fixture: Mossy Alcove -- overgrown nook with seeping water",
-    {1, DEEPEST_LEVEL}, {4, 8},     0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
+    {"Fixture: Mossy Alcove -- wall-strip grotto with foliage, grass, and pooling water",
+    {1, DEEPEST_LEVEL}, {12, 21},   0,      0,          0,                  (BP_NO_INTERIOR_FLAG | BP_PURGE_INTERIOR), {
         // Tile placement handled by applyMossyAlcoveLayout() in Architect.c
         {0}}},
     {"Fixture: Cobweb Corner -- old webs with ancient remains near a wall",

@@ -70,7 +70,7 @@ Loot is controlled by the `MF_GENERATE_ITEM` flag on a machineFeature entry with
 | 2 | **Lone Statue** ✅ | 1-2 | STATUE_INERT, MARBLE_FLOOR | Room center | Imposing figure on marble pedestal. |
 | 3 | **Collapsed Pillar** ✅ | 2-4 | STATUE_INERT (1), RUBBLE (around) | Room interior | Broken column with scattered debris. BP_PURGE_INTERIOR. |
 | 4 | **Drainage Channel** ✅ | 3-6 | SHALLOW_WATER in a line, RUBBLE at ends | Anywhere | Water seeping through cracked floor. |
-| 5 | **Mossy Alcove** ✅ | 3-5 | GRASS, FOLIAGE, SHALLOW_WATER (1) | Cavern wall-adjacent | Overgrown nook with seeping water. BP_PURGE_INTERIOR. |
+| 5 | **Mossy Alcove** ✅ | 12-18 | FOLIAGE (row against wall), GRASS (transition), SHALLOW_WATER (pool row) | Wall-adjacent strip | Wall-strip grotto: 4-6 wide × 3 deep hugging a wall. Custom `applyMossyAlcoveLayout()`. BP_PURGE_INTERIOR. |
 | 6 | **Cobweb Corner** ✅ | 2-4 | SPIDERWEB (2-3), BONES (1) | Room corner | Old webs with ancient remains. Custom `applyCobwebCornerLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 7 | **Crumbled Wall** ✅ | 2-4 | RUBBLE (2-3), STATUE_INERT (1) | Wall-adjacent | Partially collapsed wall section. Custom `applyCrumbledWallLayout()` in Architect.c. BP_PURGE_INTERIOR. |
 | 8 | **Dust Motes** ✅ | 7-11 | ASH (4-6), DEAD_GRASS (3-5) | Anywhere | Undisturbed for ages. Scattered ash and dried grass. BP_PURGE_INTERIOR. |

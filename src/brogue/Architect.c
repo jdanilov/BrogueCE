@@ -1644,61 +1644,105 @@ static boolean applyBirdNestLayout(short originX, short originY, char interior[D
     return true;
 }
 
-// Place a tight mossy alcove: shallow water at center, surrounded by foliage and grass.
-// Finds a suitable interior cell near the origin and places a 3-5 tile cluster.
-// Returns true if layout was placed, false if insufficient space.
+// Place a wall-strip mossy grotto: foliage hugging a wall, grass transition, shallow water pooling.
+// Finds a strip of 4-6 wall-adjacent interior cells with 3 rows of depth into the room.
+// Row 0 (against wall): foliage. Row 1: foliage ends, grass middle. Row 2: grass ends, water middle.
+// Returns true if layout was placed, false if no suitable wall strip found.
 static boolean applyMossyAlcoveLayout(short originX, short originY, char interior[DCOLS][DROWS], pos *outCenter) {
-    // Find an interior cell near the origin that has at least 2 adjacent interior cells.
-    short bestX = 0, bestY = 0, bestAdj = 0;
+    // Four wall directions: wall is at (x+wdx, y+wdy) relative to the interior cell.
+    static const short wallDirs[4][2] = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
 
-    for (short dy = -3; dy <= 3; dy++) {
-        for (short dx = -3; dx <= 3; dx++) {
-            short x = originX + dx;
-            short y = originY + dy;
-            if (x < 1 || x >= DCOLS - 1 || y < 1 || y >= DROWS - 1) continue;
-            if (!interior[x][y]) continue;
+    int bestScore = -10000;
+    short bestWd = -1, bestSX = 0, bestSY = 0, bestWidth = 0;
 
-            // Count adjacent interior cells
-            short adj = 0;
-            if (interior[x-1][y]) adj++;
-            if (interior[x+1][y]) adj++;
-            if (interior[x][y-1]) adj++;
-            if (interior[x][y+1]) adj++;
+    for (short wd = 0; wd < 4; wd++) {
+        short wdx = wallDirs[wd][0], wdy = wallDirs[wd][1];
+        // "into" = away from wall, into room
+        short idx = -wdx, idy = -wdy;
+        // "along" = parallel to wall
+        short adx = (wdx == 0) ? 1 : 0;
+        short ady = (wdx == 0) ? 0 : 1;
 
-            if (adj > bestAdj) {
-                bestAdj = adj;
-                bestX = x;
-                bestY = y;
+        for (short sx = 2; sx < DCOLS - 2; sx++) {
+            for (short sy = 2; sy < DROWS - 2; sy++) {
+                if (!interior[sx][sy]) continue;
+                // Cell in wall direction must NOT be interior (i.e. it's a wall)
+                short wx = sx + wdx, wy = sy + wdy;
+                if (wx < 0 || wx >= DCOLS || wy < 0 || wy >= DROWS) continue;
+                if (interior[wx][wy]) continue;
+
+                // Measure strip length along wall (max 6)
+                short width = 0;
+                for (short w = 0; w < 6; w++) {
+                    short cx = sx + adx * w, cy = sy + ady * w;
+                    if (cx < 1 || cx >= DCOLS - 1 || cy < 1 || cy >= DROWS - 1) break;
+                    if (!interior[cx][cy]) break;
+                    // Must also be wall-adjacent
+                    if (interior[cx + wdx][cy + wdy]) break;
+
+                    // Need 3 rows deep into room
+                    boolean deep = true;
+                    for (short d = 1; d <= 2; d++) {
+                        short rx = cx + idx * d, ry = cy + idy * d;
+                        if (rx < 1 || rx >= DCOLS - 1 || ry < 1 || ry >= DROWS - 1) { deep = false; break; }
+                        if (!interior[rx][ry]) { deep = false; break; }
+                    }
+                    if (!deep) break;
+
+                    width++;
+                }
+
+                if (width < 4) continue;
+
+                // Score: prefer wider strips closer to origin
+                short midX = sx + adx * (width / 2) + idx;
+                short midY = sy + ady * (width / 2) + idy;
+                int dist = (midX - originX) * (midX - originX) + (midY - originY) * (midY - originY);
+                int score = width * 100 - dist;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestWd = wd;
+                    bestSX = sx;
+                    bestSY = sy;
+                    bestWidth = width;
+                }
             }
         }
     }
 
-    if (bestAdj < 2) return false;
+    if (bestWd < 0) return false;
 
-    // Place shallow water at center
-    pmap[bestX][bestY].layers[LIQUID] = SHALLOW_WATER;
-    pmap[bestX][bestY].layers[SURFACE] = NOTHING;
+    short wdx = wallDirs[bestWd][0], wdy = wallDirs[bestWd][1];
+    short idx = -wdx, idy = -wdy;
+    short adx = (wdx == 0) ? 1 : 0;
+    short ady = (wdx == 0) ? 0 : 1;
 
-    // Place foliage and grass on adjacent interior cells
-    short dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
-    short placed = 0;
-    for (short i = 0; i < 4 && placed < 4; i++) {
-        short nx = bestX + dirs[i][0];
-        short ny = bestY + dirs[i][1];
-        if (nx < 0 || nx >= DCOLS || ny < 0 || ny >= DROWS) continue;
-        if (!interior[nx][ny]) continue;
+    for (short w = 0; w < bestWidth; w++) {
+        short bx = bestSX + adx * w;
+        short by = bestSY + ady * w;
 
-        if (placed % 2 == 0) {
-            pmap[nx][ny].layers[SURFACE] = FOLIAGE;
+        // Row 0 (against wall): foliage
+        pmap[bx][by].layers[SURFACE] = FOLIAGE;
+
+        // Row 1: foliage at ends, grass in middle
+        short r1x = bx + idx, r1y = by + idy;
+        pmap[r1x][r1y].layers[SURFACE] = (w == 0 || w == bestWidth - 1) ? FOLIAGE : GRASS;
+
+        // Row 2: grass at ends, shallow water in middle
+        short r2x = bx + idx * 2, r2y = by + idy * 2;
+        if (w == 0 || w == bestWidth - 1) {
+            pmap[r2x][r2y].layers[SURFACE] = GRASS;
         } else {
-            pmap[nx][ny].layers[SURFACE] = GRASS;
+            pmap[r2x][r2y].layers[LIQUID] = SHALLOW_WATER;
+            pmap[r2x][r2y].layers[SURFACE] = NOTHING;
         }
-        placed++;
     }
 
     if (outCenter) {
-        outCenter->x = bestX;
-        outCenter->y = bestY;
+        short midW = bestWidth / 2;
+        outCenter->x = bestSX + adx * midW + idx * 2;
+        outCenter->y = bestSY + ady * midW + idy * 2;
     }
     return true;
 }
