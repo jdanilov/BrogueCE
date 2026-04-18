@@ -301,7 +301,6 @@ enum displayGlyph {
     G_WARDEN,
     G_DEWAR,
     G_ANCIENT_SPIRIT,
-    G_ENT,
     G_LEVER,
     G_LEVER_PULLED,
     G_BLOODWORT_STALK,
@@ -339,7 +338,8 @@ enum displayGlyph {
     G_ORB_ALTAR,
     G_LEFT_TRIANGLE,
     G_CORPSE,
-    G_RANGED
+    G_RANGED,
+    G_ENT
 };
 
 enum graphicsModes {

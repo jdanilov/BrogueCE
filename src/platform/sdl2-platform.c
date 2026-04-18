@@ -355,6 +355,8 @@ static int fontIndex(enum displayGlyph glyph) {
         // -2 to disregard the up and down arrow glyphs
         // Ranged weapons reuse the melee weapon tile (G_WEAPON charIndex = 330)
         if (glyph == G_RANGED) return 330;
+        // Ent uses the unused tree-creature tile at sheet position 684
+        if (glyph == G_ENT) return 684;
         return glyph + 128 - 2;
     } else {
         unsigned int code = glyphToUnicode(glyph);
